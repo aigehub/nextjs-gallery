@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页展示</title>
+	<script src="config/config.js"></script>
+	<link rel="stylesheet" href="style/navigation.css">
+	<link rel="stylesheet" href="style/homePage.css">
+	<link rel="stylesheet" href="style/dialog.css">
+	<link rel="stylesheet" href="style/toTop.css">	
+</head>
+<body>
+    <header class="header">
+		<h1>首页</h1><div class="menu-icon">导航</div>
+    </header>
+	<!--<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">本网有防追踪功能,每次访问以原网址为准</p></div>-->
+	<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">苹果推荐浏览器:苹果自带/UC/火狐/谷歌</p></div>
+	<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">安卓推荐浏览器:华为自带/UC/夸克/谷歌</p></div>
+	<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">默认显示'中圈',点击切换'大圈'</p></div>
+	<!--<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">(重庆,北京,广东,福建,江苏,浙江)</p></div>-->
+	<!--<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">访问ppjimei及jimeipro觉得卡的换https://pkjm.mvay.cn</p></div>-->	
+	<!--<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">网址即将更新</p></div>-->
+	<!--<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">https://pig.zwidi.cn</p></div>-->
+	<!--<div class="subheader"><p style="font-weight: bold; color: red; text-align: center;">https://pig.owknm.cn</p></div>-->		
+	<div class="subheader">
+		<div class="select-row">			
+			<h2> 
+			<select class="select-btn" id="provinceSelector"></select>
+			>
+			<select class="select-btn" id="skill">
+				<option value="">行为标签</option>
+				<option value="WT">WT</option>
+				<option value="ST">ST</option>
+				<option value="DL">DL</option>
+				<option value="KB">KB</option>
+				<option value="SW">SW</option>
+				<option value="SM">SM</option>
+				<option value="CP">CP</option>
+				<option value="六九">六九</option>
+				<option value="水磨">水磨</option>
+				<option value="白虎">白虎</option>
+				<option value="御姐">御姐</option>
+				<option value="萝莉">萝莉</option>
+				<option value="COS">COS</option>
+				<option value="长腿">长腿</option>
+				<option value="大胸">大胸</option>
+				<option value="一字马">一字马</option>
+				<option value="孕妇">孕妇</option>
+				<option value="可外">可外</option>
+				<option value="可夜">可夜</option>
+				<option value="可登记">可登记</option>
+				<option value="TF加米">TF加米</option>
+				<option value="TF不加米">TF不加米</option>
+			</select>
+			>
+			<select class="select-btn-range" id="range_ref">				
+				<option value="2" selected>中圈</option>
+				<option value="3">大圈</option>
+			</select>		
+			</h2>
+		</div>
+		<div class="search-row">	  
+			<input type="text" id="searchBox" placeholder="编号/名称/地址"/>
+			<button type="button" id="searchButton" onclick="searchData()">搜索</button>
+		</div>		
+	</div>
+    <div class="citys" id="citys"></div>
+    <div class="card-container" id="homePageDataList"></div>
+    <div class="side-menu" id="sideMenu">
+		<ul></ul>
+    </div>
+	<div id="scrollTrigger"></div>
+	<div class="to-top-button" id="toTopButton">TOP</div>
+<script src="js/navigation.js"></script>
+<script src="config/dialog.js"></script>
+<script src="config/toTop.js"></script>
+<script src="config/sessionManager.js"></script>
+<script>
+function getCookie(name) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) return parts.pop().split(';').shift();
+}
+function debounce(func, delay) { 
+    let timer; 
+    return function (...args) {
+		const context = this;
+        if (timer) {
+            clearTimeout(timer); 
+        }
+        timer = setTimeout(() => {			
+			func.apply(context, args);
+        }, delay);
+    };
+}
+let page_number = 1; 
+let isLoading = false;  
+let hasMoreData = true; 
+let currentProvince = null;  
+let currentCity = null;  
+let allData = [];  
+let isDisable = false; 
+let provinces = [];
+let citys = [];
+let currentSearchData = [];
+const provinceCodeFromCookie = Number(getCookie('provinceCode'));
+const defaultProvince = { p_number: provinceCodeFromCookie || 26, name: '', jd: 0, wd: 0 };
+document.addEventListener('DOMContentLoaded', () => {
+	loadProvinceCityData();
+	toTop();
+	buttonsOperation();	
+	document.getElementById('skill').addEventListener('change', function () {
+		const skill = this.value;
+		const range = document.getElementById('range_ref').value;
+		const keyword = document.getElementById('searchBox').value.trim();
+		const isSearch = keyword && currentSearchData && currentSearchData.length > 0;
+		isDisable = true;
+		hasMoreData = false;
+		if (!skill) {
+			homePageDataList(isSearch ? currentSearchData : allData);
+			return;
+		}
+		const sourceData = isSearch ? currentSearchData : allData;
+		const result = sourceData.filter(item => {
+			if (!isSearch) {
+				const matchArea =
+					(currentCity && item.c_number === currentCity) ||
+					(currentProvince && item.p_number === currentProvince);
+				if (!matchArea) return false;
+			}
+			if (isSearch) {
+				const matchKeyword =
+					(item.code_ref && item.code_ref.includes(keyword)) ||
+					(item.name && item.name.includes(keyword)) ||
+					(item.address && item.address.includes(keyword));
+				if (!matchKeyword) return false;				
+				if (range && String(item.range_ref) !== range) return false;
+			}		
+			const tags = item.skill?.split('#') || [];
+			if (!tags.includes(skill)) return false;
+			return true;
+		});		
+		homePageDataList(result);
+	});
+	document.getElementById('range_ref').addEventListener('change', function () {
+		const range = this.value;
+		if (range) {	
+			const city = citys.find(city => city.c_number === currentCity);
+			selectCity(city)
+		}
+	});
+});
+async function loadProvinceCityData() {  
+	try {
+		const response = await fetch(`${window.API_URL}/api/provinceCity`);
+		const results = await response.json();	
+		if (response.ok) {
+			provinces = results.province;
+			citys = results.city;
+			renderProvinceList(provinces);  
+			selectProvince(defaultProvince.p_number); 
+		}
+	} catch (error) {
+		console.error('获取数据错误:', error);
+		throw error;
+	}
+}	
+function renderProvinceList(provinceData) {  
+	const provinceSelector = document.getElementById('provinceSelector');	
+	provinceSelector.innerHTML = '';  
+	provinceData.forEach(province => {  
+		const option = document.createElement('option'); 
+		option.value = province.p_number;  
+		option.textContent = province.name;
+		if (province.p_number === defaultProvince.p_number) {
+			option.selected = true;
+		}
+		provinceSelector.appendChild(option);
+	});	
+	provinceSelector.onchange = null;
+	provinceSelector.addEventListener('change', (event) => {
+		selectProvince(Number(event.target.value));
+	});	
+}
+function selectProvince(p_number) {
+	const filteredCitys = citys.filter(city => city.p_number === p_number); 
+	if (filteredCitys.length > 0) { 
+		renderCityList(filteredCitys, p_number); 
+	} else {  	
+		resetting();
+		currentProvince = p_number;  
+		currentCity = null;
+		debouncedFetchData(p_number, null);  
+		isDisable = false;
+		return; 
+	}
+}
+function renderCityList(cityData, p_number) {
+	const citySelector = document.getElementById('citys');
+	citySelector.innerHTML = '';
+	const allOption = document.createElement('button');
+    allOption.textContent = '全部';
+	allOption.id = 'allButton';
+	allOption.style.display = 'none';
+    citySelector.appendChild(allOption);
+	cityData.forEach(city => {
+		const button = document.createElement('button');	
+		button.dataset.cNumber = city.c_number;  
+		button.textContent = city.name; 
+		button.addEventListener('click', () => selectCity(city)); 
+		citySelector.appendChild(button);
+	});
+	selectCity(cityData[0]);
+}
+function selectCity(city) {
+    document.getElementById('searchBox').value = '';
+	const buttons = document.querySelectorAll('.citys button');  
+	buttons.forEach(button => button.classList.remove('active')); 
+	const selectedButton = Array.from(buttons).find(button => button.textContent === city.name);
+	if (selectedButton) selectedButton.classList.add('active');  
+	resetting();	 
+	if (city.c_number) {  
+		currentCity = city.c_number;
+		currentProvince = null;  
+		debouncedFetchData(null, city.c_number); 
+		isDisable = false
+		return;
+	} else { 
+		currentProvince = city.p_number;  
+		currentCity = null; 
+		debouncedFetchData(city.p_number, null); 
+		isDisable = false
+		return;	 
+	}
+}
+const debouncedFetchData = debounce(fetchData, 500);
+async function fetchData(p_number, c_number) {
+	if (isLoading || !hasMoreData) return; 
+	isLoading = true;
+    try {
+		const rangeRef = document.getElementById('range_ref').value;
+		const params = new URLSearchParams({
+			p_number: p_number || '', 
+            c_number: c_number || '',
+			rangeRef: rangeRef || '', 			
+			page_number: page_number,
+            page_size: 500
+        });
+		const response = await fetch(`${window.API_URL}/api/girl/homePageData?${params.toString()}`, {
+				method: 'GET',
+				credentials: 'include'
+		});					
+		const results = await response.json();	
+		if (response.ok) {
+			allData = [...allData, ...results.data]; 
+			homePageDataList(allData);
+			if (results.data.length < 10) {
+				hasMoreData = false;
+				observer.unobserve(scrollTriggerElement);
+			} else {
+				page_number++;
+			}		
+		} else {
+			hasMoreData = false;  
+		}
+			isLoading = false;		
+	} catch (error) {
+		console.error('获取数据错误:', error);
+		isLoading = false;
+	}
+}
+function homePageDataList(data) {  
+	const user = JSON.parse(sessionStorage.getItem('user')); 
+	const role = user.role;
+	const homePageDataList = document.getElementById('homePageDataList');
+	if (!data || data.length === 0) {
+		homePageDataList.innerHTML = '<p>没有查询到相关数据</p>';
+		return;
+	}
+	homePageDataList.innerHTML = '';		
+	const fragment = document.createDocumentFragment();
+	data.forEach(girl => {			
+		const card = document.createElement('div');
+		card.className = 'card';
+		card.innerHTML = `			
+			${girl.top === 1 ? (girl.today_top === 1 ? '<span class="tag-recommend">🌟今日C位🌟</span>' : '<span class="tag-recommend">已置顶</span>') : ''}
+			${girl.state_ref === 3 ? '<span class="tag-verified">已认证</span>' : ''}
+			${girl.state_ref === 4 ? '<span class="tag-tiangong">天宫</span>' : ''}
+			<img src="${girl.photo}" data-id="${girl.id}" loading="lazy">
+			<h3>${girl.name}</h3>
+			<p style="font-weight: bold; color: red;">编号:${girl.code_ref}</p>
+			${girl.price !== null && girl.price !== undefined ? `<p style="font-weight: bold; color: red;">价格:${girl.price}</p>` : ''}
+			<div class="distance-btn-container">
+				<button class="distance-btn"
+					data-wd="${girl.c_wd || girl.p_wd}"
+					data-jd="${girl.c_jd || girl.p_jd}">
+					点击查看距离
+				</button>
+			</div>
+			<p>
+				<span style="font-weight: bold; color: green;">年龄:</span>${girl.age}
+				<span style="font-weight: bold; color: green;">身高:</span>${girl.height}
+			</p>				   
+			<p>
+				<span style="font-weight: bold; color: green;">体重:</span>${girl.weight}
+				<span style="font-weight: bold; color: green;">三围:</span>${girl.bust}
+			</p> 
+			<p style="font-weight: bold; color: red;">地址:${girl.address}</p>					
+			<div>
+				${girl.skill ? girl.skill.split('#').map(skill => `<span class="tag">${skill}</span>`).join(''): ''}
+			</div>
+			<div>
+				${girl.vx ? `<p><span style="font-weight: bold; color: green;">VX:</span>${girl.vx}</p>` : ''}
+				${girl.qq ? `<p><span style="font-weight: bold; color: green;">QQ:</span>${girl.qq}</p>` : ''}
+				${girl.xl ? `<p><span style="font-weight: bold; color: green;">UU:</span>${girl.xl}</p>` : ''}
+				${girl.yn ? `<p><span style="font-weight: bold; color: green;">与你:</span>${girl.yn}</p>` : ''}
+				${girl.phone ? `<p><span style="font-weight: bold; color: green;">电话:</span>${girl.phone}</p>` : ''}
+				${girl.remarks ? `<p><span style="font-weight: bold; color: green;">备注:</span>${girl.remarks}</p>` : ''}
+			</div>
+			${role === 3 ? `<div class="distance-btn-container"><button class="distance-btn" data-id="${girl.id}">拉黑</button></div>` : ''}
+		`;
+			const image = card.querySelector('img');
+			if (image) {
+				image.addEventListener('click', function () {
+					const id = image.getAttribute('data-id');
+					sessionStorage.setItem('scrollY', window.scrollY);
+					location.href = `girlDetails.html?id=${id}`; 
+				});
+			}
+		fragment.appendChild(card);
+	});
+	homePageDataList.appendChild(fragment);
+}
+async function searchData() {
+	resetting();
+	isDisable = true;
+	const p_number = document.getElementById('provinceSelector').value;
+	const searchQuery = document.getElementById('searchBox').value.trim();
+	const rangeRef = document.getElementById('range_ref').value;
+    if (!searchQuery) {
+		return;
+    }
+	const params = new URLSearchParams({
+			p_number: p_number,
+			rangeRef: rangeRef,			
+			searchQuery: searchQuery        
+	});
+	try {
+		const response = await fetch(`${window.API_URL}/api/girl/searchData?${params.toString()}`, {
+            method: 'GET',	
+			credentials: 'include'
+        });
+        const results = await response.json(); 
+        if (response.ok) {
+			currentSearchData = results.data;
+			homePageDataList(results.data);
+			const buttons = document.querySelectorAll('.citys button');  
+			buttons.forEach(button => button.classList.remove('active')); 
+			const allButton = document.getElementById('allButton');
+			if (allButton) {
+				allButton.style.display = 'inline-block';
+				allButton.classList.add('active');
+			}
+		}
+	} catch (error) {
+		console.error('获取数据错误:', error);
+		throw error; 
+	}
+}
+function buttonsOperation() {
+	const homePageDataList = document.getElementById('homePageDataList');
+    if (!homePageDataList) {
+        console.error('无效元素');
+        return;
+    }
+	if (!window.distanceButtonListenerAttached) {
+		homePageDataList.addEventListener('click', (event) => {
+			const button = event.target.closest('.distance-btn');
+			if (!button) return;
+			if (button.dataset.wd && button.dataset.jd) {
+				setupDistanceButton(button);
+			} else if (button.dataset.id) {
+				hideButton(button);
+			}
+		});  
+		window.distanceButtonListenerAttached = true; 
+    }
+}
+function setupDistanceButton(button) {
+	const wd = button.dataset.wd; 
+	const jd = button.dataset.jd;
+	if (!wd || !jd) {
+		button.textContent = '数据错误';
+		return;
+	}
+	const presetLocation = { latitude: parseFloat(wd) , longitude: parseFloat(jd) };
+	button.textContent = '计算中...';
+	getUserLocation((error, userLocation) => {
+		if (error) {
+			button.textContent = '无法获取位置请刷新';
+			console.error('定位错误:', error.message);
+			return;
+		}
+		const distance = calculateDistance(
+			userLocation.latitude,
+			userLocation.longitude,
+			presetLocation.latitude,
+			presetLocation.longitude
+		).toFixed(2);
+		button.textContent = `距离:${distance} KM`;
+	}); 
+}
+function getUserLocation(callback) {
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(
+			position => callback(null, position.coords),
+			error => callback(error, null)
+		);
+	} else {
+		callback(new Error('不支持地理定位'), null);
+	}
+}
+function calculateDistance(lat1, lon1, lat2, lon2) {
+	const toRad = angle => angle * (Math.PI / 180);
+	const R = 6371;
+	const dLat = toRad(lat2 - lat1);
+	const dLon = toRad(lon2 - lon1);
+	const a = Math.sin(dLat / 2) ** 2 +
+			  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+			  Math.sin(dLon / 2) ** 2;
+	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+function hideButton(button) {
+	const id = button.dataset.id;
+    if (!id) {
+        console.error('无效ID');
+        return;
+    }
+	showConfirmDialog({
+        onConfirm: async () => {  
+            try {
+                const response = await fetch(`${window.API_URL}/api/user/createBlock`, {
+					method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id: id }),
+					credentials: 'include'
+                });
+                if (response.ok) {
+					button.closest('.card').remove();
+                } else {
+					console.error('拉黑错误'); 
+				}  
+            } catch (error) {
+				console.error('拉黑错误:', error); 
+				throw error;				
+            }
+        }
+    });
+}
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+		if (isDisable) return;  
+        if (entry.isIntersecting && !isLoading && hasMoreData) {
+            isLoading = true;  		
+            if (currentCity) {
+                debouncedFetchData(null, currentCity);
+				//onLoadComplete();
+            } else {
+                debouncedFetchData(currentProvince, null);
+				//onLoadComplete();
+            }
+        }
+    });
+}, { 
+    root: null,  
+    rootMargin: "0px 0px 100px 0px",  
+    threshold: 0.1 
+});
+const scrollTriggerElement = document.getElementById("scrollTrigger");
+observer.observe(scrollTriggerElement);
+//function onLoadComplete() {
+//	isLoading = false;  
+//    if (!hasMoreData) {
+//        observer.unobserve(scrollTriggerElement);
+//    } 
+//}
+function resetting() {
+    allData = [];  
+    page_number = 1;
+    isLoading = false;  
+    hasMoreData = true;  
+	isDisable = true;
+	document.getElementById('skill').value = '';
+	currentSearchData = [];
+	const allButton = document.getElementById('allButton');
+    if (allButton) {
+        allButton.style.display = 'none';
+        allButton.classList.remove('active');
+    }
+}
+setTimeout(() => {
+	const scrollY = sessionStorage.getItem('scrollY');
+		if (scrollY !== null) {	
+			window.scrollTo(0, parseInt(scrollY));
+			sessionStorage.removeItem('scrollY');
+		}
+}, 300);
+</script>
+</body>
+</html>
