@@ -365,6 +365,23 @@ async function getGirlDetails(
   }
 }
 
+export async function loadAllGirlsJSONData() {
+  const json_path = path.join(
+    process.cwd(),
+    "json",
+    "all",
+    "all_girls_details.json"
+  );
+  const content = fs.readFileSync(json_path, "utf-8");
+  const data_array: Array<object> = JSON.parse(content);
+  console.log(
+    `==》loadAllGirlsJSONData，数据数量：${data_array.length}:\n`,
+    data_array[0]
+  );
+  return new Promise<Array<object>>((resolve) => {
+    resolve(data_array);
+  });
+}
 export default {
   API_URL,
   fetchUser,
