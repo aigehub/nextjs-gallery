@@ -6,8 +6,8 @@ import Image from "next/image";
 function MediaSkeleton({ width, height ,type}: { width: number; height: number,type: string }) {
   return (
     <div
-      className="bg-gray-200 animate-pulse rounded-lg justify-center items-center flex mb-2"
-      style={{ width, height }}
+      className="bg-gray-200 animate-pulse rounded-lg justify-center items-center flex mb-4 w-full overflow-hidden aspect-[5/3]"
+      style={{ height }}
     >
       <p>{type} loading...</p>
     </div>
@@ -29,25 +29,25 @@ export function MediaItem({
 
   return (
     <div className="relative">
-      {!loaded && <MediaSkeleton width={width} height={300} type={type}/>}
+      {!loaded && <MediaSkeleton width={500} height={300} type={type}/>}
 
       {type === "image" ? (
         <Image
           src={src}
-          width={width}
+          width={500} // 让宽度自适应
           height={0} // 让高度自适应
           alt={alt || ""}
-          className={`rounded-lg mb-2 transition-opacity duration-500 ${
-            loaded ? "opacity-100" : "opacity-0 absolute"
-          }`}
+          className={`rounded-lg mb-4 transition-opacity duration-500 ${
+            loaded ? "opacity-100" : "opacity-0 absolute" 
+          } w-full h-full`}
           onLoad={() => setLoaded(true)}
           priority={true}
         />
       ) : (
         <video
-          width={width}
-          height={300}
-          className={`rounded-lg mb-2 transition-opacity duration-500 ${
+          width={500}
+          height={0}
+          className={`bg-black rounded-lg mb-4 transition-opacity duration-500 ${
             loaded ? "opacity-100" : "opacity-0 absolute"
           }`}
           controls
