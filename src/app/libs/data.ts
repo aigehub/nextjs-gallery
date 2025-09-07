@@ -1,8 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as provinces from "./provinces.json" assert { type: "json" };
-import { get } from "http";
-import { json } from "stream/consumers";
 
 const API_URL = "https://pig.zwidi.cn/";
 
@@ -365,23 +363,33 @@ async function getGirlDetails(
   }
 }
 
-export async function loadAllGirlsJSONData() {
-  const json_path = path.join(
-    process.cwd(),
-    "json",
-    "all",
-    "all_girls_details.json"
-  );
-  const content = fs.readFileSync(json_path, "utf-8");
-  const data_array: Array<object> = JSON.parse(content);
-  console.log(
-    `==》loadAllGirlsJSONData，数据数量：${data_array.length}:\n`,
-    data_array[0]
-  );
-  return new Promise<Array<object>>((resolve) => {
-    resolve(data_array);
-  });
+export let cachedGirlsData: Array<object> = [];
+
+export async function loadAllGirlsJSONData({
+  page_no = 1,
+  page_size = 500,
+}: {
+  page_no?: number;
+  page_size?: number;
+}) {
+  if (cachedGirlsData.length === 0) {
+    const json_path = path.join(
+      process.cwd(),
+      "json",
+      "all",
+      "all_girls_details.json"
+    );
+    const content = fs.readFileSync(json_path, "utf-8");
+    cachedGirlsData = JSON.parse(content);
+    console.log(
+      `==》loadAllGirlsJSONData，数据数量：${cachedGirlsData.length}:\n`,
+      cachedGirlsData[0]
+    );
+  }
+
+  return cachedGirlsData.slice((page_no - 1) * page_size, page_no * page_size);
 }
+
 export default {
   API_URL,
   fetchUser,
