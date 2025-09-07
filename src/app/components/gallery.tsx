@@ -12,7 +12,7 @@ export async function Gallery() {
     <>
       <h1>图片库组件</h1>
       <div className="card grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-5xl mt-10 h-full">
-        {dataset.slice(0, 200).map(
+        {dataset.slice(0, 20).map(
           (item: any, index) => (
             console.log("Gallery item:", item),
             (
