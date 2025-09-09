@@ -22,7 +22,7 @@ export async function Gallery({ page }: { page?: number }) {
   return (
     <>
       {/* 分页组件 */}
-      <Pagination totalPages={totalPages} className="mb-4" />
+      <Pagination totalPages={totalPages} className="mb-4 mt-4" />
       {/* 使用 CSS 列布局来实现瀑布流效果 */}
       {/* columns-1 sm:columns-2 md:columns-3 lg:columns-4 */}
       {/* gap-4 */}
