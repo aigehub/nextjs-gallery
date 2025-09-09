@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as provinces from "./provinces.json" assert { type: "json" };
+import * as provinces from "./provinces.json"
 
 const API_URL = "https://pig.zwidi.cn/";
 
@@ -362,23 +362,65 @@ async function getGirlDetails(
     return getGirlDetails(id, retryCount + 1, maxRetries);
   }
 }
-
-export let cachedGirlsData: Array<object> = [];
+type Girl =
+  {
+    "code_ref": string;
+    "name": string
+    "age": string
+    "height": string
+    "weight": string
+    "bust": string
+    "skill": string
+    "price": number,
+    "province": string
+    "p_number": number,
+    "city": string
+    "c_number": number,
+    "p_jd": number,
+    "p_wd": number,
+    "c_jd": number,
+    "c_wd": number,
+    "address": string,
+    "vx": string,
+    "qq": string,
+    "xl": string,
+    "yn": string,
+    "phone": string,
+    "remarks": string,
+    "photo": string;
+    "state_ref": number,
+    "photo1": string
+    "photo2": string
+    "photo3": string
+    "photo4": string
+    "photo5": string
+    "photo6": string
+    "video1": string
+    "video2": string
+    "video": string
+    "id": number,
+    "api_url": string
+    "web_url": string
+  }
+export let cachedGirlsData: Array<Girl> = [];
 
 export async function loadAllGirlsJSONData({
   page_no = 1,
   page_size = 500,
+  slice_by_page = true,
 }: {
   page_no?: number;
   page_size?: number;
+  slice_by_page?: boolean;
 }) {
   if (cachedGirlsData.length === 0) {
     const json_path = path.join(
-      process.cwd(),
+      "../../../",
       "json",
       "all",
       "all_girls_details.json"
     );
+    console.log("json_path", json_path)
     const content = fs.readFileSync(json_path, "utf-8");
     cachedGirlsData = JSON.parse(content);
     console.log(
@@ -386,8 +428,9 @@ export async function loadAllGirlsJSONData({
       cachedGirlsData[0]
     );
   }
-
-  return cachedGirlsData.slice((page_no - 1) * page_size, page_no * page_size);
+  if (slice_by_page)
+    return cachedGirlsData.slice((page_no - 1) * page_size, page_no * page_size);
+  else return cachedGirlsData
 }
 
 export default {
@@ -434,7 +477,7 @@ async function testSaveAllGirlsDetails() {
 
       // 使用 limit 来限制并行请求
       const requests = data_array.map(
-        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => {})) // 包裹请求以确保并发限制
+        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => { })) // 包裹请求以确保并发限制
       );
       allRequests.push(...requests); // 将每个请求添加到请求列表中
     }
@@ -445,7 +488,7 @@ async function testSaveAllGirlsDetails() {
 
   // 最后保存
   const outputPath = path.join(
-    process.cwd(),
+    "../../../",
     "json",
     "all",
     "all_girls_details.json"
@@ -462,7 +505,7 @@ async function testSaveAllGirlsDetails() {
 
 async function testSumGilrs() {
   const outputPath = path.join(
-    process.cwd(),
+    "../../../",
     "json",
     "all",
     "all_girls_details.json"
@@ -482,3 +525,70 @@ async function testSumGilrs() {
   console.log(`✅ filter 上海 ${girls.length}`);
 }
 // testSumGilrs();
+
+export async function filterByArgs({ city, bust, tag, max_price }: { city?: string, bust?: string, tag?: string, max_price?: number }) {
+
+  if (cachedGirlsData.length == 0) {
+    loadAllGirlsJSONData({ slice_by_page: false })
+  }
+  const array = cachedGirlsData.filter((item) => {
+    if (city) {
+      let res = item.province.includes(city) || item.city.includes(city)
+      // console.log("includes", res, item.city, city)
+      return res
+    }
+  });
+
+
+  console.log(city, array.length)
+
+  return array.filter((item, idx) => {
+    let result = true;
+    console.log("item.bust >= bust:", item.bust >= (bust ?? "NONE"), item.skill.includes(tag ?? "NONE"), item.price <= (max_price ?? 0), "filter result:", result)
+
+
+    if (bust) {
+      let math_group = item.bust
+        .match(/([A-Za-zＡ-Ｚａ-ｚ])/g)
+        ?.map((c) => toHalfWidth(c));
+
+      console.log("math_group:", math_group);
+      if (math_group)
+        result = math_group[0] >= toHalfWidth(bust) && result
+      else
+        result = false
+    }
+    if (tag) result = item.skill.includes(tag) && result
+    if (max_price) result = item.price <= max_price && result
+    return result
+  })
+}
+function toHalfWidth(str: string) {
+  return str.replace(/[\uFF21-\uFF3A\uFF41-\uFF5A]/g, (c) => {
+    // 全角大写 A-Z \uFF21-\uFF3A
+    // 全角小写 a-z \uFF41-\uFF5A
+    return String.fromCharCode(c.charCodeAt(0) - 0xFEE0);
+  });
+}
+
+
+type M = Pick<Girl, "bust" | "name" | "price" | "age" | "height" | "weight">;
+
+function mapGirlsToM(girls: Girl[]): M[] {
+  return girls.map(({ bust, name, price, age, height, weight }) => ({
+    bust,
+    name,
+    price,
+    age,
+    height,
+    weight,
+  }));
+}
+async function testFilter() {
+
+  const res = await filterByArgs({ max_price: 2000, city: "上海", bust: "d" })
+  const resjson = JSON.stringify(mapGirlsToM(res), null, 2);
+  fs.writeFileSync("./上海D.json", resjson)
+  console.log("===》过滤的人：", res.length)
+}
+testFilter()
