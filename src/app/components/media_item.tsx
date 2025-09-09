@@ -28,30 +28,22 @@ export function MediaItem({
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="relative">
-      {!loaded && <MediaSkeleton width={500} height={300} type={type}/>}
+    <div className="relative w-[40rem] h-[60rem] border bg-white shadow-md  rounded-lg ">
 
       {type === "image" ? (
-        <Image
+        <>
+        {/* {!loaded && <MediaSkeleton width={500} height={300} type={type}/>} */}
+        <img
           src={src}
-          width={500} // 让宽度自适应
-          height={0} // 让高度自适应
           alt={alt || ""}
-          className={`rounded-lg mb-4 transition-opacity duration-500 ${
-            loaded ? "opacity-100" : "opacity-0 absolute" 
-          } w-full h-full`}
-          onLoad={() => setLoaded(true)}
-          priority={true}
+          className={`rounded-lg mb-4 transition-opacity duration-500 w-fit h-fit`}
+          loading="lazy"
         />
+        </>
       ) : (
-        <video
-          width={500}
-          height={0}
-          className={`bg-black rounded-lg mb-4 transition-opacity duration-500 ${
-            loaded ? "opacity-100" : "opacity-0 absolute"
-          }`}
+        <video          
+          className={`bg-black rounded-lg mb-4 transition-opacity duration-500 w-full h-full`}
           controls
-          onLoadedData={() => setLoaded(true)}
         >
           <source src={src} type="video/mp4" />
           <source src={src} type="video/quicktime" />
