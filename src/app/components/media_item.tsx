@@ -19,16 +19,18 @@ export function MediaItem({
   type,
   alt,
   width,
+  className
 }: {
   src: string;
   type: "image" | "video";
   alt?: string;
   width: number;
+  className:string;
 }) {
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="relative w-[40rem] h-[60rem] border bg-white shadow-md  rounded-lg ">
+    <div className={`relative border bg-white shadow-md  rounded-lg ${className}`}>
 
       {type === "image" ? (
         <>
