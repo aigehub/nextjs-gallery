@@ -56,7 +56,7 @@ generator client {
 
 model Girl {
   id        Int    @id @default(autoincrement())
-  girl_id   Int
+  girl_id   Int @unique
   code_ref  String
   name      String
   age       String

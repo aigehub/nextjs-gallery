@@ -12,9 +12,9 @@ function normalizeBust(bust:string) {
       if (math_group) {
         res = math_group[0].toLowerCase()
       }else{
-        res=bust
+        res="-1"
       }
-      return bust
+      return res
 }
 function toHalfWidth(str:string) {
   return str.replace(/[\uFF21-\uFF3A\uFF41-\uFF5A]/g, (c) => {
@@ -72,10 +72,10 @@ async function  update(dataGirl:{where:any|string,update:Girl}){
     data: { ...dataGirl.update }
   });
 }
-async function updateBust({where,update}:{where:string;update:string}){
+async function updateBust({where,update}:{where:number;update:string}){
  // 批量更新
-  await prisma.girl.updateMany({
-    where: { id: { contains: where } },
+  return await prisma.girl.updateMany({
+    where: { id: { equals: where } },
     data: { rank_bust:update }
   });
 
@@ -94,13 +94,17 @@ async function testFilter(filter:any) {
   console.log(dataResult.length,dataResult.slice(0,10))
   return dataResult;
 }
-async function update_test(){
 
-  const origin_data= await testFilter({})
-  origin_data.forEach( async (item) => {
-    const update_bust=normalizeBust(item.bust)
-    const result=await updateBust({where:item.bust,update:update_bust})
-    console.log("update bust rank:",result)
-  });
+async function update_test() {
+  const origin_data = await testFilter({});
+
+  for (const item of origin_data) {
+    const update_bust = normalizeBust(item.bust);
+    const result = await updateBust({ where: item.id, update: update_bust });
+    console.log("update bust rank:", result);
+  }
+
+  // 所有更新做完再断开连接
+  await prisma.$disconnect();
 }
-update_test()
+// update_test()

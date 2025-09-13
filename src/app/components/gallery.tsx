@@ -1,37 +1,30 @@
 // 创建图片库组件
 import React from "react";
 import {
-  cachedGirlsData,
-  filterByArgs,
-  Girl,
-  loadAllGirlsJSONData,
+  query,
 } from "@/app/libs/data";
 import { MediaItem } from "./media_item";
 import Pagination from "./pagination";
+import { Girl } from "@/generated/prisma";
 const PAGE_SIZE = 20; // 每页显示的图片数量
 export async function Gallery({ page }: { page?: number }) {
   // 这里可以调用异步函数获取数据
-  const { length,page_data } = await filterByArgs({
+  const { total, page_data } = await query({
     max_price: 2000,
-    city: "上海",
+    province: "上海",
     bust: "c",
-    page_no: page || 1,
-    page_size: PAGE_SIZE,
+    offset: page || 1,
+    limit: PAGE_SIZE,
   });
   // const dataset: object[] = await loadAllGirlsJSONData({
   //   page_no: page || 1,
   //   page_size: PAGE_SIZE,
   // });
-  const totalPages = Math.ceil(length / PAGE_SIZE);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  console.log(
-    "Gallery dataset: total",
-    length,
-    "totalPages:",
-    totalPages
-  );
+  console.log("Gallery dataset: total", total, "totalPages:", totalPages);
   const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
-  const item_width="w-[20rem] h-[27rem]"
+  const item_width = "w-[20rem] h-[27rem]";
   return (
     <>
       {/* 分页组件 */}
@@ -40,9 +33,11 @@ export async function Gallery({ page }: { page?: number }) {
       {/* 外层：纵向排列每个 item */}
       <div className="flex flex-wrap gap-4 items-start  ">
         {page_data.map((item: Girl, index) => (
-          <div key={index}className="flex flex-wrap gap-4 items-start ">
+          <div key={index} className="flex flex-wrap gap-4 items-start ">
             {/* 描述模块 */}
-            <div className={`flex-1 border bg-white rounded-lg shadow-md ${item_width}`}>
+            <div
+              className={`flex-1 border bg-white rounded-lg shadow-md ${item_width}`}
+            >
               <h1 className="text-emerald-500 border-l-4 pl-2 mb-2">
                 {item.name}
               </h1>
@@ -60,7 +55,9 @@ export async function Gallery({ page }: { page?: number }) {
               <p className="text-sm text-gray-500 mb-2">wx：{item.vx}</p>
               <p className="text-sm text-gray-400 mb-2">与你：{item.yn}</p>
               <p className="text-sm text-gray-500 mb-2">QQ：{item.qq}</p>
-              <p className="text-sm text-gray-500 mb-2">编号：{item.code_ref}</p>
+              <p className="text-sm text-gray-500 mb-2">
+                编号：{item.code_ref}
+              </p>
             </div>
 
             {/* 图片和视频模块 */}
@@ -73,7 +70,7 @@ export async function Gallery({ page }: { page?: number }) {
                     width={300}
                     alt={item.name}
                     type="image"
-                    className={item_width}                
+                    className={item_width}
                   />
                 );
               }
