@@ -1,39 +1,54 @@
 // 创建图片库组件
 import React from "react";
-import { cachedGirlsData, loadAllGirlsJSONData } from "@/app/libs/data";
+import {
+  cachedGirlsData,
+  filterByArgs,
+  Girl,
+  loadAllGirlsJSONData,
+} from "@/app/libs/data";
 import { MediaItem } from "./media_item";
 import Pagination from "./pagination";
 const PAGE_SIZE = 20; // 每页显示的图片数量
 export async function Gallery({ page }: { page?: number }) {
   // 这里可以调用异步函数获取数据
-  const dataset: object[] = await loadAllGirlsJSONData({
+  const { length,page_data } = await filterByArgs({
+    max_price: 2000,
+    city: "上海",
+    bust: "c",
     page_no: page || 1,
     page_size: PAGE_SIZE,
   });
-  const totalPages = Math.ceil(cachedGirlsData.length / PAGE_SIZE);
+  // const dataset: object[] = await loadAllGirlsJSONData({
+  //   page_no: page || 1,
+  //   page_size: PAGE_SIZE,
+  // });
+  const totalPages = Math.ceil(length / PAGE_SIZE);
 
   console.log(
     "Gallery dataset: total",
-    cachedGirlsData.length,
+    length,
     "totalPages:",
     totalPages
   );
   const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
+  const item_width="w-[20rem] h-[27rem]"
   return (
     <>
       {/* 分页组件 */}
       <Pagination totalPages={totalPages} className="mb-4 mt-4" />
 
       {/* 外层：纵向排列每个 item */}
-      <div
-        className="flex flex-wrap gap-4 items-start  ">
-        {dataset.map((item: any, index) => (
-          < >
+      <div className="flex flex-wrap gap-4 items-start  ">
+        {page_data.map((item: Girl, index) => (
+          <div key={index}className="flex flex-wrap gap-4 items-start ">
             {/* 描述模块 */}
-            <div className="flex-1 w-[40rem] h-[60rem] border bg-white rounded-lg shadow-md">
-              <h1 className="text-emerald-500 border-l-4 pl-2 mb-2">{item.name}</h1>
+            <div className={`flex-1 border bg-white rounded-lg shadow-md ${item_width}`}>
+              <h1 className="text-emerald-500 border-l-4 pl-2 mb-2">
+                {item.name}
+              </h1>
               <p className="text-sm text-gray-500 mb-2">
-                年龄：{item.age}, 身高：{item.height}, 体重：{item.weight}, 罩杯：
+                年龄：{item.age}, 身高：{item.height}, 体重：{item.weight},
+                罩杯：
                 {item.bust}
               </p>
               <p className="text-sm text-gray-500 mb-2">
@@ -41,6 +56,11 @@ export async function Gallery({ page }: { page?: number }) {
               </p>
               <p className="text-sm text-gray-400 mb-2">{item.price}</p>
               <p className="text-sm text-gray-500 mb-2">{item.skill}</p>
+              <p className="text-sm text-gray-400 mb-2">uu；{item.xl}</p>
+              <p className="text-sm text-gray-500 mb-2">wx：{item.vx}</p>
+              <p className="text-sm text-gray-400 mb-2">与你：{item.yn}</p>
+              <p className="text-sm text-gray-500 mb-2">QQ：{item.qq}</p>
+              <p className="text-sm text-gray-500 mb-2">编号：{item.code_ref}</p>
             </div>
 
             {/* 图片和视频模块 */}
@@ -51,8 +71,9 @@ export async function Gallery({ page }: { page?: number }) {
                     key={`photo-${idx}`}
                     src={IMG_BASE_URL + item[`photo${idx + 1}`]}
                     width={300}
-                    alt={item.title}
+                    alt={item.name}
                     type="image"
+                    className={item_width}                
                   />
                 );
               }
@@ -68,14 +89,14 @@ export async function Gallery({ page }: { page?: number }) {
                     src={IMG_BASE_URL + videoItem}
                     type="video"
                     width={300}
+                    className={item_width}
                   />
                 );
               }
             })}
-          </>
+          </div>
         ))}
       </div>
-
 
       <Pagination totalPages={totalPages} className="p-2" />
     </>

@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+/**
+ * {
+ * code_ref M74210
+ * name 暴走美人 大奶牛🐄
+ * age 04
+ * height 172
+ * weight 49
+ * bust D
+ * skill 御姐#长腿
+ * price 1800
+ * province 上海
+ * p_number 26
+ * city 嘉定
+ * c_number 260010
+ * p_jd 121.4737
+ * p_wd 31.2304
+ * c_jd 121.2656
+ * c_wd 31.3856
+ * address 华翔路
+ * vx
+ * qq
+ * xl a1991
+ * yn
+ * phone
+ * remarks
+ * photo /images/jy3aalv20542116/c9x6tyyu0542117.jpeg
+ * state_ref 2
+ * photo1 /images/jy3aalv20542116/agcfcm4m0542438.jpeg
+ * photo2 /images/jy3aalv20542116/kszkt6by0542808.jpeg
+ * photo3 /images/jy3aalv20542116/1tlwh2z40543487.jpeg
+ * photo4 /images/jy3aalv20542116/rfglzx640544074.jpeg
+ * photo5 /images/jy3aalv20542116/5oqky5980544502.jpeg
+ * photo6
+ * video1
+ * video2
+ * video /images/jy3aalv20542116/66p35bn30545319.mp4
+ * id 16180
+ * api_url https//pig.zwidi.cn/api/girl/getGirlById/16180
+ * web_url https//pig.zwidi.cn/girlDetails.html?id=16180
+ * }
+ */
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+model Girl {
+  id        Int    @id @default(autoincrement())
+  girl_id   Int
+  code_ref  String
+  name      String
+  age       String
+  height    String
+  weight    String
+  bust      String
+  rank_bust String?
+  skill     String
+  price     Int
+  province  String
+  p_number  Int
+  city      String
+  c_number  Int
+  p_jd      String
+  p_wd      String
+  c_jd      String
+  c_wd      String
+  address   String
+  vx        String
+  qq        String
+  xl        String
+  yn        String
+  phone     String
+  remarks   String
+  photo     String
+  state_ref Int
+  photo1    String
+  photo2    String
+  photo3    String
+  photo4    String
+  photo5    String
+  photo6    String
+  video1    String
+  video2    String
+  video     String
+  api_url   String
+  web_url   String
+}

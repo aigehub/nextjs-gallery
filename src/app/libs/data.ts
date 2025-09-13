@@ -369,7 +369,7 @@ async function getGirlDetails(
     return getGirlDetails(id, retryCount + 1, maxRetries);
   }
 }
-type Girl = {
+export type Girl = {
   code_ref: string;
   name: string;
   age: string;
@@ -501,9 +501,7 @@ async function testSaveAllGirlsDetails() {
 
 // testSaveAllGirlsDetails();
 
- 
 async function testSumGilrs() {
- 
   mkdirIfNotExists(path.dirname(json_path));
   let content: string = fs.readFileSync(json_path, { encoding: "utf-8" });
   let jsonObj: Array<{
@@ -525,11 +523,15 @@ export async function filterByArgs({
   bust,
   tag,
   max_price,
+  page_no,
+  page_size,
 }: {
   city?: string;
   bust?: string;
   tag?: string;
   max_price?: number;
+  page_no: number;
+  page_size: number;
 }) {
   if (cachedGirlsData.length == 0) {
     loadAllGirlsJSONData({ slice_by_page: false });
@@ -544,7 +546,7 @@ export async function filterByArgs({
 
   console.log(city, array.length);
 
-  return array.filter((item, idx) => {
+  let restultData = array.filter((item, idx) => {
     let result = true;
     console.log(
       "item.bust >= bust:",
@@ -561,13 +563,17 @@ export async function filterByArgs({
         ?.map((c) => toHalfWidth(c));
 
       console.log("math_group:", math_group);
-      if (math_group) result = math_group[0] >= toHalfWidth(bust) && result;
+      if (math_group) result = math_group[0].toLowerCase() > toHalfWidth(bust).toLowerCase() && result;
       else result = false;
     }
     if (tag) result = item.skill.includes(tag) && result;
     if (max_price) result = item.price <= max_price && result;
+
     return result;
   });
+
+  return { length: restultData.length ,page_data: restultData.slice((page_no - 1) * page_size, page_no * page_size)}
+  
 }
 function toHalfWidth(str: string) {
   return str.replace(/[\uFF21-\uFF3A\uFF41-\uFF5A]/g, (c) => {
@@ -590,7 +596,7 @@ function mapGirlsToM(girls: Girl[]): M[] {
   }));
 }
 async function testFilter() {
-  const res = await filterByArgs({ max_price: 2000, city: "上海", bust: "d" });
+  const res = await filterByArgs({ max_price: 2000, city: "上海", bust: "d",page_no:1,page_size:200 });
   const resjson = JSON.stringify(mapGirlsToM(res), null, 2);
   fs.writeFileSync("./上海D.json", resjson);
   console.log("===》过滤的人：", res.length);
