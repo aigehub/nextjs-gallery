@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Suspense } from "react";
 import { Gallery } from "@/app/components/gallery";
+import TopButton from "./components/TopButton";
 export default async function Home(props: {
   searchParams: Promise<{ page?: string }>;
 }) {
@@ -23,6 +24,7 @@ export default async function Home(props: {
       <Suspense fallback={<div>Loading...</div>}>
         <Gallery page={parseInt(page, 10)} />
       </Suspense>
+       <TopButton />
     </main>
   );
 }
