@@ -25,12 +25,15 @@ export default function Pagination({
     const url = `${pathname}?${params.toString()}`;
     return url;
   };
+  const item_width =
+    "md:h-10 md:w-10 max-sm:w-8 max-sm:h-8 text-sm justify-center items-center ";
   return (
     <>
       {/*  NOTE: Uncomment this code in Chapter 11 */}
 
       <div className={clsx("inline-flex", className)}>
         <PaginationArrow
+          className={item_width}
           direction="left"
           href={createPageURL(currentPage - 1)}
           isDisabled={currentPage <= 1}
@@ -47,6 +50,7 @@ export default function Pagination({
 
             return (
               <PaginationNumber
+                className={item_width}
                 key={`${page}-${index}`}
                 href={createPageURL(page)}
                 page={page}
@@ -58,6 +62,7 @@ export default function Pagination({
         </div>
 
         <PaginationArrow
+          className={item_width}
           direction="right"
           href={createPageURL(currentPage + 1)}
           isDisabled={currentPage >= totalPages}
@@ -72,14 +77,17 @@ function PaginationNumber({
   href,
   isActive,
   position,
+  className,
 }: {
   page: number | string;
   href: string;
   position?: "first" | "last" | "middle" | "single";
   isActive: boolean;
+  className?: string;
 }) {
-  const className = clsx(
-    "flex h-10 w-10 items-center justify-center text-sm border",
+  const classNameClsx = clsx(
+    "flex items-center justify-center  border",
+    className,
     {
       "rounded-l-md": position === "first" || position === "single",
       "rounded-r-md": position === "last" || position === "single",
@@ -90,9 +98,9 @@ function PaginationNumber({
   );
 
   return isActive || position === "middle" ? (
-    <div className={className}>{page}</div>
+    <div className={classNameClsx}>{page}</div>
   ) : (
-    <Link href={href} className={className}>
+    <Link href={href} className={classNameClsx}>
       {page}
     </Link>
   );
@@ -102,13 +110,16 @@ function PaginationArrow({
   href,
   direction,
   isDisabled,
+  className,
 }: {
   href: string;
   direction: "left" | "right";
   isDisabled?: boolean;
+  className?: string;
 }) {
-  const className = clsx(
-    "flex h-10 w-10 items-center justify-center rounded-md border",
+  const classNameClsx = clsx(
+    "flex items-center justify-center rounded-md border",
+    className,
     {
       "pointer-events-none text-gray-300": isDisabled,
       "hover:bg-gray-100": !isDisabled,
@@ -125,9 +136,9 @@ function PaginationArrow({
     );
 
   return isDisabled ? (
-    <div className={className}>{icon}</div>
+    <div className={classNameClsx}>{icon}</div>
   ) : (
-    <Link className={className} href={href}>
+    <Link className={classNameClsx} href={href}>
       {icon}
     </Link>
   );

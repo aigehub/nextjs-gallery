@@ -626,7 +626,7 @@ export async function query({
   // 1️⃣ 查数据
   const rows = await prisma.girl.findMany({
     where,
-    skip: offset,
+    skip: (offset-1)*limit,
     take: limit,
     orderBy: { id: "asc" }, // 建议加排序
   });
