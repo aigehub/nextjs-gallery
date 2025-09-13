@@ -62,11 +62,12 @@ export async function Gallery({ page }: { page?: number }) {
 
             {/* 图片和视频模块 */}
             {Array.from({ length: 6 }).map((_, idx) => {
-              if (item[`photo${idx + 1}`]) {
+              const index = `photo${idx + 1}` as keyof typeof item;
+              if (item[index]) {
                 return (
                   <MediaItem
                     key={`photo-${idx}`}
-                    src={IMG_BASE_URL + item[`photo${idx + 1}`]}
+                    src={IMG_BASE_URL + item[index]}
                     width={300}
                     alt={item.name}
                     type="image"
@@ -77,8 +78,9 @@ export async function Gallery({ page }: { page?: number }) {
             })}
 
             {Array.from({ length: 3 }).map((_, idx) => {
+              const index = `video${idx + 1}` as keyof typeof item;
               let videoItem =
-                idx === 0 ? item[`video`] : item[`video${idx + 1}`];
+                idx === 0 ? item[`video`] : item[index];
               if (videoItem) {
                 return (
                   <MediaItem

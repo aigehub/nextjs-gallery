@@ -26,18 +26,12 @@ function toHalfWidth(str:string) {
 async function insertData() {
   const map_data = data.map((girl) => {
     const girl_id = girl.id
-    const age = girl.age
-    delete girl.id;
-    delete girl.age;
     let bust = girl.bust
-    delete girl.bust;
     if (bust) {
      bust=normalizeBust(bust)
     }
     return {
       ...girl,
-      bust,
-      age,
       girl_id
     }
   });

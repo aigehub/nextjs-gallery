@@ -655,17 +655,26 @@ export function normalizeBust(bust: string) {
   }
   return res;
 }
-export async function insertData(data: Girl[]) {
+type GIRL_JSON = typeof import("../../../json/all/all_girls_details.json");
+
+export function mapData(data: GIRL_JSON) {
   const map_data = data.map((girl) => {
+    const { id, ...rest } = girl;
+    const girl_id = id;
     let bust = girl.bust;
     if (bust) {
       bust = normalizeBust(bust);
     }
     return {
-      ...girl,
+      ...rest,
       rank_bust: bust,
+      girl_id,
     };
   });
+  return map_data;
+}
+export async function insertData(data: Girl[]) {
+  const map_data = mapData(data);
   const result = await prisma.girl.createMany({
     data: map_data,
     // skipDuplicates: true as boolean,
@@ -682,7 +691,8 @@ export async function insertOne(data: Girl) {
   if (res) {
     return 0;
   }
-  const count = await prisma.girl.create({ data });
+  const { id, ...rest } = data;
+  const count = await prisma.girl.create({ data: rest });
   console.log(count);
   return count;
 }
