@@ -178,13 +178,19 @@ const master_667788_headers = {
     "provinceCode=26; connect.sid=s%3Ad0df5351210c5beaeb5b30a3dce69d61.weVqqV1rCnUnA9P5238QRQMRDbUwwRim8vJekso03PU; __verify_token=MTcyLjI0NS4xNTIuOTc6MTc1NzE4MDgwMTUzMjo5ZTI2MmUwNDRkMTkzZWU0N2U3ZjA3NjMyNDQ3NDEwMzkxOTU3YjRjMzlhMjA0OTY2ODVmNTEzYjJlZDE4YjZj",
   Referer: "https://pig.zwidi.cn/homePage.html",
 };
-async function loadHomePageData(
-  p_number: number = 26,
-  c_number: number = 260008,
-  rangeRef: number = 2,
-  page_number: number = 1,
-  page_size: number = 500
-) {
+async function loadHomePageData({
+  p_number = 26,
+  c_number = 260008,
+  rangeRef = 2,
+  page_number = 1,
+  page_size = 500,
+}: {
+  p_number: number;
+  c_number: number;
+  rangeRef: number;
+  page_number: number;
+  page_size: number;
+}) {
   const res = fetch(
     `https://pig.zwidi.cn/api/girl/homePageData?p_number=${p_number}&c_number=${c_number}&rangeRef=${rangeRef}&page_number=${page_number}&page_size=${page_size}`,
     {
@@ -225,13 +231,13 @@ async function loadHomePageData(
       fs.writeFileSync(filePath, JSON.stringify(data_array, null, 2));
       console.log("JSON data saved to", filePath);
       // fetch next page
-      await loadHomePageData(
+      await loadHomePageData({
         p_number,
         c_number,
         rangeRef,
-        page_number + 1,
-        page_size
-      );
+        page_number: page_number + 1,
+        page_size,
+      });
     }
   }
 }
@@ -369,45 +375,7 @@ async function getGirlDetails(
     return getGirlDetails(id, retryCount + 1, maxRetries);
   }
 }
-export type Girl = {
-  code_ref: string;
-  name: string;
-  age: string;
-  height: string;
-  weight: string;
-  bust: string;
-  skill: string;
-  price: number;
-  province: string;
-  p_number: number;
-  city: string;
-  c_number: number;
-  p_jd: number;
-  p_wd: number;
-  c_jd: number;
-  c_wd: number;
-  address: string;
-  vx: string;
-  qq: string;
-  xl: string;
-  yn: string;
-  phone: string;
-  remarks: string;
-  photo: string;
-  state_ref: number;
-  photo1: string;
-  photo2: string;
-  photo3: string;
-  photo4: string;
-  photo5: string;
-  photo6: string;
-  video1: string;
-  video2: string;
-  video: string;
-  id: number;
-  api_url: string;
-  web_url: string;
-};
+
 export let cachedGirlsData: Array<Girl> = [];
 
 export async function loadAllGirlsJSONData({
@@ -446,23 +414,41 @@ export default {
   getGirlDetails,
   mkdirIfNotExists,
   navItems,
+  testLoadAllCitiesGirlsData,
+  testSaveAllGirlsDetails,
+  testSumGilrs,
+  mapGirlsToM,
 };
 
 /// test code load all cities data
-function testLoadAllCitiesGirlsData() {
-  // provinces.city.forEach((c) => {
-  //   console.log(
-  //     `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${
-  //       c.name
-  //     }`
-  //   );
-  //   loadHomePageData(c.p_number, c.c_number, 2, 1, 500); //中圈
-  //   loadHomePageData(c.p_number, c.c_number, 3, 1, 500); //大圈
-  // });
+export function testLoadAllCitiesGirlsData() {
+  provinces.city.forEach((c) => {
+    console.log(
+      `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${
+        c.name
+      }`
+    );
+    loadHomePageData({
+      p_number: c.p_number,
+      c_number: c.c_number,
+      rangeRef: 2, //中圈
+      page_number: 1,
+      page_size: 500,
+    });
+    loadHomePageData({
+      p_number: c.p_number,
+      c_number: c.c_number,
+      rangeRef: 3, //大圈
+      page_number: 1,
+      page_size: 500,
+    });
+  });
 }
 // getGirlDetails(21176); 读取json路径文件列表，然后从文件读区数据列表中获取id，然后获取详情
 
 import pLimit from "p-limit";
+import prisma from "../../../prisma/database_api";
+import { Girl } from "@/generated/prisma";
 
 async function testSaveAllGirlsDetails() {
   const jsonDir = path.join(process.cwd(), "json");
@@ -492,11 +478,18 @@ async function testSaveAllGirlsDetails() {
   // 最后保存
 
   mkdirIfNotExists(path.dirname(json_path));
-  fs.writeFileSync(json_path, JSON.stringify(girls, null, 2), {
-    encoding: "utf-8",
-    flag: "w",
-  });
-  console.log(`✅ save all ${girls.length} girls details to`, json_path);
+  if (girls.length > 0) {
+    fs.writeFileSync(json_path, JSON.stringify(girls, null, 2), {
+      encoding: "utf-8",
+      flag: "w",
+    });
+    console.log(`✅ save all ${girls.length} girls details to`, json_path);
+  } else {
+    console.log(
+      `✅ no data to save all ${girls.length} girls details to`,
+      json_path
+    );
+  }
 }
 
 // testSaveAllGirlsDetails();
@@ -546,7 +539,7 @@ export async function filterByArgs({
 
   console.log(city, array.length);
 
-  let restultData = array.filter((item, idx) => {
+  let resultData = array.filter((item, idx) => {
     let result = true;
     console.log(
       "item.bust >= bust:",
@@ -563,7 +556,10 @@ export async function filterByArgs({
         ?.map((c) => toHalfWidth(c));
 
       console.log("math_group:", math_group);
-      if (math_group) result = math_group[0].toLowerCase() > toHalfWidth(bust).toLowerCase() && result;
+      if (math_group)
+        result =
+          math_group[0].toLowerCase() > toHalfWidth(bust).toLowerCase() &&
+          result;
       else result = false;
     }
     if (tag) result = item.skill.includes(tag) && result;
@@ -572,8 +568,10 @@ export async function filterByArgs({
     return result;
   });
 
-  return { length: restultData.length ,page_data: restultData.slice((page_no - 1) * page_size, page_no * page_size)}
-  
+  return {
+    length: resultData.length,
+    page_data: resultData.slice((page_no - 1) * page_size, page_no * page_size),
+  };
 }
 function toHalfWidth(str: string) {
   return str.replace(/[\uFF21-\uFF3A\uFF41-\uFF5A]/g, (c) => {
@@ -595,10 +593,96 @@ function mapGirlsToM(girls: Girl[]): M[] {
     weight,
   }));
 }
-async function testFilter() {
-  const res = await filterByArgs({ max_price: 2000, city: "上海", bust: "d",page_no:1,page_size:200 });
-  const resjson = JSON.stringify(mapGirlsToM(res), null, 2);
-  fs.writeFileSync("./上海D.json", resjson);
-  console.log("===》过滤的人：", res.length);
-}
+// async function testFilter() {
+//   const res = await filterByArgs({ max_price: 2000, city: "上海", bust: "d",page_no:1,page_size:200 });
+//   const resjson = JSON.stringify(mapGirlsToM(res), null, 2);
+//   fs.writeFileSync("./上海D.json", resjson);
+//   console.log("===》过滤的人：", res.length);
+// }
 // testFilter();
+export async function query({
+  bust,
+  max_price,
+  tag,
+  province,
+  offset,
+  limit,
+}: {
+  bust?: string;
+  max_price?: number;
+  tag?: string;
+  province?: string;
+  offset: number;
+  limit: number;
+}) {
+  // 共用条件对象
+  const where = {
+    bust: bust ? { gte: bust.toLowerCase() } : undefined,
+    price: max_price ? { lte: max_price } : undefined,
+    skill: tag ? { contains: tag } : undefined,
+    province: province ? { contains: province } : undefined,
+  };
+
+  // 1️⃣ 查数据
+  const rows = await prisma.girl.findMany({
+    where,
+    skip: offset,
+    take: limit,
+    orderBy: { id: "asc" }, // 建议加排序
+  });
+
+  // 2️⃣ 查总数
+  const total = await prisma.girl.count({ where });
+
+  console.log(`query result: ${rows.length} / total: ${total}`);
+
+  // 3️⃣ 一起返回
+  return {
+    total,
+    page_data: rows,
+  };
+}
+export function normalizeBust(bust: string) {
+  let res: string;
+  let math_group = bust
+    .match(/([A-Za-zＡ-Ｚａ-ｚ])/g)
+    ?.map((c) => toHalfWidth(c));
+  console.log("math_group:", math_group);
+  if (math_group) {
+    res = math_group[0].toLowerCase();
+  } else {
+    res = "-1";
+  }
+  return res;
+}
+export async function insertData(data: Girl[]) {
+  const map_data = data.map((girl) => {
+    let bust = girl.bust;
+    if (bust) {
+      bust = normalizeBust(bust);
+    }
+    return {
+      ...girl,
+      rank_bust: bust,
+    };
+  });
+  const result = await prisma.girl.createMany({
+    data: map_data,
+    // skipDuplicates: true as boolean,
+  });
+  console.log("create result:", result.count);
+  return result;
+}
+
+export async function insertOne(data: Girl) {
+  const res = await prisma.girl.findUnique({
+    where: { girl_id: data.girl_id },
+  });
+  console.log(res);
+  if (res) {
+    return 0;
+  }
+  const count = await prisma.girl.create({ data });
+  console.log(count);
+  return count;
+}
