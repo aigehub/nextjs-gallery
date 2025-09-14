@@ -5,6 +5,7 @@ import pLimit from "p-limit";
 import { Girl } from "@/generated/prisma";
 
 const API_URL = "https://pig.zwidi.cn/";
+const cookie="provinceCode=26; connect.sid=s%3A9d2997bc157b5570705cc2c7cc72abc3.cCI8hUcNXzOmWJR89DhzcIz%2FkzCN%2FJ0vVCTaHHudMr4; __verify_token=NjEuMTY5LjE1Mi43NToxNzU3ODIwNzk0MTE5OjFlYTQ2OTc2NGVmMWY5MjE5ZjRjOWZmYTI4OTEyN2VhOTdlYmIwZDMxNWM0MDc5NWM3MDcyOGRjMDhiZTY1Yzk%3D"
 
 const json_path = path.join(
   process.cwd(),
@@ -165,19 +166,21 @@ const guest_headers = {
 };
 const master_667788_headers = {
   //客服667788
-  accept: "*/*",
-  "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-  "if-none-match": 'W/"30569-6yXtwWzrLpIgKgAL52HQ4h6kSKI"',
-  priority: "u=1, i",
-  "sec-ch-ua":
-    '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"',
-  "sec-ch-ua-mobile": "?0",
-  "sec-ch-ua-platform": '"Windows"',
-  "sec-fetch-dest": "empty",
-  "sec-fetch-mode": "cors",
-  "sec-fetch-site": "same-origin",
-  cookie:
-    "provinceCode=26; connect.sid=s%3Ad0df5351210c5beaeb5b30a3dce69d61.weVqqV1rCnUnA9P5238QRQMRDbUwwRim8vJekso03PU; __verify_token=MTcyLjI0NS4xNTIuOTc6MTc1NzE4MDgwMTUzMjo5ZTI2MmUwNDRkMTkzZWU0N2U3ZjA3NjMyNDQ3NDEwMzkxOTU3YjRjMzlhMjA0OTY2ODVmNTEzYjJlZDE4YjZj",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "zh-CN,zh;q=0.9",
+    "cache-control": "max-age=0",
+    "if-modified-since": "Sat, 30 Aug 2025 00:31:43 GMT",
+    "if-none-match": "W/\"489c-198f863236c\"",
+    "priority": "u=0, i",
+    "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "same-origin",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1",
+  cookie:    cookie,
   Referer: "https://pig.zwidi.cn/homePage.html",
 };
 async function loadHomePageData({
@@ -232,6 +235,7 @@ async function loadHomePageData({
       }
       fs.writeFileSync(filePath, JSON.stringify(data_array, null, 2));
       console.log("JSON data saved to", filePath);
+      await new Promise((resolve) => setTimeout(resolve, 300));
       // fetch next page
       await loadHomePageData({
         p_number,
@@ -322,7 +326,28 @@ const girls: {}[] = [];
   }
 }
  */
-
+// fetch("https://pig.zwidi.cn/homePage.html", {
+//   "headers": {
+//     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+//     "accept-language": "zh-CN,zh;q=0.9",
+//     "cache-control": "max-age=0",
+//     "if-modified-since": "Sat, 30 Aug 2025 00:31:43 GMT",
+//     "if-none-match": "W/\"489c-198f863236c\"",
+//     "priority": "u=0, i",
+//     "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+//     "sec-ch-ua-mobile": "?0",
+//     "sec-ch-ua-platform": "\"Windows\"",
+//     "sec-fetch-dest": "document",
+//     "sec-fetch-mode": "navigate",
+//     "sec-fetch-site": "same-origin",
+//     "sec-fetch-user": "?1",
+//     "upgrade-insecure-requests": "1",
+//     "cookie": "provinceCode=26; connect.sid=s%3A9d2997bc157b5570705cc2c7cc72abc3.cCI8hUcNXzOmWJR89DhzcIz%2FkzCN%2FJ0vVCTaHHudMr4; __verify_token=NjEuMTY5LjE1Mi43NToxNzU3ODIwNzk0MTE5OjFlYTQ2OTc2NGVmMWY5MjE5ZjRjOWZmYTI4OTEyN2VhOTdlYmIwZDMxNWM0MDc5NWM3MDcyOGRjMDhiZTY1Yzk%3D",
+//     "Referer": "https://pig.zwidi.cn/userlogin.html"
+//   },
+//   "body": null,
+//   "method": "GET"
+// });
 async function getGirlDetails(
   id: number,
   retryCount: number = 0,
@@ -331,21 +356,7 @@ async function getGirlDetails(
   try {
     const url = `https://pig.zwidi.cn/api/girl/getGirlById/${id}`;
     const res = await fetch(url, {
-      headers: {
-        accept: "*/*",
-        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-        priority: "u=1, i",
-        "sec-ch-ua":
-          '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"',
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        cookie:
-          "provinceCode=26; __verify_token=MTcyLjI0NS4xNTIuOTc6MTc1NzE5MzEwNjcxODozOWFmNWNiZDZjODM2MTFhZjdhZmE5YjUxNDEyY2FiNGE3OWZkMjQ4OWU1ZGYyODU4ZDlmOTJlYjJiYjdiMmY4; connect.sid=s%3A16e2cb54cce37fcf067f988af0165b73.H2M50BBe7MOiJH6RM%2BC2ep9gH0IIgp4VBbhVR7JIZs0",
-        Referer: "https://pig.zwidi.cn/homePage.html",
-      },
+      headers: master_667788_headers,
       body: null,
       method: "GET",
     });

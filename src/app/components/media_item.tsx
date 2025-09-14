@@ -44,7 +44,7 @@ export function MediaItem({
           <img
             src={src}
             alt={alt || ""}
-            className={`rounded-lg mb-4 transition-opacity m-auto duration-500 w-fit ${className}`}
+            className={`rounded-lg mb-4 transition-opacity m-auto duration-500 w-fit object-cover ${className}`}
             // loading="lazy"
             width={1080}
             height={0}
