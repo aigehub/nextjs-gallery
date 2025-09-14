@@ -1,4 +1,4 @@
-const result=await fetch("https://proxy.codelin.vip/https://pig.zwidi.cn/api/girl/getGirlById/21713", {
+const result=await fetch("https://pig.zwidi.cn/api/girl/getGirlById/21713", {
   "headers": {
     "accept": "*/*",
     "accept-language": "zh-CN,zh;q=0.9",
