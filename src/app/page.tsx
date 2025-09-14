@@ -47,7 +47,7 @@ export default async function Home(props: {
         province={params.province}
         bust={params.bust}
       />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div className="w-full h-full">Loading...</div>}>
         <Gallery total={total} page_data={page_data} />
       </Suspense>
       <TopButton />

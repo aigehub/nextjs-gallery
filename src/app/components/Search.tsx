@@ -11,7 +11,7 @@ export default function SearchComponent(props: {
   return (
     <form action={searcAction}>
       <input type="hidden" name="page" value={props.page} />
-      <div className="flex gap-4 m-2">
+      <div className="flex gap-4 m-2 items-end">
         <div className="flex flex-col">
           {/* search */}
           <label htmlFor="province">省市:</label>
@@ -68,7 +68,6 @@ export default function SearchComponent(props: {
         </div>
         <div className="flex flex-col">
           {/* submit */}
-          <label htmlFor="maxPrice">Max Price:</label>
           <button
             type="submit"
             name="max price"

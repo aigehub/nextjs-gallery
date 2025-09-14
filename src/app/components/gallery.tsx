@@ -21,7 +21,7 @@ export async function Gallery({
 
   console.log("Gallery dataset: total", total, "totalPages:", totalPages);
   const item_width =
-    "sm:w-[18rem] sm:h-[23rem] max-sm:w-[18rem] max-sm:h-[23rem] object-cover ";
+    "sm:w-[18rem] sm:h-[23rem] max-sm:w-[18rem] max-sm:h-[23rem] ";
   return (
     <>
       {/* 分页组件 */}
