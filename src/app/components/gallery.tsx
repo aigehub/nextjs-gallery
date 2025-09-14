@@ -30,7 +30,7 @@ export async function Gallery({ page }: { page?: number }) {
       <Pagination totalPages={totalPages} className="mb-4 mt-4" />
 
       {/* 外层：纵向排列每个 item */}
-      <div className="flex flex-wrap gap-4 items-start">
+      <div className="flex flex-wrap gap-4 items-start justify-center">
         {page_data.map((item: Girl, index) => (
           <ModelGirl
             key={`${item.id}${item.name}${index}-${item.girl_id}`}
