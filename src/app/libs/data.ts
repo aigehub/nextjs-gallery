@@ -97,7 +97,7 @@ export async function queryData({
   max_price,
   tag,
   province,
-  offset = 1,//page no
+  offset = 1, //page no
   limit = PAGE_SIZE,
 }: {
   bust?: string;
@@ -147,9 +147,9 @@ function normalizeBust(bust: string) {
   }
   return res;
 }
-type GIRL_JSON = typeof import("../../../json/all/all_girls_details.json");
+// type GIRL_JSON = typeof import("../../../json/all/all_girls_details.json");
 
-export async function mapData(data: GIRL_JSON) {
+export async function mapData(data: any[]) {
   const map_data = data.map((girl) => {
     const { id, ...rest } = girl;
     const girl_id = id;
@@ -165,6 +165,7 @@ export async function mapData(data: GIRL_JSON) {
   });
   return map_data;
 }
+
 export async function insertData(data: Girl[]) {
   const map_data = await mapData(data);
   const result = await prisma.girl.createMany({
@@ -176,15 +177,19 @@ export async function insertData(data: Girl[]) {
 }
 
 export async function insertOne(data: Girl) {
-  const res = await prisma.girl.findUnique({
+  const res = await prisma.girl.findFirst({
     where: { girl_id: data.girl_id },
   });
-  console.log(res);
   if (res) {
     return 0;
   }
   const { id, ...rest } = data;
-  const count = await prisma.girl.create({ data: rest });
-  console.log(count);
-  return count;
+  try {
+    const count = await prisma.girl.create({ data: rest });
+    // console.log(count);
+    console.log("新增", data?.name, data.girl_id, data.address);
+    return count;
+  } catch (e) {
+    console.log(" not insert");
+  }
 }
