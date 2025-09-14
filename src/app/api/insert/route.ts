@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import prisma from "../../../../prisma/database_api";
 import { headers } from "next/headers";
 import { insertData } from "@/app/libs/data";
 
