@@ -1,20 +1,18 @@
 // 创建图片库组件
 import React from "react";
-import { query } from "@/app/libs/data";
+import { queryData } from "@/app/libs/data";
 import { MediaItem } from "./media_item";
 import Pagination from "./pagination";
 import { Girl } from "@/generated/prisma";
 const PAGE_SIZE = 20; // 每页显示的图片数量
 const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
-export async function Gallery({ page }: { page?: number }) {
-  // 这里可以调用异步函数获取数据
-  const { total, page_data } = await query({
-    max_price: 2000,
-    province: "上海",
-    bust: "c",
-    offset: page || 1,
-    limit: PAGE_SIZE,
-  });
+export async function Gallery({
+  total,
+  page_data,
+}: {
+  total: number;
+  page_data: Girl[];
+}) {
   // const dataset: object[] = await loadAllGirlsJSONData({
   //   page_no: page || 1,
   //   page_size: PAGE_SIZE,

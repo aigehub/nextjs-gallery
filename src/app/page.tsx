@@ -1,14 +1,34 @@
+"use server";
 import Image from "next/image";
 import { Suspense } from "react";
 import { Gallery } from "@/app/components/gallery";
 import TopButton from "./components/TopButton";
+import SearchComponent from "./components/Search";
+import { PAGE_SIZE, queryData } from "./libs/data";
+
+
 export default async function Home(props: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    max_price?: number;
+    province?: string;
+    bust?: string;
+  }>;
 }) {
   const params = await props.searchParams; // ✅ 这里要 await
-  const page = params.page ?? "1";
-
-  console.log("Home page:", page);
+  const {
+      max_price,
+      province,
+      bust}=params
+  const page = parseInt(params.page || "1");
+  console.log("Home page params:", params);
+      const { total, page_data } = await queryData({
+      max_price,
+      province,
+      bust,
+      offset: page || 1,
+      limit: PAGE_SIZE,
+    });
   return (
     <main className="flex min-h-screen flex-col items-center justify-between md:p-14 sm:p-5 p-5">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
@@ -21,10 +41,16 @@ export default async function Home(props: {
           priority
         />
       </div>
+      <SearchComponent
+        max_price={params.max_price}
+        page={page}
+        province={params.province}
+        bust={params.bust}
+      />
       <Suspense fallback={<div>Loading...</div>}>
-        <Gallery page={parseInt(page, 10)} />
+        <Gallery total={total} page_data={page_data} />
       </Suspense>
-       <TopButton />
+      <TopButton />
     </main>
   );
 }
