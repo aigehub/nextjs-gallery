@@ -161,8 +161,6 @@ const guest_headers = {
   // "sec-fetch-dest": "empty",
   // "sec-fetch-mode": "cors",
   // "sec-fetch-site": "same-origin",
-  cookie:
-    "provinceCode=26; __verify_token=MjQwODo4MjBjOjhmOGY6MjZjMTpiMDRjOmE3OWQ6N2E0NTphNTAwOjE3NTcxNjkyODIwMDA6YTI0YjAyODU0YTUxYTIxYTgyNDM2NWY2NWNlNGEzNmMxYzhjNmNkZThkZTM0MGMxM2EzZjFiOGRiZDEyNjgyZg%3D%3D; connect.sid=s%3Afb75232143c101ed7fff70b5035e8ef5.VTlNpiv%2Fs4XxTUBbjL1FAg4ebHCCArWa9JGeoOu7vyU",
   // "Referer": "https://pig.zwidi.cn/homePage.html"
 };
 const master_667788_headers = {
@@ -171,19 +169,8 @@ const master_667788_headers = {
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
   "accept-language": "zh-CN,zh;q=0.9",
   "cache-control": "max-age=0",
-  "if-modified-since": "Sat, 30 Aug 2025 00:31:43 GMT",
-  "if-none-match": 'W/"489c-198f863236c"',
   priority: "u=0, i",
-  "sec-ch-ua":
-    '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
-  "sec-ch-ua-mobile": "?0",
-  "sec-ch-ua-platform": '"Windows"',
-  "sec-fetch-dest": "document",
-  "sec-fetch-mode": "navigate",
-  "sec-fetch-site": "same-origin",
-  "sec-fetch-user": "?1",
-  "upgrade-insecure-requests": "1",
-  cookie: cookie,
+  cookie: COCKIES.join(";"),
   Referer: "https://pig.zwidi.cn/homePage.html",
 };
 async function loadHomePageData({
@@ -465,7 +452,7 @@ async function testSaveAllGirlsDetails() {
   const jsonDir = path.join(process.cwd(), "json");
   const files = fs.readdirSync(jsonDir);
 
-console.log("files.length:",files.length)
+  console.log("files.length:", files.length);
   const limit = pLimit(5); // 设置最大并发数为 5
 
   const allRequests: Promise<void>[] = [];
@@ -523,11 +510,16 @@ async function testSumGilrs() {
 }
 // testSumGilrs()
 import { insertOne, mapData, queryData } from "../src/app/libs/data";
+import checkExpires, { COCKIES } from "./userLogin";
 // import data from "../json/all/all_girls_details.json" with {type: "json"};
 
 async function spide_jimei() {
-  await testLoadAllCitiesGirlsData()
-  await testSaveAllGirlsDetails()
+  const res = await checkExpires();
+  if (!res) {
+    return;
+  }
+  await testLoadAllCitiesGirlsData();
+  await testSaveAllGirlsDetails();
   const data = await import("../json/all/all_girls_details.json");
   const map_data = await mapData(data.default);
 
