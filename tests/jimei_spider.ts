@@ -216,6 +216,7 @@ async function loadHomePageData({
       const filePath = path.join(
         process.cwd(),
         "json",
+        "jimei",
         `${rangeRefName}_${getProvinceNameByCode(p_number)}_${getCityNameByCode(
           c_number
         )}_page${page_number}.json`
@@ -243,7 +244,7 @@ function getProvinceNameByCode(p_number: number): string | null {
     ? province.name.replace("/", "_").replace(" ", "_").trim()
     : null;
 }
-function mkdirIfNotExists(dirPath: string) {
+export function mkdirIfNotExists(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
@@ -449,7 +450,7 @@ export function testLoadAllCitiesGirlsData() {
 // getGirlDetails(21176); 读取json路径文件列表，然后从文件读区数据列表中获取id，然后获取详情
 
 async function testSaveAllGirlsDetails() {
-  const jsonDir = path.join(process.cwd(), "json");
+  const jsonDir = path.join(process.cwd(), "json", "jimei");
   const files = fs.readdirSync(jsonDir);
 
   console.log("files.length:", files.length);
@@ -518,11 +519,12 @@ async function spide_jimei() {
   if (!res) {
     return;
   }
-  await testLoadAllCitiesGirlsData();
-  await testSaveAllGirlsDetails();
+  // await testLoadAllCitiesGirlsData();
+  // await testSaveAllGirlsDetails();
   const data = await import("../json/all/all_girls_details.json");
   const map_data = await mapData(data.default);
-
+  console.log("map_data.length:", map_data.length, map_data[0]);
+  // insert to db
   for (let i = 0; i < map_data.length; i++) {
     const item = map_data[i];
     const girl = { id: item.girl_id, ...item };
@@ -534,6 +536,12 @@ async function count_total() {
   const result = await queryData({});
   console.log(result.total);
 }
-
-spide_jimei();
-count_total();
+try {
+  spide_jimei();
+  count_total();
+} catch (e) {
+  console.log("spide_jimei error:", e);
+  if (e instanceof Error) {
+    console.log(e.stack);
+  }
+}

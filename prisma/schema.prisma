@@ -1,7 +1,7 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Looking for ways to speed up your queries or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 /**
  * {
@@ -55,8 +55,8 @@ generator client {
 }
 
 model Girl {
-  id        Int    @id @default(autoincrement())
-  girl_id   Int @unique
+  id        Int     @id @default(autoincrement())
+  girl_id   Int     @unique
   code_ref  String
   name      String
   age       String
@@ -94,4 +94,115 @@ model Girl {
   video     String
   api_url   String
   web_url   String
+}
+
+model ZhizunTag {
+  id       Int    @id @default(autoincrement())
+  tag_id   Int    @unique
+  tag_name String
+}
+
+model ZhizunDistrict {
+  id            Int    @id @default(autoincrement())
+  district_id   Int    @unique
+  district_name String
+}
+
+/**
+ * 至尊平台
+ * {
+ * id 4745
+ * status Boolean
+ * valid Boolean
+ * recommend Boolean
+ * agent_id 7
+ * name 普陀💝沈幼薇（真的很骚）
+ * image [\4745/1929176201268563968.jpg\ \4745/1929176761073930240.jpg\ \4745/1929176923464798208.jpg\ \4745/1929177006491045888.jpg\ \4745/1937007243497050112.jpg\ \4745/1937007317924974592.jpg\ \4745/1950959786560327680.jpg\ \4745/1958978887262146560.jpg\ \4745/1958978927904952320.jpg\ \4745/1958979176727842816.jpg\ \4745/1958979214279446528.jpg\ \4745/1958979685324951552.jpg\ \4745/1960710690566049792.jpg\]
+ * media [\4745/1936860971758784512\ \4745/1936861130576105472\ \4745/1936988844201086976\ \4745/1961092119682617344\ \4745/1961098626331578368\]
+ * tag [13 12 35 17 11 10 9 16 26 25 32 34 41 20 31]
+ * authentication [\4745/1927819862357315584\ \4745/1952528164462792704\ \4745/1967136279778824192\]
+ * premium false
+ * code 80011
+ * city_code 100
+ * district_code 104
+ * address 三雄大厦
+ * certification Boolean
+ * poster https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1961036493631787008.jpg
+ * random_index 13
+ * city_name 上海
+ * district_name 普陀
+ * tag_name [
+ * 69
+ * 舌吻
+ * 大长腿
+ * 艳舞
+ * 深喉
+ * 口爆
+ * 毒龙
+ * 制服
+ * 双飞
+ * 角色扮演
+ * 刚下海
+ * 可夜
+ * 服务型
+ * 拍视频
+ * 姐妹花
+ * ]
+ * images [
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1929176201268563968.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1929176761073930240.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1929176923464798208.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1929177006491045888.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1937007243497050112.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1937007317924974592.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1950959786560327680.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1958978887262146560.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1958978927904952320.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1958979176727842816.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1958979214279446528.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1958979685324951552.jpg
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1960710690566049792.jpg
+ * ]
+ * medium [
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1936860971758784512
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1936861130576105472
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1936988844201086976
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1961092119682617344
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1961098626331578368
+ * ]
+ * authentications [
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1927819862357315584
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1952528164462792704
+ * https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4745/1967136279778824192
+ * ]
+ * }
+ */
+model ZhizunGirl {
+  id              Int     @id @default(autoincrement())
+  url_id          Int     @unique //详情页ID
+  status          Boolean
+  valid           Boolean
+  recommend       Boolean
+  agent_id        Int
+  name            String
+  premium         Boolean
+  code            Int     @unique //Zhizun 模特编号
+  city_code       Int
+  district_code   Int
+  address         String
+  certification   Boolean
+  poster          String
+  random_index    Int
+  city_name       String
+  district_name   String
+  //简单数据
+  image           String //[]
+  media           String //[]
+  tags            String //[]
+  authentication  String //[]
+  //详细数据
+  tag_name        String //[]
+  images          String //[]
+  medium          String //[]
+  authentications String //[]
 }

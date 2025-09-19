@@ -1,0 +1,78 @@
+{
+  "code": 0,
+  "msg": "success",
+  "data": [
+    {
+      "id": 1,
+      "characteristic": "御姐"
+    },
+    {
+      "id": 2,
+      "characteristic": "萝莉"
+    },
+    {
+      "id": 3,
+      "characteristic": "空姐"
+    },
+    {
+      "id": 4,
+      "characteristic": "大凶"
+    },
+    {
+      "id": 5,
+      "characteristic": "长腿"
+    },
+    {
+      "id": 6,
+      "characteristic": "可外"
+    },
+    {
+      "id": 7,
+      "characteristic": "双飞"
+    },
+    {
+      "id": 8,
+      "characteristic": "网红"
+    },
+    {
+      "id": 9,
+      "characteristic": "模特"
+    },
+    {
+      "id": 10,
+      "characteristic": "SM"
+    },
+    {
+      "id": 11,
+      "characteristic": "WT"
+    },
+    {
+      "id": 12,
+      "characteristic": "CP"
+    },
+    {
+      "id": 13,
+      "characteristic": "白小纯"
+    },
+    {
+      "id": 14,
+      "characteristic": "筷子腿"
+    },
+    {
+      "id": 15,
+      "characteristic": "高颜值"
+    },
+    {
+      "id": 16,
+      "characteristic": "COSER"
+    },
+    {
+      "id": 17,
+      "characteristic": "服务系"
+    },
+    {
+      "id": 18,
+      "characteristic": "一字马"
+    }
+  ]
+}
