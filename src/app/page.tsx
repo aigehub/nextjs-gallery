@@ -29,14 +29,7 @@ export default async function Home(props: {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between md:p-14 sm:p-5 p-5">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <Image
-          src="/next.svg"
-          alt="Next.js Logo"
-          className="dark:invert"
-          width={180}
-          height={37}
-          priority
-        />
+        <h1 className="text-4xl">Gallery 相册</h1>
       </div>
       <SearchComponent
         max_price={params.max_price}
