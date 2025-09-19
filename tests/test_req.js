@@ -1,19 +1,17 @@
-const result=await fetch("https://pig.zwidi.cn/api/girl/getGirlById/21713", {
+import fs from "fs";
+const result = await fetch("https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13773/1957334697029668864.jpg", {
   "headers": {
-    "accept": "*/*",
-    "accept-language": "zh-CN,zh;q=0.9",
-    "priority": "u=1, i",
+    "accept": "application/json, text/plain, */*",
+    "cache-control": "public, max-age=31536000",
     "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"Windows\"",
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "cookie": "provinceCode=26; connect.sid=s%3A9d2997bc157b5570705cc2c7cc72abc3.cCI8hUcNXzOmWJR89DhzcIz%2FkzCN%2FJ0vVCTaHHudMr4; __verify_token=NjEuMTY5LjE1Mi43NToxNzU3ODIwNzk0MTE5OjFlYTQ2OTc2NGVmMWY5MjE5ZjRjOWZmYTI4OTEyN2VhOTdlYmIwZDMxNWM0MDc5NWM3MDcyOGRjMDhiZTY1Yzk%3D",
-    "Referer": "https://pig.zwidi.cn/girlDetails.html?id=21713"
+    "sec-ch-ua-mobile": "?1",
+    "sec-ch-ua-platform": "\"Android\"",
+    "source": "blob",
+    // "Referer": "https://www.zz2025.cc/"
   },
   "body": null,
   "method": "GET"
 });
-console.log(await result.json())
+console.log(result, result.status, result.statusText);
+fs.writeFileSync("tests/req_result.jpg", Buffer.from(await result.arrayBuffer()));
 // { success: false, message: '锁定' }

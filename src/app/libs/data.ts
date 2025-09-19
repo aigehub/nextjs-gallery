@@ -139,7 +139,7 @@ function normalizeBust(bust: string) {
   let math_group = bust
     .match(/([A-Za-zＡ-Ｚａ-ｚ])/g)
     ?.map((c) => toHalfWidth(c));
-  console.log("math_group:", math_group);
+  // console.log("math_group:", math_group);
   if (math_group) {
     res = math_group[0].toLowerCase();
   } else {
@@ -181,6 +181,7 @@ export async function insertOne(data: Girl) {
     where: { girl_id: data.girl_id },
   });
   if (res) {
+    // console.log("已存在", data?.name, data?.code_ref)
     return 0;
   }
   const { id, ...rest } = data;

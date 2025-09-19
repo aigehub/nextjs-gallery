@@ -1,0 +1,86 @@
+[
+  {
+    "code": 101,
+    "parent": 100,
+    "name": "闵行",
+    "hot": true
+  },
+  {
+    "code": 102,
+    "parent": 100,
+    "name": "浦东",
+    "hot": true
+  },
+  {
+    "code": 104,
+    "parent": 100,
+    "name": "普陀",
+    "hot": true
+  },
+  {
+    "code": 103,
+    "parent": 100,
+    "name": "徐汇",
+    "hot": false
+  },
+  {
+    "code": 105,
+    "parent": 100,
+    "name": "黄埔",
+    "hot": false
+  },
+  {
+    "code": 106,
+    "parent": 100,
+    "name": "嘉定",
+    "hot": false
+  },
+  {
+    "code": 107,
+    "parent": 100,
+    "name": "松江",
+    "hot": false
+  },
+  {
+    "code": 108,
+    "parent": 100,
+    "name": "长宁",
+    "hot": false
+  },
+  {
+    "code": 109,
+    "parent": 100,
+    "name": "静安",
+    "hot": false
+  },
+  {
+    "code": 110,
+    "parent": 100,
+    "name": "虹口",
+    "hot": false
+  },
+  {
+    "code": 111,
+    "parent": 100,
+    "name": "宝山",
+    "hot": false
+  },
+  {
+    "code": 112,
+    "parent": 100,
+    "name": "杨浦",
+    "hot": false
+  },
+  {
+    "code": 113,
+    "parent": 100,
+    "name": "奉贤",
+    "hot": false
+  },
+  {
+    "code": 608,
+    "parent": 100,
+    "name": "青浦",
+    "hot": false
+  }
+]

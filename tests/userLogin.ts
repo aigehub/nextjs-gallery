@@ -1,3 +1,6 @@
+/**
+ * 用户登录 集美相册
+ */
 import fs from "fs";
 export let COCKIES: string[] = [];
 async function userLogin() {
@@ -31,6 +34,7 @@ async function userLogin() {
   return false;
 }
 let data_string: string | undefined;
+const jimei_cockie_info = "tests/cockie.json";
 function parseCockie(cockies: string[]) {
   COCKIES = [];
   cockies.forEach((item) => {
@@ -56,7 +60,7 @@ function parseCockie(cockies: string[]) {
     console.log("data_string:", data_string);
     data.expires = new Date(Date.parse(data_string)).toISOString();
   }
-  fs.writeFileSync("./cockie.json", JSON.stringify(data, null, 2), {
+  fs.writeFileSync(jimei_cockie_info, JSON.stringify(data, null, 2), {
     encoding: "utf-8",
   });
 }
@@ -92,13 +96,28 @@ const json = {
 type COCKIES_TYPE = typeof json;
 
 async function checkExpires() {
-  const res = fs.readFileSync("./cockie.json", { encoding: "utf-8" });
-  const cockie: COCKIES_TYPE = JSON.parse(res);
-  COCKIES = cockie.cockies;
-  if (Date.now() > Date.parse(cockie.expires)) {
-    await userLogin();
+  try {
+    if(fs.existsSync(jimei_cockie_info)==false){
+      return await userLogin();
+    }
+    const res = fs.readFileSync(jimei_cockie_info, { encoding: "utf-8" });
+    const cockie: COCKIES_TYPE = JSON.parse(res);
+    COCKIES = cockie.cockies;
+    if (Date.now() > Date.parse(cockie.expires)) {
+      return await userLogin();
+    }
+    console.log("cockie is valid:", cockie,COCKIES);
+    return true;
+  } catch (error) {
+    console.log("read cockie.json error:", error);
+    return await userLogin();
   }
-  return true;
 }
 export default checkExpires;
+// userAuth();
 // userLogin();
+checkExpires().then(async (isLoginValid) => {
+  if (!isLoginValid){
+    await userAuth();
+  }
+});
