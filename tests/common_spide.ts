@@ -6,6 +6,8 @@ import { checkExpires } from "./jimei_userLogin";
 import { testLoadAllCitiesGirlsData, testSaveAllGirlsDetails } from "./jimei_spider";
 import { mapData } from "@/app/libs/data";
 
+const needSpideAllData_arg:boolean = process.argv[2] === 'true'; // true / false
+
 export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>): Promise<number> {
   const res = await girlsPlatform.findFirst(data);
   if (res) {
@@ -37,7 +39,7 @@ export async function start_spide({
   insertOne,
   mapData,
   all_data_file_path,
-  needSpideAllData = false,
+  needSpideAllData = needSpideAllData_arg,
 }: {
   checkTokenExpires?: () => Promise<boolean>;
   insertOne?: (data: Omit<any, "id">) => Promise<any>;
