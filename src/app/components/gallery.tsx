@@ -1,14 +1,18 @@
 // 创建图片库组件
+"use client";
+import { useEffect, useState } from "react";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
 import React from "react";
-import { PLAT, queryData } from "@/app/libs/data";
-import { MediaItem } from "./media_item";
+import { PLAT } from "@/app/libs/data";
 import Pagination from "./pagination";
-import { Girl } from "@/generated/prisma";
 import SmartImage from "./ZZImage";
 import SmartVideo from "./ZZVideo";
+import clsx from "clsx";
 const PAGE_SIZE = 20; // 每页显示的图片数量
 const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
-export async function Gallery({ plat, total, page_data, show_tel }: { plat: PLAT; total: number; show_tel?: boolean; page_data: any[] }) {
+
+export function Gallery({ plat, total, page_data, show_tel }: { plat: PLAT; total: number; show_tel?: boolean; page_data: any[] }) {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   console.log("Gallery dataset: total", total, "totalPages:", totalPages);
@@ -49,6 +53,13 @@ function ModelGirl({
   item_width: string;
   show_tel?: boolean;
 }): React.JSX.Element {
+  // ...existing code...
+  const images = getAllImageUrls(item, plat);
+  const videos = getAllVideoUrls(item, plat);
+
+  // 视频弹窗状态
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
   let num = item.code_ref;
   if (!num) {
     if (item.code) {
@@ -63,9 +74,9 @@ function ModelGirl({
       skill = (JSON.parse(item.characteristics) as Array<string>).join(",");
     }
   }
-  return (
-    <>
-      {/* 描述模块 */}
+
+  function getDescription(item_width: string, item: any, skill: any, num: any, show_tel: boolean | undefined) {
+    return (
       <div className={`p-4 border bg-white rounded-lg shadow-md  ${item_width}`}>
         <h1 className="text-emerald-500 border-l-4 pl-2 mb-2 font-extrabold text-2xl">{item.name ?? item.titlename}</h1>
         {item.age && (
@@ -89,116 +100,128 @@ function ModelGirl({
           </>
         )}
       </div>
+    );
+  }
 
-      {/* 图片模块 */}
-      {getImageTag(item, item_width, plat)}
-      {/* 视频 */}
-      {getVideoComponent(item, item_width, plat)}
-      {/* </div> */}
+  return (
+    <>
+      {/* 描述模块 */}
+      {getDescription(item_width, item, skill, num, show_tel)}
+      {/* 图片和视频模块 */}
+      <PhotoProvider>
+        {getImageComponent(images, item, plat, item_width)}
+        {getVideoComponent(videos, item, item_width, setVideoSrc, setVideoOpen, plat)}
+      </PhotoProvider>
+      {/* 视频弹窗 */}
+      {videoOpen && videoSrc && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50" onClick={() => setVideoOpen(false)}>
+          <SmartVideo plat={plat} src={videoSrc} controls autoPlay style={{ maxHeight: "80vh", maxWidth: "90vw" }} />
+        </div>
+      )}
     </>
   );
 }
-function getVideoComponent(item: any, item_width: string, plat: PLAT) {
+
+interface PhotoViewerProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  img: string;
+  plat: number;
+  name: string;
+  item_width: string;
+}
+
+function PhotoViewer(props: PhotoViewerProps): React.JSX.Element {
+  const [imgSrc, setImgSrc] = useState("");
+  return (
+    <PhotoView src={props.plat == 2 ? imgSrc : props.img}>
+      <SmartImage
+        onLoadedSrc={(src) => {
+          setImgSrc(src);
+        }}
+        plat={props.plat}
+        src={props.img}
+        width={300}
+        alt={props.name}
+        className={clsx(props.item_width, "cursor-pointer")}
+      />
+    </PhotoView>
+  );
+}
+function getImageComponent(images: string[], item: any, plat: number, item_width: string): React.ReactNode {
+  return images.map((img: string, idx: number) => {
+    return <PhotoViewer key={idx + "PhotoViewer" + item.id} img={img} plat={plat} name={item.name} item_width={item_width} />;
+  });
+}
+
+function getVideoComponent(
+  videos: string[],
+  item: any,
+  item_width: string,
+  setVideoSrc: React.Dispatch<React.SetStateAction<string | null>>,
+  setVideoOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  plat: number
+): React.ReactNode {
+  return videos.map((video: string, idx: number) => (
+    <div
+      key={idx + "video" + item.id}
+      className={item_width + " cursor-pointer rounded-lg relative flex items-center justify-center bg-black"}
+      // style={{ width: 180, height: 230 }}
+      onClick={() => {
+        setVideoSrc(video);
+        setVideoOpen(true);
+      }}
+    >
+      <SmartVideo plat={plat} key={`${item.id}${item.name}video-${idx}`} src={video} width={300} className={item_width} />
+      <span className="absolute text-white text-3xl">&#9654;</span>
+    </div>
+  ));
+}
+
+
+// 新增：收集所有图片URL
+function getAllImageUrls(item: any, plat: PLAT): string[] {
   switch (plat) {
-    case 3: //"58kv":
-      item.video = item.video ? JSON.parse(item.video) : null;
-      if (item.video) {
-        return item.video.forEach((video: string, idx: number) => {
-          if (video) {
-            return (
-              <MediaItem
-                key={`${item.id}${item.titlename}video-${idx}`}
-                src={video}
-                type="video"
-                width={300}
-                alt={item.titlename}
-                className={item_width}
-              />
-            );
-          }
-        });
+    case 3: //"58kv"
+      let data: any[] | null = item.data ? JSON.parse(item.data) : null;
+      if (data) {
+        data.push(JSON.parse(item.cover));
+        return data.filter(Boolean);
       }
-      return <></>;
-    case 2://"zhizun":
-      item.medium = item.medium ? JSON.parse(item.medium) : null;
-      if (item.medium) {
-        return item.medium.forEach((video: string, idx: number) => {
-          if (video) {
-            return <SmartVideo key={`${item.id}${item.name}video-${idx}`} src={video} width={300} className={item_width} />;
-          }
-        });
+      return [];
+    case 2: //"zhizun"
+      let images = item.images ? JSON.parse(item.images) : null;
+      if (images) {
+        images.unshift(item.poster);
+        return images.filter(Boolean);
       }
-      return <> </>;
+      return [];
     default:
-    case 1://"jimei":
-      return Array.from({ length: 3 }).map((_, idx) => {
-        const index = `video${idx + 1}` as keyof typeof item;
-        let videoItem = idx === 0 ? item[`video`] : item[index];
-        if (videoItem) {
-          return (
-            <MediaItem
-              key={`${item.id}${item.girl_id}video-${idx}`}
-              src={IMG_BASE_URL + videoItem}
-              type="video"
-              width={300}
-              alt={item.name}
-              className={item_width}
-            />
-          );
-        }
-      });
+    case 1: //"jimei"
+      return Array.from({ length: 6 })
+        .map((_, idx) => {
+          const index = `photo${idx + 1}` as keyof typeof item;
+          return item[index] ? IMG_BASE_URL + item[index] : null;
+        })
+        .filter(Boolean) as string[];
   }
 }
 
-function getImageTag(item: any, item_width: string, plat: PLAT) {
+// 新增：收集所有视频URL
+function getAllVideoUrls(item: any, plat: PLAT): string[] {
   switch (plat) {
-    case 3://"58kv":
-      let data: any[] | null = item.data ? JSON.parse(item.data) : null;
-      if (data) {
-        data.push(JSON.parse(item.cover)); // 58kv的封面图也放到图集中
-        return data.map((img: string, idx: number) => {
-          if (img) {
-            return (
-              <MediaItem
-                key={`${item.id}${item.titlename}photo-${idx}`}
-                src={img}
-                width={300}
-                alt={item.titlename}
-                type="image"
-                className={item_width}
-              />
-            );
-          }
-        });
-      }
-      return <></>;
-    case 2://"zhizun":
-      let images = item.images ? JSON.parse(item.images) : null;
-      if (images) {
-        images.unshift(item.poster); // zhizun的封面图也放到图集中
-        return images.map((img: string, idx: number) => {
-          if (img) {
-            return <SmartImage key={`${item.id}${item.name}photo-${idx}`} src={img} width={300} alt={item.name} className={item_width} />;
-          }
-        });
-      }
-      return <> </>;
+    case 3: //"58kv"
+      let videoArr: any[] | null = item.video ? JSON.parse(item.video) : null;
+      return videoArr ? videoArr.filter(Boolean) : [];
+    case 2: //"zhizun"
+      let medium = item.medium ? JSON.parse(item.medium) : null;
+      return medium ? medium.filter(Boolean) : [];
     default:
-    case 1:// "jimei":
-      return Array.from({ length: 6 }).map((_, idx) => {
-        const index = `photo${idx + 1}` as keyof typeof item;
-        if (item[index]) {
-          return (
-            <MediaItem
-              key={`${item.id}${item.girl_id}photo-${idx}`}
-              src={IMG_BASE_URL + item[index]}
-              width={300}
-              alt={item.name}
-              type="image"
-              className={item_width}
-            />
-          );
-        }
-      });
+    case 1: //"jimei"
+      return Array.from({ length: 3 })
+        .map((_, idx) => {
+          const index = `video${idx + 1}` as keyof typeof item;
+          let videoItem = idx === 0 ? item[`video`] : item[index];
+          return videoItem ? IMG_BASE_URL + videoItem : null;
+        })
+        .filter(Boolean) as string[];
   }
 }

@@ -21,8 +21,8 @@ function upgrade(t: string) {
  */
 export async function fetchImageAsBase64(url: string): Promise<string> {
   try {
-    const res = await fetch(url,{
-      referrer:"https://www.zz2025.cc/"
+    const res = await fetch(url, {
+      referrer: "https://www.zz2025.cc/",
     });
     if (!res || !res.ok) throw new Error("HTTP " + res.status);
 
@@ -57,30 +57,46 @@ export async function fetchImageAsBase64(url: string): Promise<string> {
 }
 
 interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  src: string;
+  src?: string;
+  plat?: number;
+  onLoadedSrc?: (loadedSrc: string) => void;
 }
-
+const LOADING_TEXT = "图片加载中...";
 /**
  * 在前端把图片转成 base64 再展示
  */
-export default function SmartImage({ src, alt = "", className, ...props }: SmartImageProps) {
+export default function SmartImage({ src, onLoadedSrc, plat, alt = "", className = "", ...props }: SmartImageProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
-
+  function setOnLoadedUrl(url: string) {
+    setDataUrl(url);
+    if (onLoadedSrc) onLoadedSrc(url);
+  }
   useEffect(() => {
-    if (!src) return;
-    fetchImageAsBase64(src)
-      .then(setDataUrl)
-      .catch((e) => {
-        console.error(e);
-        setDataUrl("");
-      });
-  }, [src]);
+    if (plat === 2 && src) {
+      fetchImageAsBase64(src)
+        .then(setOnLoadedUrl)
+        .catch((e) => {
+          console.error(e);
+          setOnLoadedUrl("");
+        });
+    }
+  }, [src, plat]);
+  
+  function getImage(src: string | undefined) {
+    return <img src={src} alt={alt} {...props} className={`rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`} />;
+  }
 
-  if (!dataUrl)
-    return (
-      <div className={`${className} flex items-center justify-center text-center`} style={{ minHeight: 120 }}>
-        图片加载中...
-      </div>
-    );
-  return <img src={dataUrl} alt={alt} {...props} className={`rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`} />;
+  if (plat === 2) {
+    if (!dataUrl)
+      return (
+        <div
+          className={`flex items-center justify-center text-center  rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`}
+        >
+          图片加载中...
+        </div>
+      );
+    return getImage(dataUrl);
+  } else {
+    return getImage(src);
+  }
 }
