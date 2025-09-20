@@ -128,7 +128,7 @@ export async function queryData({
         where,
         skip: (offset - 1) * limit,
         take: limit,
-        orderBy: { id: "asc" }, // 建议加排序
+        orderBy: { create_time: "asc" }, // 建议加排序
       });
 
       // 2️⃣ 查总数
@@ -150,7 +150,7 @@ export async function queryData({
         if (/^\d+$/.test(name)) {
           // name 看起来是数字
           orArr.push({ code: Number(name) }); // 或 String(name) 取决于你的字段类型
-        } 
+        }
       }
 
       const where_zz: any = {};
@@ -164,7 +164,7 @@ export async function queryData({
         where: where_zz,
         skip: (offset - 1) * limit,
         take: limit,
-        orderBy: { id: "desc" }, // 建议加排序
+        orderBy: { create_time: "desc" }, // 建议加排序
       });
       // 2️⃣ 查总数
       const total_zz = await prisma.zhizunGirl.count({ where: where_zz });
@@ -194,7 +194,7 @@ export async function queryData({
         where: where_58,
         skip: (offset - 1) * limit,
         take: limit,
-        orderBy: { id: "asc" }, // 建议加排序
+        orderBy: { create_time: "asc" }, // 建议加排序
       });
       // 2️⃣ 查总数
       const total_58 = await prisma.girl58Kv.count({ where: where_58 });
