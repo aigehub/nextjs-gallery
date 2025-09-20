@@ -8,7 +8,7 @@ import { mapData } from "@/app/libs/data";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
 
-export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>): Promise<number> {
+export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>, platforn_name: string): Promise<number> {
   const res = await girlsPlatform.findFirst(data);
   if (res) {
     // console.log("已存在", data?.name, data?.code_ref);
@@ -18,10 +18,10 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
   try {
     const count = await girlsPlatform.prismaCreateOne(rest);
     // console.log(count);
-    console.log("新增", data.name, data.titlename, data.address);
+    console.log(platforn_name, "新增", data.name, data.titlename, data.address);
     return count;
   } catch (e) {
-    console.log(" not insert", e);
+    console.log(platforn_name, " not insert", e);
     return 0;
   }
 }
@@ -35,6 +35,7 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
  * @returns
  */
 export async function start_spide({
+  platforn_name = "",
   checkTokenExpires: checkTokenExpires,
   insertOne,
   mapData,
@@ -42,18 +43,19 @@ export async function start_spide({
   needSpideAllData = needSpideAllData_arg,
 }: {
   checkTokenExpires?: () => Promise<boolean>;
-  insertOne?: (data: Omit<any, "id">) => Promise<any>;
+  insertOne?: (data: Omit<any, "id">, platforn_name: string) => Promise<any>;
   mapData?: (data: any[]) => Promise<any[]>;
   all_data_file_path: string;
   needSpideAllData?: boolean;
+  platforn_name?: string;
 }) {
   if (checkTokenExpires) {
     const check = await checkTokenExpires();
     if (!check) {
-      console.log("token 过期");
+      console.log(platforn_name, "token 过期");
       return;
     }
-    console.log("token 有效");
+    console.log(platforn_name, "token 有效");
   }
   if (needSpideAllData) {
     await loadAllData();
@@ -64,13 +66,17 @@ export async function start_spide({
     import(all_data_file_path).then(async (module) => {
       let all_data = module.default;
       if (mapData) all_data = await mapData(all_data);
-      console.log("all_data length:", all_data.length);
+      console.log(platforn_name, "all_data length:", all_data.length);
       let add_count = 0;
       for (let i = 0; i < all_data.length; i++) {
-        const res = await insertOne(all_data[i]);
-        add_count += res;
+        const res = await insertOne(all_data[i], platforn_name);
+        if (!isNaN(res)) {
+          add_count += Number(res);
+        } else {
+          console.log(platforn_name, "res is NaN:", res);
+        }
       }
-      console.log("薪增的个数:", add_count);
+      console.log(platforn_name, "薪增的个数:", add_count);
     });
   }
 }
@@ -205,24 +211,25 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
 const zz = new ZhizunPlatform();
 //zhizun
 start_spide({
+  platforn_name:"zhizun",
   checkTokenExpires: checkTokenExpires,
   mapData: async (data) => await zz.mapData(data),
-  insertOne: (data) => insertOne(data, zz),
+  insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
   all_data_file_path: "../json/all/zhizun_all_girls_details.json",
 });
 const kv58 = new Kv58Platform();
 //58kv
-start_spide({
+start_spide({  platforn_name:"58kv",
   checkTokenExpires: async () => (await checkExpires58()) !== null,
-  insertOne: (data) => insertOne(data, kv58),
+  insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
   mapData: async (data) => await kv58.mapData(data),
   all_data_file_path: "../json/all/all_58kv_data.json",
 });
 
 // jimei
-start_spide({
+start_spide({  platforn_name:"jimei",
   checkTokenExpires: checkExpires,
-  insertOne: (data) => insertOne(data, new JimeiPlatform()),
+  insertOne: async (data, platforn_name) => await insertOne(data, new JimeiPlatform(), platforn_name),
   mapData: async (data) => await mapData(data),
   all_data_file_path: "../json/all/all_girls_details.json",
 });

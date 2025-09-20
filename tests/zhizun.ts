@@ -47,7 +47,7 @@ async function getProduct(params: QUERY_BODY = data) {
   try {
     const json_str = await res.json();
     if (json_str && json_str.code === 0) {
-      console.log(res, JSON.stringify(json_str, null, 2));
+      // console.log(res, JSON.stringify(json_str, null, 2));
       mkdirIfNotExists("json/zhizun");
       fs.writeFileSync(`json/zhizun/${params.premium ? "大圈" : "中圈"}zhizun_page_${params.page_index}.json`, JSON.stringify(json_str, null, 2));
       return json_str;
@@ -99,18 +99,18 @@ export async function checkTokenExpires() {
     // });
     // console.log("verfiryToken res:");
     if (res.status !== 200) {
-      console.log(res, res.status, res.statusText);
+      console.log("zhizun",res, res.status, res.statusText);
       return null;
     } else {
       const json_str = await res.json();
-      console.log(res, json_str);
+      console.log("zhizun",res, json_str);
       fs.writeFileSync(token_json_file, JSON.stringify(json_str, null, 2), {
         encoding: "utf-8",
       });
       return json_str.data.token;
     }
   } catch (err) {
-    console.log("getToken err:", err);
+    console.log("zhizun getToken err:", err);
     return null;
   }
 }
