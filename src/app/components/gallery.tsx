@@ -60,22 +60,30 @@ function ModelGirl({
   // 视频弹窗状态
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
-  let num = item.code_ref;
-  if (!num) {
-    if (item.code) {
-      num = `${item.code}`;
-    } else num = `M${item.ladyid}`;
-  }
-  let skill = item.skill;
-  if (!item.skill) {
-    if (item.tag_name) {
-      skill = (JSON.parse(item.tag_name) as Array<string>).join(",");
-    } else {
-      skill = (JSON.parse(item.characteristics) as Array<string>).join(",");
-    }
-  }
 
-  function getDescription(item_width: string, item: any, skill: any, num: any, show_tel: boolean | undefined) {
+  function getDescription(item_width: string, item: any, show_tel: boolean | undefined) {
+    let province = "";
+    let skill = "";
+    let num = item.code_ref;
+    if (!num) {
+      if (item.code) {
+        num = `${item.code}`;
+      } else num = `M${item.ladyid}`;
+    }
+    switch (plat) {
+      case 1: //jimei
+        province = item.province + " " + item.city + " " + item.address;
+        skill = item.skill;
+        break;
+      case 2: //zz
+        province = item.city_name + " " + item.district_name + " " + item.address;
+        if (item.tag_name) skill = (JSON.parse(item.tag_name) as Array<string>).join(",");
+        break;
+      case 3: //58kv
+        province = item.provinceCity + " " + item.region + " " + item.address;
+        if (item.characteristics) skill = (JSON.parse(item.characteristics) as Array<string>).join(",");
+        break;
+    }
     return (
       <div className={`p-4 border bg-white rounded-lg shadow-md  ${item_width}`}>
         <h1 className="text-emerald-500 border-l-4 pl-2 mb-2 font-extrabold text-2xl">{item.name ?? item.titlename}</h1>
@@ -85,9 +93,7 @@ function ModelGirl({
             {item.bust}
           </p>
         )}
-        <p className="text-sm text-gray-500 mb-2">
-          {item.province ?? item.provinceCity ?? item.city_name + " " + (item.city ?? item.district_name ?? item.region) + " " + item.address}
-        </p>
+        <p className="text-sm text-gray-500 mb-2">{province}</p>
         <p className="text-sm text-gray-400 mb-2">{item.price}</p>
         <p className="text-sm text-gray-500 mb-2">{skill}</p>
         <p className="text-sm text-gray-500 mb-2">编号：{num}</p>
@@ -106,7 +112,7 @@ function ModelGirl({
   return (
     <>
       {/* 描述模块 */}
-      {getDescription(item_width, item, skill, num, show_tel)}
+      {getDescription(item_width, item, show_tel)}
       {/* 图片和视频模块 */}
       <PhotoProvider>
         {getImageComponent(images, item, plat, item_width)}
@@ -175,7 +181,6 @@ function getVideoComponent(
     </div>
   ));
 }
-
 
 // 新增：收集所有图片URL
 function getAllImageUrls(item: any, plat: PLAT): string[] {

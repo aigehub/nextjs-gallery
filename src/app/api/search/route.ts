@@ -13,19 +13,26 @@ export async function GET(req: NextRequest) {
   }
   const params = req.nextUrl.searchParams;
   const page = params.get("page") || "1";
+  const district = params.get("district") || "";
+  const name = params.get("name") || "";
   const bust = params.get("bust") || undefined;
   const max_price = params.get("max_price")
     ? parseInt(params.get("max_price") as string)
     : undefined;
   const province = params.get("province") || undefined;
+    let plat = parseInt(params.get("p")?.toString() || "1");
   const offset = parseInt(page, 10);
+
   const data = await queryData({
-    offset,
-    limit: 20,
-    bust,
-    max_price,
-    province,
-  });
+      max_price,
+      province,
+      bust,
+      offset: offset,
+      limit: 20,
+      name,
+      district_name: district,
+      platform:plat,
+    });
   const newJson = { current_page: page, limit: data.page_data.length, ...data };
   return new Response(JSON.stringify(newJson, null, 2), { status: 200 });
 }
