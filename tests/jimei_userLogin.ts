@@ -24,13 +24,13 @@ async function userLogin() {
     method: "POST",
   });
   if (res.status == 200) {
-    console.log(res, await res.json());
+    console.log("jimei",res, await res.json());
     const cockies = res.headers.getSetCookie();
-    console.log(cockies);
+    console.log("jimei",cockies);
     parseCockie(cockies);
     return true;
   } else {
-    console.log(res.status, await res.text(), await res.json());
+    console.log("jimei",res.status, await res.text(), await res.json());
   }
   return false;
 }
@@ -47,19 +47,19 @@ function parseCockie(cockies: string[]) {
       data_string = array.find((value, index, array) => {
         if (value.includes("Expires=")) {
           const date = Date.parse(value.replace("Expires=", ""));
-          console.log("parse date ", date);
+          console.log("jimei","parse date ", date);
           return `${date}`;
         }
       });
   });
 
-  console.log("all cockies array:", COCKIES);
+  console.log("jimei","all cockies array:", COCKIES);
   const data = {
     cockies: COCKIES,
     expires: "",
   };
   if (data_string) {
-    console.log("data_string:", data_string);
+    console.log("jimei","data_string:", data_string);
     data.expires = new Date(Date.parse(data_string)).toISOString();
   }
   fs.writeFileSync(jimei_cockie_info, JSON.stringify(data, null, 2), {
@@ -107,10 +107,10 @@ async function checkExpires() {
     if (Date.now() > Date.parse(cockie.expires)) {
       return await userLogin();
     }
-    console.log("cockie is valid:", cockie, COCKIES);
+    console.log("jimei cockie is valid:", cockie, COCKIES);
     return true;
   } catch (error) {
-    console.log("read cockie.json error:", error);
+    console.log("jimei read cockie.json error:", error);
     return await userLogin();
   }
 }

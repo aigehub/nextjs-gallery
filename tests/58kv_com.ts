@@ -58,10 +58,10 @@ async function checkExpires() {
       tokenObj = await authAlbum();
       return tokenObj;
     }
-    console.log("tokenObj is valid:", tokenObj);
+    console.log("5bkv tokenObj is valid:", tokenObj);
     return true;
   } catch (error) {
-    console.log("read tokenObj.json error:", error);
+    console.log("5bkv read tokenObj.json error:", error);
     tokenObj = await authAlbum();
     return tokenObj;
   }
@@ -96,7 +96,7 @@ async function authAlbum() {
       return null;
     }
   } catch (error) {
-    console.log("read token error:", error);
+    console.log("5bkv read token error:", error);
   }
   return null;
 }
@@ -141,7 +141,7 @@ async function getPageData(queryPageParam: queryPageParamType) {
   });
   if (res.status == 200) {
     const jsonData = await res.json();
-    console.log(res, JSON.stringify(jsonData, null, 2));
+    // console.log(res, JSON.stringify(jsonData, null, 2));
     mkdirIfNotExists("json/58kv");
     if (jsonData.code !== 0 || !jsonData.data) {
       console.log("获取58kv数据失败:", jsonData);
