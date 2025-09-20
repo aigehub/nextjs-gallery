@@ -6,12 +6,12 @@ import { checkExpires } from "./jimei_userLogin";
 import { testLoadAllCitiesGirlsData, testSaveAllGirlsDetails } from "./jimei_spider";
 import { mapData } from "@/app/libs/data";
 
-const needSpideAllData_arg:boolean = process.argv[2] === 'true'; // true / false
+const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
 
 export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>): Promise<number> {
   const res = await girlsPlatform.findFirst(data);
   if (res) {
-    console.log("已存在", data?.name, data?.code_ref);
+    // console.log("已存在", data?.name, data?.code_ref);
     return 0;
   }
   const { id, ...rest } = data;
@@ -30,9 +30,9 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
  * 1、检查 token 是否过期
  * 2、如果需要，爬取所有数据并保存到本地 json 文件
  * 3、读取本地 json 文件，插入到数据库
- * 
+ *
  * @param param0
- * @returns 
+ * @returns
  */
 export async function start_spide({
   checkTokenExpires: checkTokenExpires,
@@ -65,9 +65,12 @@ export async function start_spide({
       let all_data = module.default;
       if (mapData) all_data = await mapData(all_data);
       console.log("all_data length:", all_data.length);
+      let add_count = 0;
       for (let i = 0; i < all_data.length; i++) {
         const res = await insertOne(all_data[i]);
+        add_count += res;
       }
+      console.log("薪增的个数:", add_count);
     });
   }
 }
