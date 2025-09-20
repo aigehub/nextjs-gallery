@@ -35,7 +35,7 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: |
-        npx tsx tests/common_spide.ts
+        DATABASE_URL="file:./data/girls.db?timeout=5000" npx tsx tests/common_spide.ts
     - name: git update
       if: matrix.node-version == '20.x'
       run: |
