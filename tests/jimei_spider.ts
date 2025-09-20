@@ -244,7 +244,7 @@ function getProvinceNameByCode(p_number: number): string | null {
     ? province.name.replace("/", "_").replace(" ", "_").trim()
     : null;
 }
-export function mkdirIfNotExists(dirPath: string) {
+function mkdirIfNotExists(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
@@ -382,7 +382,7 @@ async function getGirlDetails(
 
 export let cachedGirlsData: Array<Girl> = [];
 
-export async function loadAllGirlsJSONData({
+async function loadAllGirlsJSONData({
   page_no = 1,
   page_size = 500,
   slice_by_page = true,
@@ -408,7 +408,7 @@ export async function loadAllGirlsJSONData({
   else return cachedGirlsData;
 }
 
-export default {
+export {
   API_URL,
   fetchUser,
   loadHomePageData,
@@ -424,7 +424,7 @@ export default {
 };
 
 /// test code load all cities data
-export function testLoadAllCitiesGirlsData() {
+function testLoadAllCitiesGirlsData() {
   provinces.city.forEach((c) => {
     console.log(
       `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${
@@ -511,7 +511,7 @@ async function testSumGilrs() {
 }
 // testSumGilrs()
 import { insertOne, mapData, queryData } from "../src/app/libs/data";
-import checkExpires, { COCKIES } from "./userLogin";
+import { COCKIES,checkExpires } from "./jimei_userLogin";
 // import data from "../json/all/all_girls_details.json" with {type: "json"};
 
 async function spide_jimei() {
@@ -536,12 +536,14 @@ async function count_total() {
   const result = await queryData({});
   console.log(result.total);
 }
-try {
-  spide_jimei();
-  count_total();
-} catch (e) {
-  console.log("spide_jimei error:", e);
-  if (e instanceof Error) {
-    console.log(e.stack);
-  }
-}
+
+
+// try {
+//   spide_jimei();
+//   count_total();
+// } catch (e) {
+//   console.log("spide_jimei error:", e);
+//   if (e instanceof Error) {
+//     console.log(e.stack);
+//   }
+// }

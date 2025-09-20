@@ -2,6 +2,7 @@
  * 用户登录 集美相册
  */
 import fs from "fs";
+import { mkdirIfNotExists } from "./utils";
 export let COCKIES: string[] = [];
 async function userLogin() {
   const res = await fetch("https://pig.zwidi.cn/api/auth/userLogin", {
@@ -34,7 +35,8 @@ async function userLogin() {
   return false;
 }
 let data_string: string | undefined;
-const jimei_cockie_info = "tests/cockie.json";
+const jimei_cockie_info = "tests/jimei/cockie.json";
+mkdirIfNotExists("tests/jimei");
 function parseCockie(cockies: string[]) {
   COCKIES = [];
   cockies.forEach((item) => {
@@ -70,8 +72,7 @@ async function userAuth() {
       accept: "*/*",
       "accept-language": "zh-CN,zh;q=0.9",
       priority: "u=1, i",
-      "sec-ch-ua":
-        '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+      "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
       "sec-ch-ua-mobile": "?0",
       "sec-ch-ua-platform": '"Windows"',
       "sec-fetch-dest": "empty",
@@ -97,7 +98,7 @@ type COCKIES_TYPE = typeof json;
 
 async function checkExpires() {
   try {
-    if(fs.existsSync(jimei_cockie_info)==false){
+    if (fs.existsSync(jimei_cockie_info) == false) {
       return await userLogin();
     }
     const res = fs.readFileSync(jimei_cockie_info, { encoding: "utf-8" });
@@ -106,18 +107,19 @@ async function checkExpires() {
     if (Date.now() > Date.parse(cockie.expires)) {
       return await userLogin();
     }
-    console.log("cockie is valid:", cockie,COCKIES);
+    console.log("cockie is valid:", cockie, COCKIES);
     return true;
   } catch (error) {
     console.log("read cockie.json error:", error);
     return await userLogin();
   }
 }
-export default checkExpires;
+export { checkExpires, userAuth, userLogin };
 // userAuth();
 // userLogin();
-checkExpires().then(async (isLoginValid) => {
-  if (!isLoginValid){
-    await userAuth();
-  }
-});
+
+// checkExpires().then(async (isLoginValid) => {
+//   if (!isLoginValid){
+//     await userAuth();
+//   }
+// });

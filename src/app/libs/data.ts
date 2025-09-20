@@ -1,6 +1,6 @@
 import { Girl } from "@/generated/prisma";
 import prisma from "../../../prisma/database_api";
-export let cachedGirlsData: Array<Girl> = [];
+export let cachedGirlsData: Array<any> = [];
 export const PAGE_SIZE = 20; // 每页显示的图片数量
 export async function filterByArgs({
   city,
@@ -43,15 +43,10 @@ export async function filterByArgs({
     );
 
     if (bust) {
-      let math_group = item.bust
-        .match(/([A-Za-zＡ-Ｚａ-ｚ])/g)
-        ?.map((c) => toHalfWidth(c));
+      let math_group = item.bust.match(/([A-Za-zＡ-Ｚａ-ｚ])/g)?.map((c: string) => toHalfWidth(c));
 
       console.log("math_group:", math_group);
-      if (math_group)
-        result =
-          math_group[0].toLowerCase() > toHalfWidth(bust).toLowerCase() &&
-          result;
+      if (math_group) result = math_group[0].toLowerCase() > toHalfWidth(bust).toLowerCase() && result;
       else result = false;
     }
     if (tag) result = item.skill.includes(tag) && result;
@@ -73,18 +68,6 @@ function toHalfWidth(str: string) {
   });
 }
 
-type M = Pick<Girl, "bust" | "name" | "price" | "age" | "height" | "weight">;
-
-function mapGirlsToM(girls: Girl[]): M[] {
-  return girls.map(({ bust, name, price, age, height, weight }) => ({
-    bust,
-    name,
-    price,
-    age,
-    height,
-    weight,
-  }));
-}
 // async function testFilter() {
 //   const res = await filterByArgs({ max_price: 2000, city: "上海", bust: "d",page_no:1,page_size:200 });
 //   const resjson = JSON.stringify(mapGirlsToM(res), null, 2);
@@ -92,53 +75,118 @@ function mapGirlsToM(girls: Girl[]): M[] {
 //   console.log("===》过滤的人：", res.length);
 // }
 // testFilter();
+export type PLAT = "58kv" | "zhizun" | "jimei";
 export async function queryData({
   bust,
   max_price,
   tag,
   province,
+  district_name,
+  name,
   offset = 1, //page no
   limit = PAGE_SIZE,
+  platform = "jimei",
 }: {
   bust?: string;
   max_price?: number;
   tag?: string;
+  name?: string;
   province?: string;
+  district_name?: string;
   offset?: number;
   limit?: number;
+  platform?: PLAT;
 }) {
-  // 共用条件对象
-  const where = {
-    bust: bust ? { gte: bust.toLowerCase() } : undefined,
-    price: max_price ? { lte: max_price } : undefined,
-    skill: tag ? { contains: tag } : undefined,
-    province: province ? { contains: province } : undefined,
-  };
+  console.log("queryData params:", { bust, max_price, tag, province, district_name, name, offset, limit, platform });
+  switch (platform) {
+    case "jimei":
+      // 共用条件对象
+      const where = {
+        name: name ? { contains: name } : undefined,
 
-  // 1️⃣ 查数据
-  const rows = await prisma.girl.findMany({
-    where,
-    skip: (offset - 1) * limit,
-    take: limit,
-    orderBy: { id: "asc" }, // 建议加排序
-  });
+        bust: bust ? { gte: bust.toLowerCase() } : undefined,
+        price: max_price ? { lte: max_price } : undefined,
+        skill: tag ? { contains: tag } : undefined,
+        province: province ? { contains: province } : undefined,
+        district_name: province ? { contains: district_name } : undefined,
+      };
 
-  // 2️⃣ 查总数
-  const total = await prisma.girl.count({ where });
+      // 1️⃣ 查数据
+      const rows = await prisma.girl.findMany({
+        where,
+        skip: (offset - 1) * limit,
+        take: limit,
+        orderBy: { id: "asc" }, // 建议加排序
+      });
 
-  console.log(`query result: ${rows.length} / total: ${total}`);
+      // 2️⃣ 查总数
+      const total = await prisma.girl.count({ where });
 
-  // 3️⃣ 一起返回
-  return {
-    total,
-    page_data: rows,
-  };
+      console.log(`query result: ${rows.length} / total: ${total}`);
+
+      // 3️⃣ 一起返回
+      return {
+        total,
+        page_data: rows,
+      };
+    case "zhizun":
+      // 共用条件对象
+      const where_zz = {
+        district_name: district_name ? { contains: district_name } : undefined,
+        province: province ? { contains: province } : undefined,
+        name: name ? { contains: name } : undefined,
+        tag_name: tag ? { contains: tag } : undefined,
+      };
+      // 1️⃣ 查数据
+      const rows_zz = await prisma.zhizunGirl.findMany({
+        where: where_zz,
+        skip: (offset - 1) * limit,
+        take: limit,
+        orderBy: { id: "desc" }, // 建议加排序
+      });
+      // 2️⃣ 查总数
+      const total_zz = await prisma.zhizunGirl.count({ where: where_zz });
+
+      console.log(`query result: ${rows_zz.length} / total: ${total_zz}`);
+      // 3️⃣ 一起返回
+      return {
+        total: total_zz,
+        page_data: rows_zz,
+      };
+    case "58kv":
+      // 共用条件对象
+      const where_58 = {
+        titlename: name ? { contains: name } : undefined,
+        price: max_price ? { lte: max_price } : undefined,
+        characteristics: tag ? { contains: tag } : undefined,
+        province: province ? { contains: province } : undefined,
+        region: district_name ? { contains: district_name } : undefined,
+      };
+      // 1️⃣ 查数据
+      const rows_58 = await prisma.girl58Kv.findMany({
+        where: where_58,
+        skip: (offset - 1) * limit,
+        take: limit,
+        orderBy: { id: "asc" }, // 建议加排序
+      });
+      // 2️⃣ 查总数
+      const total_58 = await prisma.girl58Kv.count({ where: where_58 });
+      console.log(`query result: ${rows_58.length} / total: ${total_58}`);
+      // 3️⃣ 一起返回
+      return {
+        total: total_58,
+        page_data: rows_58,
+      };
+    default:
+      return {
+        total: 0,
+        page_data: [],
+      };
+  }
 }
 function normalizeBust(bust: string) {
   let res: string;
-  let math_group = bust
-    .match(/([A-Za-zＡ-Ｚａ-ｚ])/g)
-    ?.map((c) => toHalfWidth(c));
+  let math_group = bust.match(/([A-Za-zＡ-Ｚａ-ｚ])/g)?.map((c) => toHalfWidth(c));
   // console.log("math_group:", math_group);
   if (math_group) {
     res = math_group[0].toLowerCase();

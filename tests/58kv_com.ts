@@ -1,5 +1,5 @@
 import fs, { mkdir } from "fs";
-import { mkdirIfNotExists } from "./common";
+import { mkdirIfNotExists } from "./utils";
 const dir = "json/58kv";
 const save_character_path = "tests/58kv/58kv_character.json";
 const save_token_path = "tests/58kv/58kv_token.json";
@@ -18,13 +18,17 @@ const token_temp = {
 };
 type TOKEN_TYPE = typeof token_temp;
 async function getCharacterList() {
+  await checkExpires();
+  if (!tokenObj) {
+    console.log("tokenObj is null");
+    return null;
+  }
   const res = await fetch("https://58kv.com/api/sys/lady/getCharacteristic", {
     headers: {
       accept: "application/json, text/plain, */*",
       "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-      authorization: "73ce2d482730403c8792d91b0afee763",
-      "sec-ch-ua":
-        '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+      authorization: tokenObj ? tokenObj.data.access_token : "",
+      "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
       "sec-ch-ua-mobile": "?1",
       "sec-ch-ua-platform": '"Android"',
       "sec-fetch-dest": "empty",
@@ -70,8 +74,7 @@ async function authAlbum() {
         "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
         authorization: "",
         "content-type": "application/json",
-        "sec-ch-ua":
-          '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+        "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
         "sec-ch-ua-mobile": "?0",
         "sec-ch-ua-platform": '"Windows"',
         "sec-fetch-dest": "empty",
@@ -125,8 +128,7 @@ async function getPageData(queryPageParam: queryPageParamType) {
       accept: "application/json, text/plain, */*",
       "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
       authorization: tokenObj ? tokenObj.data.access_token : "",
-      "sec-ch-ua":
-        '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+      "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
       "sec-ch-ua-mobile": "?1",
       "sec-ch-ua-platform": '"Android"',
       "sec-fetch-dest": "empty",
@@ -141,14 +143,12 @@ async function getPageData(queryPageParam: queryPageParamType) {
     const jsonData = await res.json();
     console.log(res, JSON.stringify(jsonData, null, 2));
     mkdirIfNotExists("json/58kv");
-    if(jsonData.code !== 0 || !jsonData.data) {
+    if (jsonData.code !== 0 || !jsonData.data) {
       console.log("获取58kv数据失败:", jsonData);
       return jsonData;
     }
     fs.writeFileSync(
-      `json/58kv/${queryPageParam.ladytype == "1" ? "中圈" : "大圈"}58kv_page_${
-        queryPageParam.page
-      }.json`,
+      `json/58kv/${queryPageParam.ladytype == "1" ? "中圈" : "大圈"}58kv_page_${queryPageParam.page}.json`,
       JSON.stringify(jsonData, null, 2)
     );
     return jsonData;
@@ -162,11 +162,7 @@ async function loadAllData() {
   for (let i = 1; i <= 100; i++) {
     queryPageParam.page = `${i}`;
     const jsondata = await getPageData({ ...queryPageParam, page: `${i}` });
-    if (
-      !jsondata ||
-      jsondata.code !== 0 ||
-      (jsondata.data && jsondata.data.list && jsondata.data.list.length === 0)
-    ) {
+    if (!jsondata || jsondata.code !== 0 || (jsondata.data && jsondata.data.list && jsondata.data.list.length === 0)) {
       console.log("获取58kv 中圈数据失败，停止 index:", i);
       break;
     }
@@ -178,11 +174,7 @@ async function loadAllData() {
       page: `${i}`,
       ladytype: "2",
     });
-    if (
-      !jsondata ||
-      jsondata.code !== 0 ||
-      (jsondata.data && jsondata.data.list && jsondata.data.list.length === 0)
-    ) {
+    if (!jsondata || jsondata.code !== 0 || (jsondata.data && jsondata.data.list && jsondata.data.list.length === 0)) {
       console.log("获取58kv 大圈数据失败，停止 index:", i);
       break;
     }
@@ -207,12 +199,10 @@ async function saveAllDetails() {
   }
   console.log("所有58kv数据：", all_58kv_data.length);
   mkdirIfNotExists("json/all");
-  fs.writeFileSync(
-    `json/all/all_58kv_data.json`,
-    JSON.stringify(all_58kv_data, null, 2)
-  );
+  fs.writeFileSync(`json/all/all_58kv_data.json`, JSON.stringify(all_58kv_data, null, 2));
 }
+export { getCharacterList, authAlbum, loadAllData, saveAllDetails, checkExpires };
 // getCharacterList();
 // authAlbum();
 // loadAllData();
-saveAllDetails();
+// saveAllDetails();
