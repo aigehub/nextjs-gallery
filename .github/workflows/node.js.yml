@@ -1,0 +1,47 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: spider Node.js CI
+
+on:
+# 手动触发
+  workflow_dispatch:
+
+  # 定时触发（每天凌晨 3 点）
+  schedule:
+    - cron: '0 2 * * *'   # UTC 时间
+    
+permissions:
+  contents: write    # 👈 必须有写权限才能 push
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: |
+        npx tsx tests/common_spide.ts
+    - name: git update
+      if: matrix.node-version == '20.x'
+      run: |
+       git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git status
+        git add --all
+       git commit -m "auto spide data and update database" || echo "no changes"
+        git push --all
+
+        
+    
