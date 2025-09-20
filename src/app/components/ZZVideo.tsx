@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
   plat: number;
+  isLargePreview: boolean;
 }
 
 /**
  * 在前端 fetch 视频得到 Blob URL，再用 <video src="blob:...">
  */
-export default function SmartVideo({ src, plat, poster, className, ...props }: SmartVideoProps) {
+export default function SmartVideo({ isLargePreview = false, src, plat, poster, className, ...props }: SmartVideoProps) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function SmartVideo({ src, plat, poster, className, ...props }: S
   return (
     <video
       {...props}
-      controls
+      controls={isLargePreview}
       poster={poster}
       src={blobUrl} // blob:xxxx
       className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}
