@@ -1,13 +1,7 @@
-
-"use client"
+"use client";
 import { wrappedSearchAction } from "../libs/actions";
 
-export default function SearchComponent(props: {
-  page?: number;
-  max_price?: number;
-  province?: string;
-  bust?: string;
-}) {
+export default function SearchComponent(props: { page?: number; max_price?: number; province?: string; bust?: string }) {
   const searcAction = wrappedSearchAction.bind(null);
   return (
     <form action={searcAction} className="max-sm:w-full mt-4">

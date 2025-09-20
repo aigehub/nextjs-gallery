@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ["pig.zwidi.cn"],
+    domains: ["pig.zwidi.cn","test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com"],
   },
 };
 

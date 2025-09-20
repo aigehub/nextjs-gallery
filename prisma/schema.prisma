@@ -192,7 +192,7 @@ model ZhizunGirl {
   address         String
   certification   Boolean
   poster          String
-  random_index    Int
+  random_index    String
   city_name       String
   district_name   String
   //简单数据
@@ -205,4 +205,90 @@ model ZhizunGirl {
   images          String //[]
   medium          String //[]
   authentications String //[]
+}
+
+/**
+ * {
+ * "id": 87710,
+ * "titlename": "普陀小玲",
+ * "content": null,
+ * "price": null,
+ * "wechat": null,
+ * "uuutalk": null,
+ * "qqnum": null,
+ * "telegram": null,
+ * "shadow": null,
+ * "mobile": null,
+ * "provinceCity": "上海",
+ * "region": "普陀区",
+ * "address": "上海香溢花城2期",
+ * "accuracy": "121.436121",
+ * "dimension": "31.255451",
+ * "position": null,
+ * "cover": [
+ * "https://cdn.wuyuepai.com/73058de2cfc143318fe63deed6dca46c_2911.jpeg"
+ * ],
+ * "data": [
+ * "https://cdn.wuyuepai.com/0fd3f836c0714ccc8f6f3c637b167e44_5137.jpg",
+ * "https://cdn.wuyuepai.com/a96dc1de22894255982db4e5cebc669a_5168.jpg",
+ * "https://cdn.wuyuepai.com/82639ad55a6149499604f6fd3ac3b774_5975.jpg",
+ * "https://cdn.wuyuepai.com/893b56a275fd4d98bbdfef5b23b77c3a_2944.jpeg",
+ * "https://cdn.wuyuepai.com/4bc8295de1994eef93615555bef339e0_2944.jpeg",
+ * "https://cdn.wuyuepai.com/2c4a7426bc60466f90aace8920bbe323_2944.jpeg"
+ * ],
+ * "video": [
+ * "https://cdn.wuyuepai.com/c79a9bd9c2af4fc68a30d3535b0e85cc_5348.mp4"
+ * ],
+ * "ladyid": "7079",
+ * "distance": "0",
+ * "isbn": 2,
+ * "ladytype": 1,
+ * "isExamine": 2,
+ * "isStart": 1,
+ * "isAuth": 2,
+ * "topup": 2,
+ * "isBlackList": false,
+ * "createTime": "2025-05-16 22:50:36",
+ * "characteristics": [
+ * "萝莉",
+ * "双飞",
+ * "白小纯",
+ * "服务系",
+ * "长腿"
+ * ],
+ * "role": null
+ * }
+ */
+model Girl58Kv {
+  id              Int     @id @default(autoincrement())
+  titlename       String
+  content         String? 
+  price           Int?
+  wechat          String?
+  uuutalk         String?
+  qqnum           String?
+  telegram        String?
+  shadow          String?
+  mobile          String?
+  provinceCity    String?
+  region          String?
+  address         String?
+  accuracy        String?
+  dimension       String?
+  position        String?
+  ladyid          String @unique
+  distance        String?
+  isbn            Int?
+  ladytype        Int?
+  isExamine       Int?
+  isStart         Int?
+  isAuth          Int?
+  topup           Int?
+  isBlackList     Boolean?
+  createTime      String?
+  cover           String? //[]
+  data            String? //[]
+  video           String? //[]
+  characteristics String? //[]
+  role            Int?
 }

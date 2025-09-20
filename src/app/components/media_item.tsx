@@ -3,17 +3,9 @@
 import React, { useState } from "react";
 import Image from "next/image";
 
-function MediaSkeleton({
-  className,
-  type,
-}: {
-  className: string;
-  type: string;
-}) {
+function MediaSkeleton({ className, type }: { className: string; type: string }) {
   return (
-    <div
-      className={`${className} bg-gray-200 animate-pulse rounded-lg justify-center items-center flex mb-4 overflow-hidden`}
-    >
+    <div className={`${className} bg-gray-200 animate-pulse rounded-lg justify-center items-center flex mb-4 overflow-hidden`}>
       <p>{type} loading...</p>
     </div>
   );
@@ -35,9 +27,7 @@ export function MediaItem({
   // const [loaded, setLoaded] = useState(false);
 
   return (
-    <div
-      className={`relative border bg-white shadow-md rounded-lg ${className}`}
-    >
+    <div className={`relative border bg-white shadow-md rounded-lg ${className}`}>
       {type === "image" ? (
         <>
           {/* {!loaded && <MediaSkeleton className={className} type={type} />} */}
@@ -45,6 +35,7 @@ export function MediaItem({
             src={src}
             alt={alt || ""}
             className={`rounded-lg mb-4 transition-opacity m-auto duration-500 w-fit object-cover ${className}`}
+            referrerPolicy="no-referrer"
             // loading="lazy"
             width={1080}
             height={0}
@@ -97,3 +88,4 @@ export function MediaItem({
     </div>
   );
 }
+
