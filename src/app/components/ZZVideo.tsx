@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
   plat: number;
-  isLargePreview: boolean;
+  isLargePreview?: boolean;
 }
 
 /**
