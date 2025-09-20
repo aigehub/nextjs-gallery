@@ -49,27 +49,43 @@ function ModelGirl({
   item_width: string;
   show_tel?: boolean;
 }): React.JSX.Element {
+  let num = item.code_ref;
+  if (!num) {
+    if (item.code) {
+      num = `${item.code}`;
+    } else num = `M${item.ladyid}`;
+  }
+  let skill = item.skill;
+  if (!item.skill) {
+    if (item.tag_name) {
+      skill = (JSON.parse(item.tag_name) as Array<string>).join(",");
+    } else {
+      skill = (JSON.parse(item.characteristics) as Array<string>).join(",");
+    }
+  }
   return (
     <>
       {/* 描述模块 */}
       <div className={`p-4 border bg-white rounded-lg shadow-md  ${item_width}`}>
         <h1 className="text-emerald-500 border-l-4 pl-2 mb-2 font-extrabold text-2xl">{item.name ?? item.titlename}</h1>
-        <p className="text-sm text-gray-500 mb-2">
-          年龄：{item.age}, 身高：{item.height}, 体重：{item.weight}, 罩杯：
-          {item.bust}
-        </p>
+        {item.age && (
+          <p className="text-sm text-gray-500 mb-2">
+            年龄：{item.age}, 身高：{item.height}, 体重：{item.weight}, 罩杯：
+            {item.bust}
+          </p>
+        )}
         <p className="text-sm text-gray-500 mb-2">
           {item.province ?? item.provinceCity ?? item.city_name + " " + (item.city ?? item.district_name ?? item.region) + " " + item.address}
         </p>
         <p className="text-sm text-gray-400 mb-2">{item.price}</p>
-        <p className="text-sm text-gray-500 mb-2">{item.skill ?? item.tag_name ?? item.characteristics}</p>
+        <p className="text-sm text-gray-500 mb-2">{skill}</p>
+        <p className="text-sm text-gray-500 mb-2">编号：{num}</p>
         {show_tel == true && (
           <>
             <p className="text-sm text-gray-400 mb-2">uu；{item.xl}</p>
             <p className="text-sm text-gray-500 mb-2">wx：{item.vx}</p>
             <p className="text-sm text-gray-400 mb-2">与你：{item.yn}</p>
             <p className="text-sm text-gray-500 mb-2">QQ：{item.qq}</p>
-            <p className="text-sm text-gray-500 mb-2">编号：{item.code_ref ?? `Z${item.code}` ?? `M${item.ladyid}`}</p>
           </>
         )}
       </div>
@@ -84,7 +100,7 @@ function ModelGirl({
 }
 function getVideoComponent(item: any, item_width: string, plat: PLAT) {
   switch (plat) {
-    case "58kv":
+    case 3: //"58kv":
       item.video = item.video ? JSON.parse(item.video) : null;
       if (item.video) {
         return item.video.forEach((video: string, idx: number) => {
@@ -103,20 +119,18 @@ function getVideoComponent(item: any, item_width: string, plat: PLAT) {
         });
       }
       return <></>;
-    case "zhizun":
+    case 2://"zhizun":
       item.medium = item.medium ? JSON.parse(item.medium) : null;
       if (item.medium) {
         return item.medium.forEach((video: string, idx: number) => {
           if (video) {
-            return (
-              <SmartVideo key={`${item.id}${item.name}video-${idx}`} src={video} width={300} className={item_width} />
-            );
+            return <SmartVideo key={`${item.id}${item.name}video-${idx}`} src={video} width={300} className={item_width} />;
           }
         });
       }
       return <> </>;
     default:
-    case "jimei":
+    case 1://"jimei":
       return Array.from({ length: 3 }).map((_, idx) => {
         const index = `video${idx + 1}` as keyof typeof item;
         let videoItem = idx === 0 ? item[`video`] : item[index];
@@ -138,7 +152,7 @@ function getVideoComponent(item: any, item_width: string, plat: PLAT) {
 
 function getImageTag(item: any, item_width: string, plat: PLAT) {
   switch (plat) {
-    case "58kv":
+    case 3://"58kv":
       let data: any[] | null = item.data ? JSON.parse(item.data) : null;
       if (data) {
         data.push(JSON.parse(item.cover)); // 58kv的封面图也放到图集中
@@ -158,7 +172,7 @@ function getImageTag(item: any, item_width: string, plat: PLAT) {
         });
       }
       return <></>;
-    case "zhizun":
+    case 2://"zhizun":
       let images = item.images ? JSON.parse(item.images) : null;
       if (images) {
         images.unshift(item.poster); // zhizun的封面图也放到图集中
@@ -170,7 +184,7 @@ function getImageTag(item: any, item_width: string, plat: PLAT) {
       }
       return <> </>;
     default:
-    case "jimei":
+    case 1:// "jimei":
       return Array.from({ length: 6 }).map((_, idx) => {
         const index = `photo${idx + 1}` as keyof typeof item;
         if (item[index]) {

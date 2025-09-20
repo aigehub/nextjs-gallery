@@ -75,7 +75,7 @@ function toHalfWidth(str: string) {
 //   console.log("===》过滤的人：", res.length);
 // }
 // testFilter();
-export type PLAT = "58kv" | "zhizun" | "jimei";
+export type PLAT = number; //"jimei" | "zhizun" |58kv" ;
 export async function queryData({
   bust,
   max_price,
@@ -85,7 +85,7 @@ export async function queryData({
   name,
   offset = 1, //page no
   limit = PAGE_SIZE,
-  platform = "jimei",
+  platform = 1,
 }: {
   bust?: string;
   max_price?: number;
@@ -99,16 +99,28 @@ export async function queryData({
 }) {
   console.log("queryData params:", { bust, max_price, tag, province, district_name, name, offset, limit, platform });
   switch (platform) {
-    case "jimei":
+    case 1: //"jimei":
       // 共用条件对象
-      const where = {
-        name: name ? { contains: name } : undefined,
+      // 拆分每个字段并注释含义，提升可维护性
+      const orConditions = [];
+      // 按名称模糊查询
+      if (name) orConditions.push({ name: { contains: name } });
+      // 按 code_ref 模糊查询
+      if (name) orConditions.push({ code_ref: { contains: name } });
 
-        bust: bust ? { gte: bust.toLowerCase() } : undefined,
-        price: max_price ? { lte: max_price } : undefined,
-        skill: tag ? { contains: tag } : undefined,
-        province: province ? { contains: province } : undefined,
-        district_name: province ? { contains: district_name } : undefined,
+      const where = {
+        // 多条件 OR 查询
+        ...(orConditions.length > 0 ? { OR: orConditions } : {}),
+        // 胸围大于等于指定值
+        ...(bust ? { bust: { gte: bust.toLowerCase() } } : {}),
+        // 价格小于等于指定值
+        ...(max_price ? { price: { lte: max_price } } : {}),
+        // 技能包含指定标签
+        ...(tag ? { skill: { contains: tag } } : {}),
+        // 省份包含指定值
+        ...(province ? { province: { contains: province } } : {}),
+        // 区域名称包含指定值
+        ...(district_name ? { city: { contains: district_name } } : {}),
       };
 
       // 1️⃣ 查数据
@@ -129,14 +141,24 @@ export async function queryData({
         total,
         page_data: rows,
       };
-    case "zhizun":
-      // 共用条件对象
-      const where_zz = {
-        district_name: district_name ? { contains: district_name } : undefined,
-        province: province ? { contains: province } : undefined,
-        name: name ? { contains: name } : undefined,
-        tag_name: tag ? { contains: tag } : undefined,
-      };
+    case 2: //"zhizun":
+      // 共用条件对象，过滤掉无效字段，确保类型正确
+      const orArr = [];
+      if (name) orArr.push({ name: { contains: name } });
+      if (name) {
+        // 如果 name 全是数字（整数）
+        if (/^\d+$/.test(name)) {
+          // name 看起来是数字
+          orArr.push({ code: Number(name) }); // 或 String(name) 取决于你的字段类型
+        } 
+      }
+
+      const where_zz: any = {};
+      if (orArr.length > 0) where_zz.OR = orArr;
+      if (district_name) where_zz.district_name = { contains: district_name };
+      if (province) where_zz.province = { contains: province };
+      if (tag) where_zz.tag_name = { contains: tag };
+
       // 1️⃣ 查数据
       const rows_zz = await prisma.zhizunGirl.findMany({
         where: where_zz,
@@ -153,14 +175,19 @@ export async function queryData({
         total: total_zz,
         page_data: rows_zz,
       };
-    case "58kv":
+    case 3: //"58kv":
       // 共用条件对象
+      const orArr_58 = [];
+      if (name) {
+        orArr_58.push({ titlename: { contains: name } });
+        orArr_58.push({ ladyid: { contains: name } });
+      }
       const where_58 = {
-        titlename: name ? { contains: name } : undefined,
+        ...(orArr_58.length > 0 ? { OR: orArr_58 } : {}),
+        region: district_name ? { contains: district_name } : undefined,
         price: max_price ? { lte: max_price } : undefined,
         characteristics: tag ? { contains: tag } : undefined,
         province: province ? { contains: province } : undefined,
-        region: district_name ? { contains: district_name } : undefined,
       };
       // 1️⃣ 查数据
       const rows_58 = await prisma.girl58Kv.findMany({
