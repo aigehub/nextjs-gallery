@@ -120,7 +120,7 @@ function ModelGirl({
       </PhotoProvider>
       {/* 视频弹窗 */}
       {videoOpen && videoSrc && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50" onClick={() => setVideoOpen(false)}>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050" onClick={() => setVideoOpen(false)}>
           <SmartVideo isLargePreview={true} plat={plat} src={videoSrc} controls autoPlay style={{ maxHeight: "80vh", maxWidth: "90vw" }} />
         </div>
       )}

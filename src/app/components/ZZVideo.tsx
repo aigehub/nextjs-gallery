@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
@@ -13,7 +13,7 @@ interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
  */
 export default function SmartVideo({ isLargePreview = false, src, plat, poster, className, ...props }: SmartVideoProps) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
-
+  const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (!src) return;
     if (plat == 2) {
@@ -40,11 +40,16 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
     } else {
       setBlobUrl(src);
     }
+    return () => {
+      if (ref.current) ref.current.src = "";
+      ref.current = null;
+    };
   }, [src, plat]);
 
   if (!blobUrl) return <div className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}>视频加载中...</div>;
   return (
     <video
+      ref={ref}
       {...props}
       controls={isLargePreview}
       poster={poster}

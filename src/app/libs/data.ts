@@ -158,6 +158,7 @@ export async function queryData({
       if (district_name) where_zz.district_name = { contains: district_name };
       if (province) where_zz.province = { contains: province };
       if (tag) where_zz.tag_name = { contains: tag };
+      if (bust) where_zz.name = { contains: bust};
 
       // 1️⃣ 查数据
       const rows_zz = await prisma.zhizunGirl.findMany({
@@ -188,6 +189,7 @@ export async function queryData({
         price: max_price ? { lte: max_price } : undefined,
         characteristics: tag ? { contains: tag } : undefined,
         province: province ? { contains: province } : undefined,
+        titlename: bust ? { contains: bust} : undefined,
       };
       // 1️⃣ 查数据
       const rows_58 = await prisma.girl58Kv.findMany({
