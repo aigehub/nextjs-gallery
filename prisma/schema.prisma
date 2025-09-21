@@ -95,6 +95,8 @@ model Girl {
   api_url     String
   web_url     String
   create_time DateTime @default(now())
+  create_timestamps BigInt @default(dbgenerated("(strftime('%s','now') * 1000)"))
+
 }
 
 model ZhizunTag {
@@ -102,6 +104,8 @@ model ZhizunTag {
   tag_id      Int      @unique
   tag_name    String
   create_time DateTime @default(now())
+  create_timestamps BigInt @default(dbgenerated("(strftime('%s','now') * 1000)"))
+
 }
 
 model ZhizunDistrict {
@@ -109,6 +113,8 @@ model ZhizunDistrict {
   district_id   Int      @unique
   district_name String
   create_time   DateTime @default(now())
+  create_timestamps BigInt @default(dbgenerated("(strftime('%s','now') * 1000)"))
+
 }
 
 /**
@@ -209,6 +215,8 @@ model ZhizunGirl {
   medium          String //[]
   authentications String //[]
   create_time     DateTime @default(now())
+  create_timestamps BigInt @default(dbgenerated("(strftime('%s','now') * 1000)"))
+
 }
 
 /**
@@ -296,4 +304,6 @@ model Girl58Kv {
   characteristics String? //[]
   role            Int?
   create_time     DateTime @default(now())
+  create_timestamps BigInt @default(dbgenerated("(strftime('%s','now') * 1000)"))
+
 }
