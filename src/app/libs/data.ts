@@ -128,7 +128,7 @@ export async function queryData({
         where,
         skip: (offset - 1) * limit,
         take: limit,
-        orderBy: { create_time: "asc" }, // 建议加排序
+        orderBy: { create_timestamps: "desc" }, // 建议加排序
       });
 
       // 2️⃣ 查总数
@@ -165,7 +165,7 @@ export async function queryData({
         where: where_zz,
         skip: (offset - 1) * limit,
         take: limit,
-        orderBy: { create_time: "desc" }, // 建议加排序
+        orderBy: { create_timestamps: "desc" }, // 建议加排序
       });
       // 2️⃣ 查总数
       const total_zz = await prisma.zhizunGirl.count({ where: where_zz });
@@ -196,7 +196,7 @@ export async function queryData({
         where: where_58,
         skip: (offset - 1) * limit,
         take: limit,
-        orderBy: { create_time: "asc" }, // 建议加排序
+        orderBy: { create_timestamps: "desc" }, // 建议加排序
       });
       // 2️⃣ 查总数
       const total_58 = await prisma.girl58Kv.count({ where: where_58 });
