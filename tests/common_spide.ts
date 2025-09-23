@@ -19,7 +19,10 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
     const count = await girlsPlatform.prismaCreateOne(rest);
     // console.log(count);
     console.log(platforn_name, "新增", data.name, data.titlename, data.address);
-    return count;
+    if (count) {
+      return 1;
+    }
+    return 0;
   } catch (e) {
     console.log(platforn_name, " not insert", e);
     return 0;
@@ -57,6 +60,7 @@ export async function start_spide({
     }
     console.log(platforn_name, "token 有效");
   }
+  console.log("needSpideAllData_arg:",needSpideAllData_arg)
   if (needSpideAllData) {
     await loadAllData();
     await saveAllDetails();
@@ -72,8 +76,6 @@ export async function start_spide({
         const res = await insertOne(all_data[i], platforn_name);
         if (res) {
           add_count += 1;
-        } else {
-          console.log(platforn_name, "res is NaN:", res);
         }
       }
       console.log(platforn_name, "薪增的个数:", add_count);
