@@ -16,7 +16,7 @@ async function getProduct(params: QUERY_BODY = data) {
       return;
     }
   } else {
-    console.log("已有token:", token);
+    // console.log("已有token:", token);
   }
 
   const res = await fetch("https://www.zz2025.cc/v1/product", {
@@ -98,7 +98,7 @@ async function requestToken() {
   } else {
     const json_str = await res.json();
     console.log("zhizun", res, json_str);
-    json_str.expires = Date.now() + 1000 * 60 * 30;//30分钟过期
+    json_str.expires = Date.now() + 1000 * 60 * 30; //30分钟过期
     fs.writeFileSync(token_json_file, JSON.stringify(json_str, null, 2), {
       encoding: "utf-8",
     });
@@ -110,6 +110,9 @@ export async function checkTokenExpires() {
     if (fs.existsSync(token_json_file)) {
       const res = fs.readFileSync(token_json_file, { encoding: "utf-8" });
       const json_str = JSON.parse(res);
+      if (!json_str.expires) {
+        return requestToken();
+      }
       const time = new Date(json_str.expires).getTime();
       const now = new Date().getTime();
       if (now > time) {
@@ -118,7 +121,6 @@ export async function checkTokenExpires() {
         return json_str.data.token;
       }
     }
-
   } catch (err) {
     console.log("zhizun getToken err:", err);
     return null;
@@ -254,7 +256,7 @@ async function saveAllDetails() {
       return;
     }
   } else {
-    console.log("已有token:", token);
+    // console.log("已有token:", token);
   }
 
   const dir = "json/zhizun";
@@ -264,7 +266,7 @@ async function saveAllDetails() {
   for (const file of files) {
     if (file.startsWith("中圈") || file.startsWith("大圈")) {
       const fullpath = dir + "/" + file;
-      console.log("处理文件：", fullpath);
+      console.log("处理读取文件：", fullpath);
       const res = fs.readFileSync(fullpath, { encoding: "utf-8" });
       const jsondata = JSON.parse(res);
       if (jsondata && jsondata.code === 0 && jsondata.data.product) {

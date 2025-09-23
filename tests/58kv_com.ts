@@ -192,7 +192,7 @@ async function saveAllDetails() {
   const files = fs.readdirSync(dir);
   for (let i = 0; i < files.length; i++) {
     const fullpath = dir + "/" + files[i];
-    console.log("处理文件：", fullpath);
+    console.log("处理读取文件：", fullpath);
     const res = fs.readFileSync(fullpath, { encoding: "utf-8" });
     const jsondata = JSON.parse(res);
     all_58kv_data.push(...jsondata.data.list);
