@@ -424,28 +424,29 @@ export {
 };
 
 /// test code load all cities data
-function testLoadAllCitiesGirlsData() {
-  provinces.city.forEach((c) => {
+async function testLoadAllCitiesGirlsData() {
+  const conut = provinces.city.length
+  for (let i = 0; i < conut; i++) {
+    const c = provinces.city[i];
     console.log(
-      `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${
-        c.name
+      `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${c.name
       }`
     );
-    loadHomePageData({
+    await loadHomePageData({
       p_number: c.p_number,
       c_number: c.c_number,
       rangeRef: 2, //中圈
       page_number: 1,
       page_size: 500,
     });
-    loadHomePageData({
+    await loadHomePageData({
       p_number: c.p_number,
       c_number: c.c_number,
       rangeRef: 3, //大圈
       page_number: 1,
       page_size: 500,
     });
-  });
+  };
 }
 // getGirlDetails(21176); 读取json路径文件列表，然后从文件读区数据列表中获取id，然后获取详情
 
@@ -466,7 +467,7 @@ async function testSaveAllGirlsDetails() {
 
       // 使用 limit 来限制并行请求
       const requests = data_array.map(
-        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => {})) // 包裹请求以确保并发限制
+        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => { })) // 包裹请求以确保并发限制
       );
       allRequests.push(...requests); // 将每个请求添加到请求列表中
     }
@@ -511,7 +512,7 @@ async function testSumGilrs() {
 }
 // testSumGilrs()
 import { insertOne, mapData, queryData } from "../src/app/libs/data";
-import { COCKIES,checkExpires } from "./jimei_userLogin";
+import { COCKIES, checkExpires } from "./jimei_userLogin";
 // import data from "../json/all/all_girls_details.json" with {type: "json"};
 
 async function spide_jimei() {
