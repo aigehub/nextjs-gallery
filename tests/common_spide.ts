@@ -37,7 +37,8 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
  * @param param0
  * @returns
  */
-export async function start_spide({
+export async function start_spide<GirlModel>({
+  girlsPlatform,
   platforn_name = "",
   checkTokenExpires: checkTokenExpires,
   insertOne,
@@ -45,6 +46,7 @@ export async function start_spide({
   all_data_file_path,
   needSpideAllData = needSpideAllData_arg,
 }: {
+  girlsPlatform: GirlsPlatform<GirlModel>;
   checkTokenExpires?: () => Promise<boolean>;
   insertOne?: (data: Omit<any, "id">, platforn_name: string) => Promise<any>;
   mapData?: (data: any[]) => Promise<any[]>;
@@ -60,10 +62,10 @@ export async function start_spide({
     }
     console.log(platforn_name, "token 有效");
   }
-  console.log("needSpideAllData_arg:",needSpideAllData_arg)
+  console.log("needSpideAllData_arg:", needSpideAllData_arg)
   if (needSpideAllData) {
-    await loadAllData();
-    await saveAllDetails();
+    await girlsPlatform.loadAllData();
+    await girlsPlatform.saveAllDetails();
   }
 
   if (insertOne) {
@@ -188,7 +190,7 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
     return mapData(data);
   }
   public async loadAllData(): Promise<any> {
-   await testLoadAllCitiesGirlsData();
+    await testLoadAllCitiesGirlsData();
     return Promise.resolve(null);
   }
   public async saveAllDetails(): Promise<any> {
@@ -212,8 +214,9 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
 
 const zz = new ZhizunPlatform();
 //zhizun
-start_spide({
-  platforn_name:"zhizun",
+start_spide<ZhizunGirl>({
+  girlsPlatform: zz,
+  platforn_name: "zhizun",
   checkTokenExpires: checkTokenExpires,
   mapData: async (data) => await zz.mapData(data),
   insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
@@ -221,7 +224,9 @@ start_spide({
 });
 const kv58 = new Kv58Platform();
 //58kv
-start_spide({  platforn_name:"58kv",
+start_spide<Girl58Kv>({
+  girlsPlatform: kv58,
+  platforn_name: "58kv",
   checkTokenExpires: async () => (await checkExpires58()) !== null,
   insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
   mapData: async (data) => await kv58.mapData(data),
@@ -229,9 +234,12 @@ start_spide({  platforn_name:"58kv",
 });
 
 // jimei
-start_spide({  platforn_name:"jimei",
+const jimei = new JimeiPlatform();
+start_spide<Girl>({
+  girlsPlatform: jimei,
+  platforn_name: "jimei",
   checkTokenExpires: checkExpires,
-  insertOne: async (data, platforn_name) => await insertOne(data, new JimeiPlatform(), platforn_name),
+  insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
   mapData: async (data) => await mapData(data),
   all_data_file_path: "../json/all/all_girls_details.json",
 });
