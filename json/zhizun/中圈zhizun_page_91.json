@@ -1,0 +1,99 @@
+{
+  "code": 0,
+  "data": {
+    "product": [
+      {
+        "id": 13424,
+        "status": true,
+        "valid": true,
+        "recommend": false,
+        "agent_id": 2460,
+        "name": "静安洋酒芬兰🇫🇮",
+        "image": "[\"13424/1953527012589047808.jpg\", \"13424/1953527106595983360.jpg\", \"13424/1953527239983239168.jpg\", \"13424/1953527454958096384.jpg\", \"13424/1953527491855388672.jpg\", \"13424/1953655877240098816.jpg\"]",
+        "media": "[\"13424/1953527621492936704\"]",
+        "tag": "[12, 13, 16, 34, 35, 43, 39, 40]",
+        "authentication": "[\"13424/1953527674274058240\"]",
+        "premium": false,
+        "code": 566,
+        "city_code": 100,
+        "district_code": 109,
+        "address": "静安区",
+        "certification": false,
+        "poster": "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953526959585628160.jpg",
+        "random_index": "1998",
+        "city_name": "上海",
+        "district_name": "静安",
+        "tag_name": [
+          "舌吻",
+          "69",
+          "制服",
+          "可夜",
+          "大长腿",
+          "洋酒",
+          "清纯型",
+          "甜美型"
+        ],
+        "images": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527012589047808.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527106595983360.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527239983239168.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527454958096384.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527491855388672.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953655877240098816.jpg"
+        ],
+        "medium": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527621492936704"
+        ],
+        "authentications": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/13424/1953527674274058240"
+        ]
+      },
+      {
+        "id": 14556,
+        "status": true,
+        "valid": true,
+        "recommend": false,
+        "agent_id": 2554,
+        "name": "沪上俏佳人 舟曼 惊鸿一瞥自难忘",
+        "image": "[\"14556/1968292072079233024.jpg\", \"14556/1968292075216572416.jpg\", \"14556/1968292080191016960.jpg\", \"14556/1968292084557287424.jpg\", \"14556/1968292089749835776.jpg\"]",
+        "media": "[\"14556/1968292121085480960\"]",
+        "tag": "[39, 40, 41, 34, 35, 36, 37, 32, 16]",
+        "authentication": "[\"14556/1968292115523833856\"]",
+        "premium": false,
+        "code": 2894,
+        "city_code": 100,
+        "district_code": 112,
+        "address": "上海文化商厦",
+        "certification": true,
+        "poster": "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292055746613248.jpg",
+        "random_index": "1999",
+        "city_name": "上海",
+        "district_name": "杨浦",
+        "tag_name": [
+          "清纯型",
+          "甜美型",
+          "服务型",
+          "可夜",
+          "大长腿",
+          "蜜桃臀",
+          "Cos",
+          "刚下海",
+          "制服"
+        ],
+        "images": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292072079233024.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292075216572416.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292080191016960.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292084557287424.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292089749835776.jpg"
+        ],
+        "medium": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292121085480960"
+        ],
+        "authentications": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14556/1968292115523833856"
+        ]
+      }
+    ]
+  }
+}
