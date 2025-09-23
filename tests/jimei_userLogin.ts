@@ -30,7 +30,7 @@ async function userLogin() {
     parseCockie(cockies);
     return true;
   } else {
-    console.log("jimei",res.status, await res.text(), await res.json());
+    console.log("jimei",res.status, await res.text());
   }
   return false;
 }
