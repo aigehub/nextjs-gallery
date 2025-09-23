@@ -8,12 +8,7 @@ const API_URL = "https://pig.zwidi.cn/";
 const cookie =
   "provinceCode=26; connect.sid=s%3A9d2997bc157b5570705cc2c7cc72abc3.cCI8hUcNXzOmWJR89DhzcIz%2FkzCN%2FJ0vVCTaHHudMr4; __verify_token=NjEuMTY5LjE1Mi43NToxNzU3ODIwNzk0MTE5OjFlYTQ2OTc2NGVmMWY5MjE5ZjRjOWZmYTI4OTEyN2VhOTdlYmIwZDMxNWM0MDc5NWM3MDcyOGRjMDhiZTY1Yzk%3D";
 
-const json_path = path.join(
-  process.cwd(),
-  "json",
-  "all",
-  "all_girls_details.json"
-);
+const json_path = path.join(process.cwd(), "json", "all", "all_girls_details.json");
 
 const navItems = {
   0: [
@@ -165,8 +160,7 @@ const guest_headers = {
 };
 const master_667788_headers = {
   //客服667788
-  accept:
-    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
   "accept-language": "zh-CN,zh;q=0.9",
   "cache-control": "max-age=0",
   priority: "u=0, i",
@@ -186,6 +180,7 @@ async function loadHomePageData({
   page_number: number;
   page_size: number;
 }) {
+  await checkExpires();
   const res = fetch(
     `https://pig.zwidi.cn/api/girl/homePageData?p_number=${p_number}&c_number=${c_number}&rangeRef=${rangeRef}&page_number=${page_number}&page_size=${page_size}`,
     {
@@ -198,13 +193,11 @@ async function loadHomePageData({
   const data = await res;
   const jsonObj = await data.json();
   if (jsonObj.success !== true) {
-    console.log(`jimei loadHomePageData fetch error\n`, jsonObj);
+    console.log(`jimei loadHomePageData fetch error`, jsonObj);
+    if (jsonObj.message == "锁定") return "锁定";
   } else {
     const data_array: Array<object> = jsonObj.data;
-    console.log(
-      `==》page ${page_number}，数据数量：${data_array.length}:\n`,
-      data_array[0]
-    );
+    console.log(`==》page ${page_number}，数据数量：${data_array.length}:\n`, data_array[0]);
     if (data_array.length > 0) {
       //save json to local file system
       let rangeRefName = "";
@@ -217,9 +210,7 @@ async function loadHomePageData({
         process.cwd(),
         "json",
         "jimei",
-        `${rangeRefName}_${getProvinceNameByCode(p_number)}_${getCityNameByCode(
-          c_number
-        )}_page${page_number}.json`
+        `${rangeRefName}_${getProvinceNameByCode(p_number)}_${getCityNameByCode(c_number)}_page${page_number}.json`
       );
       if (!fs.existsSync(path.dirname(filePath))) {
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -236,13 +227,12 @@ async function loadHomePageData({
         page_size,
       });
     }
+    return true;
   }
 }
 function getProvinceNameByCode(p_number: number): string | null {
   const province = provinces.province.find((p) => p.p_number === p_number);
-  return province
-    ? province.name.replace("/", "_").replace(" ", "_").trim()
-    : null;
+  return province ? province.name.replace("/", "_").replace(" ", "_").trim() : null;
 }
 function mkdirIfNotExists(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
@@ -339,12 +329,7 @@ const girls: {}[] = [];
 //   "body": null,
 //   "method": "GET"
 // });
-async function getGirlDetails(
-  id: number,
-  retryCount: number = 0,
-  maxRetries: number = 3
-): Promise<object | null> {
-  await checkExpires()
+async function getGirlDetails(id: number, retryCount: number = 0, maxRetries: number = 3): Promise<object | null> {
   try {
     const url = `https://pig.zwidi.cn/api/girl/getGirlById/${id}`;
     const res = await fetch(url, {
@@ -355,7 +340,7 @@ async function getGirlDetails(
 
     const jsonObj = await res.json();
     if (jsonObj.success !== true) {
-      console.log("jimei getGirlDetails",`fetch error\n`, jsonObj);
+      console.log("jimei getGirlDetails", `fetch error`, jsonObj);
       return null;
     } else {
       console.log(`✅ fetch success for url=${url} `, jsonObj);
@@ -396,16 +381,9 @@ async function loadAllGirlsJSONData({
     console.log("json_path", json_path);
     const content = fs.readFileSync(json_path, "utf-8");
     cachedGirlsData = JSON.parse(content);
-    console.log(
-      `==》loadAllGirlsJSONData，数据数量：${cachedGirlsData.length}:\n`,
-      cachedGirlsData[0]
-    );
+    console.log(`==》loadAllGirlsJSONData，数据数量：${cachedGirlsData.length}:\n`, cachedGirlsData[0]);
   }
-  if (slice_by_page)
-    return cachedGirlsData.slice(
-      (page_no - 1) * page_size,
-      page_no * page_size
-    );
+  if (slice_by_page) return cachedGirlsData.slice((page_no - 1) * page_size, page_no * page_size);
   else return cachedGirlsData;
 }
 
@@ -426,21 +404,22 @@ export {
 
 /// test code load all cities data
 async function testLoadAllCitiesGirlsData() {
-  await checkExpires()
-  const conut = provinces.city.length
+  await checkExpires();
+  const conut = provinces.city.length;
   for (let i = 0; i < conut; i++) {
     const c = provinces.city[i];
-    console.log(
-      `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${c.name
-      }`
-    );
-    await loadHomePageData({
+    console.log("jimei provinces.city:", `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${c.name}`);
+    const res = await loadHomePageData({
       p_number: c.p_number,
       c_number: c.c_number,
       rangeRef: 2, //中圈
       page_number: 1,
       page_size: 500,
     });
+    if (res == "锁定") {
+      console.log("被锁定了，不再继续请求")
+      break;
+    }
     await loadHomePageData({
       p_number: c.p_number,
       c_number: c.c_number,
@@ -448,7 +427,7 @@ async function testLoadAllCitiesGirlsData() {
       page_number: 1,
       page_size: 500,
     });
-  };
+  }
 }
 // getGirlDetails(21176); 读取json路径文件列表，然后从文件读区数据列表中获取id，然后获取详情
 
@@ -460,7 +439,6 @@ async function testSaveAllGirlsDetails() {
   const limit = pLimit(5); // 设置最大并发数为 5
 
   const allRequests: Promise<void>[] = [];
-  await checkExpires()
 
   for (const file of files) {
     if (file.endsWith(".json")) {
@@ -470,7 +448,7 @@ async function testSaveAllGirlsDetails() {
 
       // 使用 limit 来限制并行请求
       const requests = data_array.map(
-        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => { })) // 包裹请求以确保并发限制
+        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => {})) // 包裹请求以确保并发限制
       );
       allRequests.push(...requests); // 将每个请求添加到请求列表中
     }
@@ -489,10 +467,7 @@ async function testSaveAllGirlsDetails() {
     });
     console.log(`✅ save all ${girls.length} girls details to`, json_path);
   } else {
-    console.log(
-      `✅ no data to save all ${girls.length} girls details to`,
-      json_path
-    );
+    console.log(`✅ no data to save all ${girls.length} girls details to`, json_path);
   }
 }
 
@@ -540,7 +515,6 @@ async function count_total() {
   const result = await queryData({});
   console.log(result.total);
 }
-
 
 // try {
 //   spide_jimei();
