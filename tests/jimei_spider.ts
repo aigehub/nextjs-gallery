@@ -198,7 +198,7 @@ async function loadHomePageData({
   const data = await res;
   const jsonObj = await data.json();
   if (jsonObj.success !== true) {
-    console.log(`"fetch error\n`, jsonObj);
+    console.log(`jimei loadHomePageData fetch error\n`, jsonObj);
   } else {
     const data_array: Array<object> = jsonObj.data;
     console.log(
@@ -344,6 +344,7 @@ async function getGirlDetails(
   retryCount: number = 0,
   maxRetries: number = 3
 ): Promise<object | null> {
+  await checkExpires()
   try {
     const url = `https://pig.zwidi.cn/api/girl/getGirlById/${id}`;
     const res = await fetch(url, {
@@ -354,7 +355,7 @@ async function getGirlDetails(
 
     const jsonObj = await res.json();
     if (jsonObj.success !== true) {
-      console.log(`"fetch error\n`, jsonObj);
+      console.log("jimei getGirlDetails",`fetch error\n`, jsonObj);
       return null;
     } else {
       console.log(`✅ fetch success for url=${url} `, jsonObj);
@@ -425,6 +426,7 @@ export {
 
 /// test code load all cities data
 async function testLoadAllCitiesGirlsData() {
+  await checkExpires()
   const conut = provinces.city.length
   for (let i = 0; i < conut; i++) {
     const c = provinces.city[i];
@@ -458,6 +460,7 @@ async function testSaveAllGirlsDetails() {
   const limit = pLimit(5); // 设置最大并发数为 5
 
   const allRequests: Promise<void>[] = [];
+  await checkExpires()
 
   for (const file of files) {
     if (file.endsWith(".json")) {
