@@ -2,61 +2,8 @@
   "code": 0,
   "msg": "success",
   "data": {
-    "total": 1243,
+    "total": 1242,
     "list": [
-      {
-        "id": 95671,
-        "titlename": "全能米朵，🉑️CP、🉑️WT，🉑️SM，服务不加米",
-        "content": null,
-        "price": null,
-        "wechat": null,
-        "uuutalk": null,
-        "qqnum": null,
-        "telegram": null,
-        "shadow": null,
-        "mobile": null,
-        "provinceCity": "上海市-上海市",
-        "region": "闵行区",
-        "address": "凯迪·华光公寓",
-        "accuracy": "121.380785",
-        "dimension": "31.18758",
-        "position": null,
-        "cover": [
-          "https://cdn.wuyuepai.com/dc0e940c5b75448ea6581ce094b1ed09_85584.jpeg"
-        ],
-        "data": [
-          "https://cdn.wuyuepai.com/1e3a08d60ef74653a720c267bbda487a_85615.jpeg",
-          "https://cdn.wuyuepai.com/0db07902852b4e54b5afe7fae509bb19_85615.jpeg",
-          "https://cdn.wuyuepai.com/560cde3a09af44099e165fdca034b2c4_85654.jpeg",
-          "https://cdn.wuyuepai.com/ab6784f3a9074f44b035400cd9c35149_85654.jpeg",
-          "https://cdn.wuyuepai.com/a0bbedb0c92f4e5087d55e25c7995653_85654.jpeg",
-          "https://cdn.wuyuepai.com/2ca8e54a7d884247946c196ece319f46_85669.jpeg",
-          "https://cdn.wuyuepai.com/f5561eaf6c224794bc1457be60868e4a_85687.jpeg"
-        ],
-        "video": [
-          "https://cdn.wuyuepai.com/13ca3937741d4620af48d10f3397f99a_85698.MOV"
-        ],
-        "ladyid": "3341",
-        "distance": "0",
-        "isbn": 2,
-        "ladytype": 1,
-        "isExamine": 2,
-        "isStart": 1,
-        "isAuth": 2,
-        "topup": 2,
-        "isBlackList": false,
-        "createTime": "2025-09-17 23:49:11",
-        "characteristics": [
-          "御姐",
-          "大凶",
-          "双飞",
-          "SM",
-          "WT",
-          "CP",
-          "服务系"
-        ],
-        "role": null
-      },
       {
         "id": 95670,
         "titlename": "上海头牌 冰冰姐",
@@ -26813,6 +26760,58 @@
           "长腿",
           "网红",
           "白小纯"
+        ],
+        "role": null
+      },
+      {
+        "id": 89403,
+        "titlename": "极品瑜伽老师车模倩倩日系东京热",
+        "content": "倩倩服务一流",
+        "price": null,
+        "wechat": null,
+        "uuutalk": null,
+        "qqnum": null,
+        "telegram": null,
+        "shadow": null,
+        "mobile": null,
+        "provinceCity": "上海市-上海市",
+        "region": "静安区",
+        "address": "玉城大厦",
+        "accuracy": null,
+        "dimension": null,
+        "position": null,
+        "cover": [
+          "https://cdn.wuyuepai.com/49157da0be1445ccaf40cf83078b4d31_72621.jpg"
+        ],
+        "data": [
+          "https://cdn.wuyuepai.com/743c1ee5a6894265b4606b7701d40aac_72761.jpg",
+          "https://cdn.wuyuepai.com/c3e71b5fa48e42fb8f87db920c6c0ed4_72765.jpg",
+          "https://cdn.wuyuepai.com/1618bbbe17a1483192d079b4a94d826a_72770.jpg",
+          "https://cdn.wuyuepai.com/2e7308a30aec4b81a02be614e938b011_72774.jpg",
+          "https://cdn.wuyuepai.com/3ecb430baeb0432ea3d455bb3424af14_72779.jpg",
+          "https://cdn.wuyuepai.com/d8b9848faa3b40648364fe459a21cbb4_72784.jpg"
+        ],
+        "video": [
+          "https://cdn.wuyuepai.com/c4c9724bcad84277b2b04ceb2aba61d0_72750.mp4",
+          "https://cdn.wuyuepai.com/89246630dfd9421f8724cfafdfdece30_41580.mp4"
+        ],
+        "ladyid": "2489",
+        "distance": "0",
+        "isbn": 2,
+        "ladytype": 1,
+        "isExamine": 2,
+        "isStart": 1,
+        "isAuth": 2,
+        "topup": 2,
+        "isBlackList": false,
+        "createTime": "2025-06-04 20:13:14",
+        "characteristics": [
+          "御姐",
+          "大凶",
+          "高颜值",
+          "服务系",
+          "长腿",
+          "模特"
         ],
         "role": null
       }
