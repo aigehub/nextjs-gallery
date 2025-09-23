@@ -40,7 +40,7 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
 export async function start_spide<GirlModel>({
   girlsPlatform,
   platforn_name = "",
-  checkTokenExpires: checkTokenExpires,
+  checkTokenExpires,
   insertOne,
   mapData,
   all_data_file_path,

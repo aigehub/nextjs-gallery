@@ -59,56 +59,66 @@ async function getProduct(params: QUERY_BODY = data) {
     return null;
   }
 }
+async function requestToken() {
+  const res = await fetch("https://www.zz2025.cc/v1/token", {
+    headers: {
+      accept: "application/json, text/plain, */*",
+      "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+      "cache-control": "no-cache, no-store, must-revalidate",
+      "content-type": "application/json",
+      priority: "u=1, i",
+      "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+      "sec-ch-ua-mobile": "?1",
+      "sec-ch-ua-platform": '"Android"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
+      // cookie:  "__vtins__3LXbMpY3HA4LNEfR=%7B%22sid%22%3A%20%221c1c6dd4-1c18-584c-8ad4-e139aeb90c63%22%2C%20%22vd%22%3A%201%2C%20%22stt%22%3A%200%2C%20%22dr%22%3A%200%2C%20%22expires%22%3A%201758244496584%2C%20%22ct%22%3A%201758242696584%7D; __51uvsct__3LXbMpY3HA4LNEfR=1; __51vcke__3LXbMpY3HA4LNEfR=3f3b417e-d3c3-56f5-a840-07825429f121; __51vuft__3LXbMpY3HA4LNEfR=1758242696587",
+      Referer: "https://www.zz2025.cc/",
+    },
+    body: '{"code":"2088"}',
+    method: "POST",
+  });
+  // const res = await fetch("https://www.zz2025.cc/login", {
+  //   headers: {
+  //     accept: "application/json, text/plain, */*",
+  //     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+  //     "cache-control": "no-cache, no-store, must-revalidate",
+  //     "content-type": "application/json",
+  //     priority: "u=1, i",
+  //     token:
+  //       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwiaXNzIjoiaXNzdWVyIiwiZXhwIjoxNzU5MTA2NzQyfQ.Wbv_b51faizOk663Zuf6VhtuWdz8xYXJfz_AqE8Qs6I",
+  //   },
+  //   method: "GET",
+  // });
+  // console.log("verfiryToken res:");
+  if (res.status !== 200) {
+    console.log("zhizun", res, res.status, res.statusText);
+    return null;
+  } else {
+    const json_str = await res.json();
+    console.log("zhizun", res, json_str);
+    json_str.expires = Date.now() + 1000 * 60 * 30;//30分钟过期
+    fs.writeFileSync(token_json_file, JSON.stringify(json_str, null, 2), {
+      encoding: "utf-8",
+    });
+    return json_str.data.token;
+  }
+}
 export async function checkTokenExpires() {
   try {
     if (fs.existsSync(token_json_file)) {
       const res = fs.readFileSync(token_json_file, { encoding: "utf-8" });
       const json_str = JSON.parse(res);
-      return json_str.data.token;
+      const time = new Date(json_str.expires).getTime();
+      const now = new Date().getTime();
+      if (now > time) {
+        return requestToken();
+      } else {
+        return json_str.data.token;
+      }
     }
-    const res = await fetch("https://www.zz2025.cc/v1/token", {
-      headers: {
-        accept: "application/json, text/plain, */*",
-        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-        "cache-control": "no-cache, no-store, must-revalidate",
-        "content-type": "application/json",
-        priority: "u=1, i",
-        "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
-        "sec-ch-ua-mobile": "?1",
-        "sec-ch-ua-platform": '"Android"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        // cookie:  "__vtins__3LXbMpY3HA4LNEfR=%7B%22sid%22%3A%20%221c1c6dd4-1c18-584c-8ad4-e139aeb90c63%22%2C%20%22vd%22%3A%201%2C%20%22stt%22%3A%200%2C%20%22dr%22%3A%200%2C%20%22expires%22%3A%201758244496584%2C%20%22ct%22%3A%201758242696584%7D; __51uvsct__3LXbMpY3HA4LNEfR=1; __51vcke__3LXbMpY3HA4LNEfR=3f3b417e-d3c3-56f5-a840-07825429f121; __51vuft__3LXbMpY3HA4LNEfR=1758242696587",
-        Referer: "https://www.zz2025.cc/",
-      },
-      body: '{"code":"2088"}',
-      method: "POST",
-    });
-    // const res = await fetch("https://www.zz2025.cc/login", {
-    //   headers: {
-    //     accept: "application/json, text/plain, */*",
-    //     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-    //     "cache-control": "no-cache, no-store, must-revalidate",
-    //     "content-type": "application/json",
-    //     priority: "u=1, i",
-    //     token:
-    //       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwiaXNzIjoiaXNzdWVyIiwiZXhwIjoxNzU5MTA2NzQyfQ.Wbv_b51faizOk663Zuf6VhtuWdz8xYXJfz_AqE8Qs6I",
-    //   },
-    //   method: "GET",
-    // });
-    // console.log("verfiryToken res:");
-    if (res.status !== 200) {
-      console.log("zhizun",res, res.status, res.statusText);
-      return null;
-    } else {
-      const json_str = await res.json();
-      console.log("zhizun",res, json_str);
-      fs.writeFileSync(token_json_file, JSON.stringify(json_str, null, 2), {
-        encoding: "utf-8",
-      });
-      return json_str.data.token;
-    }
+
   } catch (err) {
     console.log("zhizun getToken err:", err);
     return null;
