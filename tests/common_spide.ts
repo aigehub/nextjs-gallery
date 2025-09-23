@@ -11,7 +11,7 @@ const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / fals
 export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>, platforn_name: string): Promise<number> {
   const res = await girlsPlatform.findFirst(data);
   if (res) {
-    // console.log("已存在", data?.name, data?.code_ref);
+    // console.log(platforn_name,"已存在", data?.name, data?.code_ref);
     return 0;
   }
   const { id, ...rest } = data;
@@ -70,8 +70,8 @@ export async function start_spide({
       let add_count = 0;
       for (let i = 0; i < all_data.length; i++) {
         const res = await insertOne(all_data[i], platforn_name);
-        if (!isNaN(res)) {
-          add_count += Number(res);
+        if (res) {
+          add_count += 1;
         } else {
           console.log(platforn_name, "res is NaN:", res);
         }
@@ -119,11 +119,11 @@ export class ZhizunPlatform extends GirlsPlatform<ZhizunGirl> {
     });
     return Promise.resolve(map_data);
   }
-  public loadAllData(): Promise<any> {
-    return loadAllDataZz();
+  public async loadAllData(): Promise<any> {
+    return await loadAllDataZz();
   }
-  public saveAllDetails(): Promise<any> {
-    return saveAllDetailsZz();
+  public async saveAllDetails(): Promise<any> {
+    return await saveAllDetailsZz();
   }
   public async prismaCreateOne<zhizunGirl>(rest: Omit<zhizunGirl, "id">): Promise<number> {
     if (await this.findFirst(rest as any)) {
@@ -157,12 +157,12 @@ export class Kv58Platform extends GirlsPlatform<Girl58Kv> {
     });
     return Promise.resolve(map_data);
   }
-  public loadAllData(): Promise<any> {
-    loadAllData();
+  public async loadAllData(): Promise<any> {
+    await loadAllData();
     return Promise.resolve(null);
   }
-  public saveAllDetails(): Promise<any> {
-    saveAllDetails();
+  public async saveAllDetails(): Promise<any> {
+    await saveAllDetails();
     return Promise.resolve(null);
   }
   public async prismaCreateOne<Girl58Kv>(rest: Omit<Girl58Kv, "id">): Promise<number> {
@@ -185,12 +185,12 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
   public mapData(data: []): Promise<any[]> {
     return mapData(data);
   }
-  public loadAllData(): Promise<any> {
-    testLoadAllCitiesGirlsData();
+  public async loadAllData(): Promise<any> {
+   await testLoadAllCitiesGirlsData();
     return Promise.resolve(null);
   }
-  public saveAllDetails(): Promise<any> {
-    testSaveAllGirlsDetails();
+  public async saveAllDetails(): Promise<any> {
+    await testSaveAllGirlsDetails();
     return Promise.resolve(null);
   }
   public async prismaCreateOne<Girl>(rest: Omit<Girl, "id">): Promise<number> {
