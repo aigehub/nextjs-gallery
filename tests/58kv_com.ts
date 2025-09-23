@@ -92,7 +92,7 @@ async function authAlbum() {
       fs.writeFileSync(save_token_path, JSON.stringify(jsonData, null, 2));
       return jsonData;
     } else {
-      console.log(res.status, await res.text(), await res.json());
+      console.log(res.status, await res.text());
       return null;
     }
   } catch (error) {
@@ -153,7 +153,7 @@ async function getPageData(queryPageParam: queryPageParamType) {
     );
     return jsonData;
   } else {
-    console.log(res.status, await res.text(), await res.json());
+    console.log(res.status, await res.text());
     return null;
   }
 }
