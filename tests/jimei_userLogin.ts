@@ -31,7 +31,7 @@ async function userLogin() {
     parseCockie(cockies);
     return true;
   } else {
-    console.log("jimei", res.status, await res.text());
+    console.log("jimei", res.status, res.statusText, await res.text());
   }
   return false;
 }
@@ -62,7 +62,7 @@ function parseCockie(cockies: string[]) {
   if (data_string) {
     console.log("jimei", "data_string:", data_string);
     //设置半小时过期
-    data.expires = new Date(Date.now() + 1000 * 60 * 30).toISOString();
+    data.expires = new Date(Date.now() + 1000 * 60 * 30).toUTCString();
   }
   fs.writeFileSync(jimei_cockie_info, JSON.stringify(data, null, 2), {
     encoding: "utf-8",
@@ -81,6 +81,7 @@ async function userAuth() {
       "sec-fetch-mode": "cors",
       "sec-fetch-site": "same-origin",
       // "cookie": "provinceCode=26; __verify_token=MTM5LjIyNi4xNjEuNTg6MTc1ODEzMDYyMDY0NTpjYmU2YmU3OWJlNWYwZDBjMTQyNTkwNDNiOGU1MTZhYTA5YTE0NzU5OTQ3NGE3ZjJjOGEwMzljOGZiMDEzMzUz; connect.sid=s%3Aa0155c61e8548f28a2a70e762be56dc2.dCT5Nig0V0deip3d9pu6gqPdwoZqQQzUG3XapLU%2BS8M",
+      // "cookie":COCKIES.join(";"),
       Referer: "https://pig.zwidi.cn/homePage.html",
     },
     body: null,
@@ -98,27 +99,28 @@ const json = {
 };
 type COCKIES_TYPE = typeof json;
 
-async function checkExpires() {
-  try {
-    if (fs.existsSync(jimei_cockie_info) == false) {
-      return await userLogin();
-    }
-    const res = fs.readFileSync(jimei_cockie_info, { encoding: "utf-8" });
-    const cockie: COCKIES_TYPE = JSON.parse(res);
-    COCKIES = cockie.cockies;
-    if (Date.now() > Date.parse(cockie.expires)) {
-      return await userLogin();
-    }
-    console.log("jimei cockie is valid:", cockie, COCKIES);
-    return true;
-  } catch (error) {
-    console.log("jimei read cockie.json error:", error);
-    return await userLogin();
-  }
+async function checkTokenExpires() {
+  // try {
+  //   if (fs.existsSync(jimei_cockie_info) == false) {
+  //     return await userLogin();
+  //   }
+  //   const res = fs.readFileSync(jimei_cockie_info, { encoding: "utf-8" });
+  //   const cockie: COCKIES_TYPE = JSON.parse(res);
+  //   COCKIES = cockie.cockies;
+  //   if (Date.now() > Date.parse(cockie.expires)) {
+  //     return await userLogin();
+  //   }
+  //   console.log("jimei cockie is valid:", cockie, COCKIES);
+  //   return true;
+  // } catch (error) {
+  // console.log("jimei read cockie.json error:", error);
+  return await userLogin();
+  // }
 }
-export { checkExpires, userAuth, userLogin };
+export { checkTokenExpires, userAuth, userLogin };
 // userAuth();
 // userLogin();
+// userAuth();
 
 // checkExpires().then(async (isLoginValid) => {
 //   if (!isLoginValid){
