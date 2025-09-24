@@ -180,7 +180,7 @@ async function loadHomePageData({
   page_number: number;
   page_size: number;
 }) {
-  await checkExpires();
+  console.log(JSON.stringify(master_667788_headers, null, 2));
   const res = fetch(
     `https://pig.zwidi.cn/api/girl/homePageData?p_number=${p_number}&c_number=${c_number}&rangeRef=${rangeRef}&page_number=${page_number}&page_size=${page_size}`,
     {
@@ -194,7 +194,7 @@ async function loadHomePageData({
   const jsonObj = await data.json();
   if (jsonObj.success !== true) {
     console.log(`jimei loadHomePageData fetch error`, jsonObj);
-    if (jsonObj.message == "锁定") return "锁定";
+    if (jsonObj.message == "锁定" || jsonObj.message == "会话已过期") return jsonObj.message;
   } else {
     const data_array: Array<object> = jsonObj.data;
     console.log(`==》page ${page_number}，数据数量：${data_array.length}:\n`, data_array[0]);
@@ -343,6 +343,10 @@ async function getGirlDetails(id: number, retryCount: number = 0, maxRetries: nu
       console.log("jimei getGirlDetails", `fetch error`, jsonObj);
       return null;
     } else {
+      if (jsonObj.messaage == "锁定" || jsonObj.messaage == "会话已过期") {
+        console.log(res, "被锁定了，不再继续请求");
+        return jsonObj.messaage;
+      }
       console.log(`✅ fetch success for url=${url} `, jsonObj);
       const data_obj: any = jsonObj.data;
       console.log(`girl id=${id} details:\n`, data_obj);
@@ -404,7 +408,7 @@ export {
 
 /// test code load all cities data
 async function testLoadAllCitiesGirlsData() {
-  await checkExpires();
+  // await checkExpires();
   const conut = provinces.city.length;
   for (let i = 0; i < conut; i++) {
     const c = provinces.city[i];
@@ -416,8 +420,8 @@ async function testLoadAllCitiesGirlsData() {
       page_number: 1,
       page_size: 500,
     });
-    if (res == "锁定") {
-      console.log("被锁定了，不再继续请求")
+    if (res == "锁定" || res == "会话已过期") {
+      console.log(res, "被锁定了，不再继续请求");
       break;
     }
     await loadHomePageData({
@@ -447,15 +451,26 @@ async function testSaveAllGirlsDetails() {
       const data_array: Array<{ id: number }> = JSON.parse(content);
 
       // 使用 limit 来限制并行请求
-      const requests = data_array.map(
-        (item) => limit(() => getGirlDetails(item.id, 0, 3).then(() => {})) // 包裹请求以确保并发限制
-      );
-      allRequests.push(...requests); // 将每个请求添加到请求列表中
+      let requests: any[] = [];
+      for (const item of data_array) {
+        requests.push(
+          limit(
+            async () => {
+              const res = await getGirlDetails(item.id, 0, 3);
+              if (res instanceof String && (res == "锁定" || res == "会话已过期")) {
+                console.log(res, "被锁定了，不再继续请求");
+                throw Error("被锁定了，不再继续请求");
+              }
+            } // 包裹请求以确保并发限制
+          )
+        );
+        allRequests.push(...requests); // 将每个请求添加到请求列表中
+      }
     }
   }
 
   // 等待所有请求完成
-  await Promise.allSettled(allRequests);
+  await Promise.all(allRequests);
 
   // 最后保存
 
@@ -490,11 +505,11 @@ async function testSumGilrs() {
 }
 // testSumGilrs()
 import { insertOne, mapData, queryData } from "../src/app/libs/data";
-import { COCKIES, checkExpires } from "./jimei_userLogin";
+import { COCKIES, checkTokenExpires } from "./jimei_userLogin";
 // import data from "../json/all/all_girls_details.json" with {type: "json"};
 
 async function spide_jimei() {
-  const res = await checkExpires();
+  const res = await checkTokenExpires();
   if (!res) {
     return;
   }
