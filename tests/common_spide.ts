@@ -8,26 +8,6 @@ import { mapData } from "@/app/libs/data";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
 
-export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>, platforn_name: string): Promise<number> {
-  const res = await girlsPlatform.findFirst(data);
-  if (res) {
-    // console.log(platforn_name,"已存在", data?.name, data?.code_ref);
-    return 0;
-  }
-  const { id, ...rest } = data;
-  try {
-    const count = await girlsPlatform.prismaCreateOne(rest);
-    // console.log(count);
-    console.log(platforn_name, "新增", data.name, data.titlename, data.address);
-    if (count) {
-      return 1;
-    }
-    return 0;
-  } catch (e) {
-    console.log(platforn_name, " not insert", e);
-    return 0;
-  }
-}
 /**
  * 步骤：
  * 1、检查 token 是否过期
@@ -37,7 +17,7 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
  * @param param0
  * @returns
  */
-export async function start_spide<GirlModel>({
+export async function runStartSpider<GirlModel>({
   girlsPlatform,
   platforn_name = "",
   checkTokenExpires,
@@ -83,6 +63,26 @@ export async function start_spide<GirlModel>({
       }
       console.log(platforn_name, "薪增的个数:", add_count);
     });
+  }
+}
+export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>, platforn_name: string): Promise<number> {
+  const res = await girlsPlatform.findFirst(data);
+  if (res) {
+    // console.log(platforn_name,"已存在", data?.name, data?.code_ref);
+    return 0;
+  }
+  const { id, ...rest } = data;
+  try {
+    const count = await girlsPlatform.prismaCreateOne(rest);
+    // console.log(count);
+    console.log(platforn_name, "新增", data.name, data.titlename, data.address);
+    if (count) {
+      return 1;
+    }
+    return 0;
+  } catch (e) {
+    console.log(platforn_name, " not insert", e);
+    return 0;
   }
 }
 /**
@@ -236,7 +236,7 @@ const zz = new ZhizunPlatform();
 
 // jimei
 const jimei = new JimeiPlatform();
-start_spide<Girl>({
+runStartSpider<Girl>({
   girlsPlatform: jimei,
   platforn_name: "jimei",
   checkTokenExpires: checkTokenExpiresJimei,

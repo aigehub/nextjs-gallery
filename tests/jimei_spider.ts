@@ -158,15 +158,18 @@ const guest_headers = {
   // "sec-fetch-site": "same-origin",
   // "Referer": "https://pig.zwidi.cn/homePage.html"
 };
-const master_667788_headers = {
-  //客服667788
-  accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-  "accept-language": "zh-CN,zh;q=0.9",
-  "cache-control": "max-age=0",
-  priority: "u=0, i",
-  cookie: COCKIES.join(";"),
-  Referer: "https://pig.zwidi.cn/homePage.html",
-};
+// const master_667788_headers = getHeaders();
+function getHeaders() {
+  return {
+    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "zh-CN,zh;q=0.9",
+    "cache-control": "max-age=0",
+    priority: "u=0, i",
+    cookie: COCKIES.join(";"),
+    Referer: "https://pig.zwidi.cn/homePage.html",
+  };
+}
+
 async function loadHomePageData({
   p_number = 26,
   c_number = 260008,
@@ -180,11 +183,11 @@ async function loadHomePageData({
   page_number: number;
   page_size: number;
 }) {
-  console.log(JSON.stringify(master_667788_headers, null, 2));
+  console.log("jimei loadHomePageData",JSON.stringify(getHeaders(), null, 2));
   const res = fetch(
     `https://pig.zwidi.cn/api/girl/homePageData?p_number=${p_number}&c_number=${c_number}&rangeRef=${rangeRef}&page_number=${page_number}&page_size=${page_size}`,
     {
-      headers: master_667788_headers,
+      headers: getHeaders(),
       body: null,
       method: "GET",
     }
@@ -197,7 +200,7 @@ async function loadHomePageData({
     if (jsonObj.message == "锁定" || jsonObj.message == "会话已过期") return jsonObj.message;
   } else {
     const data_array: Array<object> = jsonObj.data;
-    console.log(`==》page ${page_number}，数据数量：${data_array.length}:\n`, data_array[0]);
+    console.log(`==》page ${page_number}，数据数量：${data_array.length}:`, data_array[0]);
     if (data_array.length > 0) {
       //save json to local file system
       let rangeRefName = "";
@@ -333,7 +336,7 @@ async function getGirlDetails(id: number, retryCount: number = 0, maxRetries: nu
   try {
     const url = `https://pig.zwidi.cn/api/girl/getGirlById/${id}`;
     const res = await fetch(url, {
-      headers: master_667788_headers,
+      headers: getHeaders(),
       body: null,
       method: "GET",
     });
@@ -343,9 +346,9 @@ async function getGirlDetails(id: number, retryCount: number = 0, maxRetries: nu
       console.log("jimei getGirlDetails", `fetch error`, jsonObj);
       return null;
     } else {
-      if (jsonObj.messaage == "锁定" || jsonObj.messaage == "会话已过期") {
+      if (jsonObj.message == "锁定" || jsonObj.message == "会话已过期") {
         console.log(res, "被锁定了，不再继续请求");
-        return jsonObj.messaage;
+        return jsonObj.message;
       }
       console.log(`✅ fetch success for url=${url} `, jsonObj);
       const data_obj: any = jsonObj.data;
@@ -514,7 +517,7 @@ async function spide_jimei() {
     return;
   }
   // await testLoadAllCitiesGirlsData();
-  // await testSaveAllGirlsDetails();
+  await testSaveAllGirlsDetails();
   const data = await import("../json/all/all_girls_details.json");
   const map_data = await mapData(data.default);
   console.log("map_data.length:", map_data.length, map_data[0]);
@@ -528,15 +531,15 @@ async function spide_jimei() {
 
 async function count_total() {
   const result = await queryData({});
-  console.log(result.total);
+  console.log("jimei count_total",result.total);
 }
 
-// try {
-//   spide_jimei();
-//   count_total();
-// } catch (e) {
-//   console.log("spide_jimei error:", e);
-//   if (e instanceof Error) {
-//     console.log(e.stack);
-//   }
-// }
+try {
+  // spide_jimei();
+  // count_total();
+} catch (e) {
+  console.log("spide_jimei error:", e);
+  if (e instanceof Error) {
+    console.log(e.stack);
+  }
+}
