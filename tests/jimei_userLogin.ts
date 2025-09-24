@@ -3,7 +3,7 @@
  */
 import fs from "fs";
 import { mkdirIfNotExists } from "./utils";
-export let COCKIES: string[] = [];
+export  let  COCKIES: string[] = [];
 async function userLogin() {
   console.log("jimei", "userLogin");
   const res = await fetch("https://pig.zwidi.cn/api/auth/userLogin", {
