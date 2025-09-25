@@ -9,6 +9,7 @@ import Pagination from "./pagination";
 import SmartImage from "./ZZImage";
 import SmartVideo from "./ZZVideo";
 import clsx from "clsx";
+import { XCircleIcon } from "@heroicons/react/24/solid";
 const PAGE_SIZE = 20; // 每页显示的图片数量
 const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
 
@@ -120,7 +121,8 @@ function ModelGirl({
       </PhotoProvider>
       {/* 视频弹窗 */}
       {videoOpen && videoSrc && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050" onClick={() => setVideoOpen(false)}>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050 text-white" >
+          <XCircleIcon className="fixed top-6 right-6  h-6 w-6 cursor-pointer"  onClick={() => setVideoOpen(false)} />
           <SmartVideo isLargePreview={true} plat={plat} src={videoSrc} controls autoPlay style={{ maxHeight: "80vh", maxWidth: "90vw" }} />
         </div>
       )}
@@ -217,8 +219,12 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
       let videoArr: any[] | null = item.video ? JSON.parse(item.video) : null;
       return videoArr ? videoArr.filter(Boolean) : [];
     case 2: //"zhizun"
-      let medium = item.medium ? JSON.parse(item.medium) : null;
-      return medium ? medium.filter(Boolean) : [];
+      let medium: any[] | null = item.medium ? JSON.parse(item.medium) : null;
+      let authentications: any[] | null = item.authentications ? JSON.parse(item.authentications) : null;
+      medium = medium ? medium.filter(Boolean) : [];
+      authentications = authentications ? authentications.filter(Boolean) : [];
+      medium.push(authentications);
+      return medium;
     default:
     case 1: //"jimei"
       return Array.from({ length: 3 })

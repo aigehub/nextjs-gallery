@@ -46,7 +46,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
     };
   }, [src, plat]);
 
-  if (!blobUrl) return <div className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}>视频加载中...</div>;
+  if (!blobUrl) return <div className={`bg-black flex items-center justify-center text-center rounded-lg transition-opacity duration-500 w-full h-full ${className}`}>视频加载中...</div>;
   return (
     <video
       ref={ref}
