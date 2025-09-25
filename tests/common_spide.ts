@@ -215,7 +215,7 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
 
 const zz = new ZhizunPlatform();
 //zhizun
- start_spide<ZhizunGirl>({
+ runStartSpider<ZhizunGirl>({
    girlsPlatform: zz,
    platforn_name: "zhizun",
    checkTokenExpires: checkTokenExpires,
@@ -225,7 +225,7 @@ const zz = new ZhizunPlatform();
  });
  const kv58 = new Kv58Platform();
 // //58kv
- start_spide<Girl58Kv>({
+ runStartSpider<Girl58Kv>({
    girlsPlatform: kv58,
    platforn_name: "58kv",
 checkTokenExpires: async () => (await checkExpires58()) !== null,
