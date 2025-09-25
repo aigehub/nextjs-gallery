@@ -215,24 +215,24 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
 
 const zz = new ZhizunPlatform();
 //zhizun
-// start_spide<ZhizunGirl>({
-//   girlsPlatform: zz,
-//   platforn_name: "zhizun",
-//   checkTokenExpires: checkTokenExpires,
-//   mapData: async (data) => await zz.mapData(data),
-//   insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
-//   all_data_file_path: "../json/all/zhizun_all_girls_details.json",
-// });
-// const kv58 = new Kv58Platform();
+ start_spide<ZhizunGirl>({
+   girlsPlatform: zz,
+   platforn_name: "zhizun",
+   checkTokenExpires: checkTokenExpires,
+   mapData: async (data) => await zz.mapData(data),
+   insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
+   all_data_file_path: "../json/all/zhizun_all_girls_details.json",
+ });
+ const kv58 = new Kv58Platform();
 // //58kv
-// start_spide<Girl58Kv>({
-//   girlsPlatform: kv58,
-//   platforn_name: "58kv",
-//   checkTokenExpires: async () => (await checkExpires58()) !== null,
-//   insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
-//   mapData: async (data) => await kv58.mapData(data),
-//   all_data_file_path: "../json/all/all_58kv_data.json",
-// });
+ start_spide<Girl58Kv>({
+   girlsPlatform: kv58,
+   platforn_name: "58kv",
+checkTokenExpires: async () => (await checkExpires58()) !== null,
+insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
+mapData: async (data) => await kv58.mapData(data),
+all_data_file_path: "../json/all/all_58kv_data.json",
+ });
 
 // jimei
 const jimei = new JimeiPlatform();
