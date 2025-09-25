@@ -3,43 +3,42 @@
   "data": {
     "product": [
       {
-        "id": 4827,
+        "id": 4825,
         "status": true,
         "valid": true,
         "recommend": false,
         "agent_id": 1763,
-        "name": "沪972 03年 166D 46kg",
-        "image": "[\"4827/1901727726386024448.jpg\", \"4827/1901727727258439680.jpg\", \"4827/1901727727585595392.jpg\", \"4827/1901727728378318848.jpg\", \"4827/1901727729124904960.jpg\", \"4827/1901727729997320192.jpg\", \"4827/1901727730941038592.jpg\", \"4827/1901727731683430400.jpg\", \"4827/1901727732421627904.jpg\"]",
-        "media": "[]",
-        "tag": "[27]",
-        "authentication": "[\"4827/1909839037250670592\"]",
+        "name": "沪341 04年 166G",
+        "image": "[\"4825/1901727714998489088.jpg\", \"4825/1901727715908653056.jpg\", \"4825/1901727716852371456.jpg\", \"4825/1901727717682843648.jpg\", \"4825/1901727718702059520.jpg\"]",
+        "media": "[\"4825/1910344858829066240\"]",
+        "tag": "[39, 40]",
+        "authentication": "[\"4825/1909839079512477696\"]",
         "premium": true,
-        "code": 7133,
+        "code": 2543,
         "city_code": 100,
-        "district_code": 102,
+        "district_code": 109,
         "address": "",
         "certification": true,
-        "poster": "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1908218961296625664.jpg",
-        "random_index": "1995",
+        "poster": "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1908218963804819456.jpg",
+        "random_index": "1970",
         "city_name": "上海",
-        "district_name": "浦东",
+        "district_name": "静安",
         "tag_name": [
-          "学妹兼职"
+          "清纯型",
+          "甜美型"
         ],
         "images": [
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727726386024448.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727727258439680.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727727585595392.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727728378318848.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727729124904960.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727729997320192.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727730941038592.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727731683430400.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1901727732421627904.jpg"
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1901727714998489088.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1901727715908653056.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1901727716852371456.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1901727717682843648.jpg",
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1901727718702059520.jpg"
         ],
-        "medium": [],
+        "medium": [
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1910344858829066240"
+        ],
         "authentications": [
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4827/1909839037250670592"
+          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/4825/1909839079512477696"
         ]
       }
     ]
