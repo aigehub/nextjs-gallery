@@ -57,6 +57,7 @@ function ModelGirl({
   // ...existing code...
   const images = getAllImageUrls(item, plat);
   const videos = getAllVideoUrls(item, plat);
+  const posters = getAllPoster(item, plat);
 
   // 视频弹窗状态
   const [videoOpen, setVideoOpen] = useState(false);
@@ -117,12 +118,12 @@ function ModelGirl({
       {/* 图片和视频模块 */}
       <PhotoProvider>
         {getImageComponent(images, item, plat, item_width)}
-        {getVideoComponent(videos, item, item_width, setVideoSrc, setVideoOpen, plat)}
+        {getVideoComponent(videos, posters, item, item_width, setVideoSrc, setVideoOpen, plat)}
       </PhotoProvider>
       {/* 视频弹窗 */}
       {videoOpen && videoSrc && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050 text-white" >
-          <XCircleIcon className="fixed top-6 right-6  h-6 w-6 cursor-pointer"  onClick={() => setVideoOpen(false)} />
+          <XCircleIcon className="fixed top-6 right-6  h-6 w-6 cursor-pointer" onClick={() => setVideoOpen(false)} />
           <SmartVideo isLargePreview={true} plat={plat} src={videoSrc} controls autoPlay style={{ maxHeight: "80vh", maxWidth: "90vw" }} />
         </div>
       )}
@@ -162,6 +163,7 @@ function getImageComponent(images: string[], item: any, plat: number, item_width
 
 function getVideoComponent(
   videos: string[],
+  posters: string[],
   item: any,
   item_width: string,
   setVideoSrc: React.Dispatch<React.SetStateAction<string | null>>,
@@ -178,7 +180,7 @@ function getVideoComponent(
         setVideoOpen(true);
       }}
     >
-      <SmartVideo plat={plat} key={`${item.id}${item.name}video-${idx}`} src={video} width={300} className={item_width} />
+      <SmartVideo plat={plat} key={`${item.id}${item.name}video-${idx}`} poster={posters.length > 0 ? posters[idx] : undefined} src={video} width={300} className={item_width} />
       <span className="absolute text-white text-3xl">&#9654;</span>
     </div>
   ));
@@ -236,3 +238,11 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
         .filter(Boolean) as string[];
   }
 }
+function getAllPoster(item: any, plat: number) {
+  let posters: any[] = [];
+  if (item.poster) {
+    posters.push(item.poster)
+  }
+  return posters
+}
+
