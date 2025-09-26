@@ -1,6 +1,6 @@
 "use client";
 
-import Hls from "hls.js";
+import Hls from "./hls.mjs";
 import { useEffect, useRef, useState } from "react";
 import { fetchImageAsBase64 } from "./ZZImage";
 
@@ -13,6 +13,7 @@ interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
 /**
  * 在前端 fetch 视频得到 Blob URL，再用 <video src="blob:...">
  */
+
 export default function SmartVideo({ isLargePreview = false, src, plat, poster, className, ...props }: SmartVideoProps) {
   const [blobUrl, setBlobUrl] = useState<string | undefined>(undefined);
   const [posterrSrc, setPosterrSrc] = useState<string>("");
@@ -20,23 +21,33 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
   useEffect(() => {
     if (!src) return;
     if (plat == 2 && ref.current) {
-      ref.current.preload = "none"
+      ref.current.preload = "none";
     }
     if (plat == 2) {
+      if ((src as unknown) instanceof Array) {
+        // console.log("has more than one video link", src);
+        src = src[0];
+        // console.log("after video link", src);
+      }
       const videoSrc = src + "/index.m3u8";
-      (async () => {
-        const coverImage = src + "/index.jpg"
-        const result = await fetchImageAsBase64(coverImage)
-        setPosterrSrc(result)
-      })().catch(console.error);
+      // (async () => {
+      //   const coverImage = src + "/index.jpg";
+      //   const result = await fetchImageAsBase64(coverImage);
+      //   setPosterrSrc(result);
+      // })().catch((e)=>{});
       if (Hls.isSupported()) {
-        var hls = new Hls();
+        let hls = new Hls();
         hls.loadSource(videoSrc);
-        if (ref.current)
-          hls.attachMedia(ref.current);
+
+        if (ref.current) hls.attachMedia(ref.current);
+        return () => {
+          if (ref.current) ref.current.src = "";
+          ref.current = null;
+          hls.destroy();
+        };
       }
     } else {
-      setBlobUrl(src)
+      setBlobUrl(src);
     }
     return () => {
       if (ref.current) ref.current.src = "";
@@ -51,7 +62,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
       {...props}
       controls={isLargePreview}
       src={blobUrl}
-      poster={posterrSrc}
+      // poster={posterrSrc}
       className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}
     />
   );

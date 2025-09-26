@@ -225,7 +225,7 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
       let authentications: any[] | null = item.authentications ? JSON.parse(item.authentications) : null;
       medium = medium ? medium.filter(Boolean) : [];
       authentications = authentications ? authentications.filter(Boolean) : [];
-      medium.push(authentications);
+      medium.push(...authentications);
       return medium;
     default:
     case 1: //"jimei"
