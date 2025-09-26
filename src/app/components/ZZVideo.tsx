@@ -14,7 +14,7 @@ interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
  * 在前端 fetch 视频得到 Blob URL，再用 <video src="blob:...">
  */
 export default function SmartVideo({ isLargePreview = false, src, plat, poster, className, ...props }: SmartVideoProps) {
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | undefined>(undefined);
   const [posterrSrc, setPosterrSrc] = useState<string>("");
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -36,10 +36,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
           hls.attachMedia(ref.current);
       }
     } else {
-      if (ref.current) {
-        ref.current.preload = "auto"
-        ref.current.src = src
-      }
+      setBlobUrl(src)
     }
     return () => {
       if (ref.current) ref.current.src = "";
@@ -53,6 +50,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
       ref={ref}
       {...props}
       controls={isLargePreview}
+      src={blobUrl}
       poster={posterrSrc}
       className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}
     />
