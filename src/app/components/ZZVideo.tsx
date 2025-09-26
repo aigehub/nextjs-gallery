@@ -1,6 +1,8 @@
 "use client";
 
+import Hls from "hls.js";
 import { useEffect, useRef, useState } from "react";
+import { fetchImageAsBase64 } from "./ZZImage";
 
 interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
   src: string;
@@ -13,30 +15,47 @@ interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
  */
 export default function SmartVideo({ isLargePreview = false, src, plat, poster, className, ...props }: SmartVideoProps) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [posterrSrc, setPosterrSrc] = useState<string>("");
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (!src) return;
-    if (plat == 2) {
-      let currentUrl: string | null = null;
+    if (plat == 2 && poster) {
       (async () => {
-        try {
-          const res = await fetch(src);
-          if (!res || !res.ok) throw new Error("HTTP " + res.status);
-          const blob = await res.blob();
-          currentUrl = URL.createObjectURL(blob);
-          setBlobUrl(currentUrl);
-        } catch (e) {
-          console.log(e);
-          if (e instanceof Error) {
-            console.log(e.stack);
-          }
-        }
-      })().catch(console.error);
+        if (!poster.endsWith(".jpg"))
+          poster += "/index.jpg"
+        const src = await fetchImageAsBase64(poster)
+        setPosterrSrc(src)
+      })()
+    }
+    if (plat == 2) {
+      const videoSrc = src + "/index.m3u8";
+      // let currentUrl: string | null = null;
+      // (async () => {
+      //   try {
+      //     const res = await fetch(src);
+      //     if (!res || !res.ok) throw new Error("HTTP " + res.status);
+      //     const blob = await res.blob();
+      //     currentUrl = URL.createObjectURL(blob);
+      //     setBlobUrl(currentUrl);
+      //   } catch (e) {
+      //     console.log(e);
+      //     if (e instanceof Error) {
+      //       console.log(e.stack);
+      //     }
+      //   }
+      // })().catch(console.error);
 
-      // 组件卸载时释放 blob URL
-      return () => {
-        if (currentUrl) URL.revokeObjectURL(currentUrl);
-      };
+      // // 组件卸载时释放 blob URL
+      // return () => {
+      //   if (currentUrl) URL.revokeObjectURL(currentUrl);
+      // };
+      setBlobUrl(videoSrc)
+      if (Hls.isSupported()) {
+        var hls = new Hls();
+        hls.loadSource(videoSrc);
+        if (ref.current)
+          hls.attachMedia(ref.current);
+      }
     } else {
       setBlobUrl(src);
     }
@@ -52,7 +71,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
       ref={ref}
       {...props}
       controls={isLargePreview}
-      poster={poster}
+      poster={posterrSrc}
       src={blobUrl} // blob:xxxx
       className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}
     />
