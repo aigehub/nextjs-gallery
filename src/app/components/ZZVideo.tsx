@@ -49,7 +49,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
       // return () => {
       //   if (currentUrl) URL.revokeObjectURL(currentUrl);
       // };
-      setBlobUrl(videoSrc)
+      // setBlobUrl(videoSrc)
       if (Hls.isSupported()) {
         var hls = new Hls();
         hls.loadSource(videoSrc);
