@@ -19,37 +19,16 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (!src) return;
-    if (plat == 2 && poster) {
-      (async () => {
-        if (!poster.endsWith(".jpg"))
-          poster += "/index.jpg"
-        const src = await fetchImageAsBase64(poster)
-        setPosterrSrc(src)
-      })()
+    if (plat == 2 && ref.current) {
+      ref.current.preload = "none"
     }
     if (plat == 2) {
       const videoSrc = src + "/index.m3u8";
-      // let currentUrl: string | null = null;
-      // (async () => {
-      //   try {
-      //     const res = await fetch(src);
-      //     if (!res || !res.ok) throw new Error("HTTP " + res.status);
-      //     const blob = await res.blob();
-      //     currentUrl = URL.createObjectURL(blob);
-      //     setBlobUrl(currentUrl);
-      //   } catch (e) {
-      //     console.log(e);
-      //     if (e instanceof Error) {
-      //       console.log(e.stack);
-      //     }
-      //   }
-      // })().catch(console.error);
-
-      // // 组件卸载时释放 blob URL
-      // return () => {
-      //   if (currentUrl) URL.revokeObjectURL(currentUrl);
-      // };
-      // setBlobUrl(videoSrc)
+      (async () => {
+        const coverImage = src + "/index.jpg"
+        const result = await fetchImageAsBase64(coverImage)
+        setPosterrSrc(result)
+      })().catch(console.error);
       if (Hls.isSupported()) {
         var hls = new Hls();
         hls.loadSource(videoSrc);
@@ -57,7 +36,10 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
           hls.attachMedia(ref.current);
       }
     } else {
-      setBlobUrl(src);
+      if (ref.current) {
+        ref.current.preload = "auto"
+        ref.current.src = src
+      }
     }
     return () => {
       if (ref.current) ref.current.src = "";
@@ -65,14 +47,13 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
     };
   }, [src, plat]);
 
-  if (!blobUrl) return <div className={`bg-black flex items-center justify-center text-center rounded-lg transition-opacity duration-500 w-full h-full ${className}`}>视频加载中...</div>;
+  // if (!blobUrl) return <div className={`bg-black flex items-center justify-center text-center rounded-lg transition-opacity duration-500 w-full h-full ${className}`}>视频加载中...</div>;
   return (
     <video
       ref={ref}
       {...props}
       controls={isLargePreview}
       poster={posterrSrc}
-      src={blobUrl} // blob:xxxx
       className={`bg-black rounded-lg transition-opacity duration-500 w-full h-full ${className}`}
     />
   );
