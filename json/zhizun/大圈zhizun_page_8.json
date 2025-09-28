@@ -1,48 +1,6 @@
 {
   "code": 0,
   "data": {
-    "product": [
-      {
-        "id": 14603,
-        "status": true,
-        "valid": true,
-        "recommend": false,
-        "agent_id": 1763,
-        "name": "沪1912 06年 175C 44kg",
-        "image": "[\"14603/1969673669114335232.jpg\", \"14603/1969673706229731328.jpg\", \"14603/1969673796923166720.jpg\", \"14603/1969673816477011968.jpg\", \"14603/1969673833312948224.jpg\", \"14603/1969673892238725120.jpg\", \"14603/1969673923247214592.jpg\"]",
-        "media": "[]",
-        "tag": "[12, 33, 34, 35]",
-        "authentication": "[\"14603/1969675793621585920\"]",
-        "premium": true,
-        "code": 8343,
-        "city_code": 100,
-        "district_code": 104,
-        "address": "",
-        "certification": true,
-        "poster": "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673509827252224.jpg",
-        "random_index": "1990",
-        "city_name": "上海",
-        "district_name": "普陀",
-        "tag_name": [
-          "舌吻",
-          "可外",
-          "可夜",
-          "大长腿"
-        ],
-        "images": [
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673669114335232.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673706229731328.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673796923166720.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673816477011968.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673833312948224.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673892238725120.jpg",
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969673923247214592.jpg"
-        ],
-        "medium": [],
-        "authentications": [
-          "https://test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com:2000/14603/1969675793621585920"
-        ]
-      }
-    ]
+    "product": null
   }
 }
