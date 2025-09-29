@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
   const headersList = await headers();
-  const ua = headersList.get("user-agenet");
+  const ua = headersList.get("user-agent");
   const referer = headersList.get("referer");
   console.log("ua:", ua, "referer:", referer, "origin:", req.nextUrl.origin);
   if (!ua || referer !== "jaysen") {
@@ -33,6 +33,13 @@ export async function GET(req: NextRequest) {
       district_name: district,
       platform:plat,
     });
+  function jsonReplacer(key: string, value: any) {
+  // 把 BigInt 转成 string
+    const isBigint= typeof value === 'bigint'
+    if(isBigint)
+      console.log("isBigint:",isBigint, "key,value",key,value)
+    return  isBigint? value.toString() : value;
+  }
   const newJson = { current_page: page, limit: data.page_data.length, ...data };
-  return new Response(JSON.stringify(newJson, null, 2), { status: 200 });
+  return new Response(JSON.stringify(newJson, jsonReplacer, 2), { status: 200 });
 }
