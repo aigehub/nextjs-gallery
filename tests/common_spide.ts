@@ -2,7 +2,7 @@ import { Girl, Girl58Kv, ZhizunGirl } from "@/generated/prisma";
 import prisma from "../prisma/database_api";
 import { checkTokenExpires, loadAllData as loadAllDataZz, saveAllDetails as saveAllDetailsZz } from "./zhizun";
 import { checkExpires as checkExpires58, loadAllData, saveAllDetails } from "./58kv_com";
-import { checkTokenExpires  as checkTokenExpiresJimei} from "./jimei_userLogin";
+import { checkTokenExpires as checkTokenExpiresJimei } from "./jimei_userLogin";
 import { testLoadAllCitiesGirlsData, testSaveAllGirlsDetails } from "./jimei_spider";
 import { mapData } from "@/app/libs/data";
 
@@ -34,16 +34,16 @@ export async function runStartSpider<GirlModel>({
   needSpideAllData?: boolean;
   platforn_name?: string;
 }) {
-  console.log("common spider start checkTokenExpires：")
+  console.log("common spider start checkTokenExpires：");
   if (checkTokenExpires) {
     const check = await checkTokenExpires();
     if (!check) {
-      console.log("common spidercheckTokenExpires result：",platforn_name, "token 过期");
+      console.log("common spidercheckTokenExpires result：", platforn_name, "token 过期");
       return;
     }
     console.log(platforn_name, "token 有效");
   }
-  console.log("needSpideAllData_arg:", needSpideAllData_arg)
+  console.log("needSpideAllData_arg:", needSpideAllData_arg);
   if (needSpideAllData) {
     await girlsPlatform.loadAllData();
     await girlsPlatform.saveAllDetails();
@@ -75,7 +75,7 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
   try {
     const count = await girlsPlatform.prismaCreateOne(rest);
     // console.log(count);
-    console.log(platforn_name, "新增", data.name, data.titlename, data.address);
+    console.log(platforn_name, "新增", data.name ?? "", data.titlename ?? "", data.address ?? "");
     if (count) {
       return 1;
     }
@@ -225,22 +225,22 @@ const zz = new ZhizunPlatform();
  });
  const kv58 = new Kv58Platform();
 // //58kv
- runStartSpider<Girl58Kv>({
-   girlsPlatform: kv58,
-   platforn_name: "58kv",
-checkTokenExpires: async () => (await checkExpires58()) !== null,
-insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
-mapData: async (data) => await kv58.mapData(data),
-all_data_file_path: "../json/all/all_58kv_data.json",
- });
+//  runStartSpider<Girl58Kv>({
+//    girlsPlatform: kv58,
+//    platforn_name: "58kv",
+// checkTokenExpires: async () => (await checkExpires58()) !== null,
+// insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
+// mapData: async (data) => await kv58.mapData(data),
+// all_data_file_path: "../json/all/all_58kv_data.json",
+//  });
 
 // jimei
-const jimei = new JimeiPlatform();
-runStartSpider<Girl>({
-  girlsPlatform: jimei,
-  platforn_name: "jimei",
-  checkTokenExpires: checkTokenExpiresJimei,
-  insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
-  mapData: async (data) => await mapData(data),
-  all_data_file_path: "../json/all/all_girls_details.json",
-});
+// const jimei = new JimeiPlatform();
+// runStartSpider<Girl>({
+//   girlsPlatform: jimei,
+//   platforn_name: "jimei",
+//   checkTokenExpires: checkTokenExpiresJimei,
+//   insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
+//   mapData: async (data) => await mapData(data),
+//   all_data_file_path: "../json/all/all_girls_details.json",
+// });

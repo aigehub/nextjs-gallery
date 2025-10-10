@@ -181,7 +181,7 @@ async function loadAllData() {
   }
 }
 async function saveAllDetails() {
-  await checkExpires();
+  // await checkExpires();
 
   if (!tokenObj) {
     console.log("tokenObj is null");

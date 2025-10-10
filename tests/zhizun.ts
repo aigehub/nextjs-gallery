@@ -18,7 +18,9 @@ async function getProduct(params: QUERY_BODY = data) {
   } else {
     // console.log("已有token:", token);
   }
-
+  console.log("start getProduct");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000); // 3秒超时
   const res = await fetch("https://www.zz2025.cc/v1/product", {
     headers: {
       accept: "application/json, text/plain, */*",
@@ -39,7 +41,9 @@ async function getProduct(params: QUERY_BODY = data) {
     },
     body: JSON.stringify(params),
     method: "POST",
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
   if (res.status !== 200) {
     console.log(res, res.status, res.statusText);
     return null;
@@ -157,6 +161,7 @@ async function getTag() {
 }
 
 async function getDistrict() {
+  console.log("start getDistrict data");
   const res = await fetch("https://www.zz2025.cc/v1/district", {
     headers: {
       accept: "application/json, text/plain, */*",
@@ -197,7 +202,9 @@ const data = {
 type QUERY_BODY = typeof data;
 
 async function loadAllData() {
+  console.log("loadAllData start");
   for (let i = 1; i <= 100; i++) {
+    console.log("获取中圈数据：page", i);
     data.page_index = i;
     const jsondata = await getProduct({ ...data, page_index: i });
     if (!jsondata || jsondata.code !== 0 || !jsondata.data.product) {
@@ -206,6 +213,7 @@ async function loadAllData() {
     }
   }
   for (let i = 1; i <= 100; i++) {
+    console.log("获取大圈数据：page", i);
     data.page_index = i;
     const jsondata = await getProduct({
       ...data,
@@ -219,33 +227,48 @@ async function loadAllData() {
   }
 }
 
-async function getGirlDetails(id: number) {
-  const res = await fetch("https://www.zz2025.cc/v1/product/" + id, {
-    headers: {
-      accept: "application/json, text/plain, */*",
-      "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-      "cache-control": "no-cache, no-store, must-revalidate",
-      priority: "u=1, i",
-      "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
-      "sec-ch-ua-mobile": "?1",
-      "sec-ch-ua-platform": '"Android"',
-      "sec-fetch-dest": "empty",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-site": "same-origin",
-      token: token ?? "",
-      // "cookie": "__51vcke__3LXbMpY3HA4LNEfR=3f3b417e-d3c3-56f5-a840-07825429f121; __51vuft__3LXbMpY3HA4LNEfR=1758242696587; __51uvsct__3LXbMpY3HA4LNEfR=3; __vtins__3LXbMpY3HA4LNEfR=%7B%22sid%22%3A%20%22db3a81d8-5596-5dc4-952e-491291bf250b%22%2C%20%22vd%22%3A%202%2C%20%22stt%22%3A%20217248%2C%20%22dr%22%3A%20217248%2C%20%22expires%22%3A%201758299762861%2C%20%22ct%22%3A%201758297962861%7D",
-      Referer: "https://www.zz2025.cc/",
-    },
-    body: null,
-    method: "GET",
-  });
-  if (res.status !== 200) {
-    console.log(res, res.status, res.statusText);
-    return null;
+async function getGirlDetails(id: number, retry_count = 0) {
+  console.log("getGirlDetails start id:", id);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000); // 3秒超时
+  try {
+    const res = await fetch("https://www.zz2025.cc/v1/product/" + id, {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+        "cache-control": "no-cache, no-store, must-revalidate",
+        priority: "u=1, i",
+        "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": '"Android"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        token: token ?? "",
+        // "cookie": "__51vcke__3LXbMpY3HA4LNEfR=3f3b417e-d3c3-56f5-a840-07825429f121; __51vuft__3LXbMpY3HA4LNEfR=1758242696587; __51uvsct__3LXbMpY3HA4LNEfR=3; __vtins__3LXbMpY3HA4LNEfR=%7B%22sid%22%3A%20%22db3a81d8-5596-5dc4-952e-491291bf250b%22%2C%20%22vd%22%3A%202%2C%20%22stt%22%3A%20217248%2C%20%22dr%22%3A%20217248%2C%20%22expires%22%3A%201758299762861%2C%20%22ct%22%3A%201758297962861%7D",
+        Referer: "https://www.zz2025.cc/",
+      },
+      body: null,
+      method: "GET",
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (res.status !== 200) {
+      console.log(res, res.status, res.statusText);
+      return null;
+    }
+    const json_str = await res.json();
+    console.log(res.statusText, "data length:", json_str.data.length);
+    return json_str;
+  } catch (e) {
+    console.log("getGirlDetails error", e);
+    if (++retry_count > 3) {
+      return null;
+    }
+    console.log("getGirlDetails retry", retry_count, "times, id:", id);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return getGirlDetails(id, retry_count);
   }
-  const json_str = await res.json();
-  // console.log(res, JSON.stringify(json_str, null, 2));
-  return json_str;
 }
 
 async function saveAllDetails() {
@@ -271,6 +294,7 @@ async function saveAllDetails() {
       const jsondata = JSON.parse(res);
       if (jsondata && jsondata.code === 0 && jsondata.data.product) {
         for (let i = 0; i < jsondata.data.product.length; i++) {
+          //请求详情数据
           const json_data = await getGirlDetails(jsondata.data.product[i].id);
           if (json_data) {
             all_girls_details.push(json_data);
