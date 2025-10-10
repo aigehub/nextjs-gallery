@@ -176,31 +176,46 @@ async function loadHomePageData({
   rangeRef = 2,
   page_number = 1,
   page_size = 500,
+  retry_count = 0,
 }: {
   p_number: number;
   c_number: number;
   rangeRef: number;
   page_number: number;
   page_size: number;
+  retry_count?: number;
 }) {
-  console.log("jimei loadHomePageData",JSON.stringify(getHeaders(), null, 2));
-  const res = fetch(
-    `https://pig.zwidi.cn/api/girl/homePageData?p_number=${p_number}&c_number=${c_number}&rangeRef=${rangeRef}&page_number=${page_number}&page_size=${page_size}`,
-    {
-      headers: getHeaders(),
-      body: null,
-      method: "GET",
+  if (retry_count == undefined) {
+    retry_count = 0;
+  }
+  console.log("jimei loadHomePageData", JSON.stringify(getHeaders(), null, 2));
+  let jsonObj = null;
+  try {
+    const res = fetch(
+      `https://pig.zwidi.cn/api/girl/homePageData?p_number=${p_number}&c_number=${c_number}&rangeRef=${rangeRef}&page_number=${page_number}&page_size=${page_size}`,
+      {
+        headers: getHeaders(),
+        body: null,
+        method: "GET",
+      }
+    );
+    const data = await res;
+    jsonObj = await data.json();
+  } catch (e) {
+    console.log("loadHomePageData error", e);
+    if (++retry_count > 3) {
+      return "retry over 3 times";
     }
-  );
-
-  const data = await res;
-  const jsonObj = await data.json();
+    console.log("retry load ",retry_count,"times");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return loadHomePageData({ p_number, c_number, rangeRef, page_number, page_size, retry_count });
+  }
   if (jsonObj.success !== true) {
     console.log(`jimei loadHomePageData fetch error`, jsonObj);
     if (jsonObj.message == "锁定" || jsonObj.message == "会话已过期") return jsonObj.message;
   } else {
     const data_array: Array<object> = jsonObj.data;
-    console.log(`==》page ${page_number}，数据数量：${data_array.length}:`, data_array[0]);
+    console.log(`==》page ${page_number}，数据数量：${data_array.length}:`, data_array[0] ?? "NoData");
     if (data_array.length > 0) {
       //save json to local file system
       let rangeRefName = "";
@@ -228,6 +243,7 @@ async function loadHomePageData({
         rangeRef,
         page_number: page_number + 1,
         page_size,
+        retry_count: 0,
       });
     }
     return true;
@@ -531,7 +547,7 @@ async function spide_jimei() {
 
 async function count_total() {
   const result = await queryData({});
-  console.log("jimei count_total",result.total);
+  console.log("jimei count_total", result.total);
 }
 
 try {
