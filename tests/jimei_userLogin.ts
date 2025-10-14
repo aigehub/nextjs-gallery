@@ -3,37 +3,49 @@
  */
 import fs from "fs";
 import { mkdirIfNotExists } from "./utils";
-export  let  COCKIES: string[] = [];
-async function userLogin() {
+export let COCKIES: string[] = [];
+async function userLogin(retry_count = 0) {
   console.log("jimei", "userLogin");
-  const res = await fetch("https://pig.zwidi.cn/api/auth/userLogin", {
-    headers: {
-      accept: "*/*",
-      "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
-      "content-type": "application/json",
-      // "priority": "u=1, i",
-      // "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
-      // "sec-ch-ua-mobile": "?0",
-      // "sec-ch-ua-platform": "\"Windows\"",
-      // "sec-fetch-dest": "empty",
-      // "sec-fetch-mode": "cors",
-      // "sec-fetch-site": "same-origin",
-      // "cookie": "provinceCode=26; __verify_token=MTM5LjIyNi4xNjEuNTg6MTc1ODEyOTI5ODExMTo1NDk3NWIyYmI5YzA1MmM0MmZiNDg2MDAwZWNlMjg3YzFkYTg1NmNhODU3NDRjMWM5ZTM0ZTc1NjNhMmU5OWFl; connect.sid=s%3A07f3eff0e11640328ce5dcfb9d0b03ea.s4dxBTqy97xFpxS1UCuEeOutTucAiAztksebHvnjkQc",
-      Referer: "https://pig.zwidi.cn/userlogin.html",
-    },
-    body: '{"username":"667788","password":"667788"}',
-    method: "POST",
-  });
-  if (res.status == 200) {
-    console.log("jimei", res, await res.json());
-    const cockies = res.headers.getSetCookie();
-    console.log("jimei", cockies);
-    parseCockie(cockies);
-    return true;
-  } else {
-    console.log("jimei", res.status, res.statusText, await res.text());
+  try {
+    const res = await fetch("https://pig.zwidi.cn/api/auth/userLogin", {
+      headers: {
+        accept: "*/*",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+        "content-type": "application/json",
+        // "priority": "u=1, i",
+        // "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+        // "sec-ch-ua-mobile": "?0",
+        // "sec-ch-ua-platform": "\"Windows\"",
+        // "sec-fetch-dest": "empty",
+        // "sec-fetch-mode": "cors",
+        // "sec-fetch-site": "same-origin",
+        // "cookie": "provinceCode=26; __verify_token=MTM5LjIyNi4xNjEuNTg6MTc1ODEyOTI5ODExMTo1NDk3NWIyYmI5YzA1MmM0MmZiNDg2MDAwZWNlMjg3YzFkYTg1NmNhODU3NDRjMWM5ZTM0ZTc1NjNhMmU5OWFl; connect.sid=s%3A07f3eff0e11640328ce5dcfb9d0b03ea.s4dxBTqy97xFpxS1UCuEeOutTucAiAztksebHvnjkQc",
+        Referer: "https://pig.zwidi.cn/userlogin.html",
+      },
+      body: '{"username":"667788","password":"667788"}',
+      method: "POST",
+    });
+    if (res.status == 200) {
+      console.log("jimei", res, await res.json());
+      const cockies = res.headers.getSetCookie();
+      console.log("jimei", cockies);
+      parseCockie(cockies);
+      return true;
+    } else {
+      console.log("jimei", res.status, res.statusText, await res.text());
+    }
+    return false;
+  } catch (e) {
+    console.log("jimei userLogin error", e);
+    console.log("retry login");
+    if (++retry_count > 3) {
+      console.log("retry login over 3");
+      return false;
+    } else {
+      console.log("retry login ", retry_count);
+    }
+    return userLogin();
   }
-  return false;
 }
 let data_string: string | undefined;
 const jimei_cockie_info = "tests/jimei/cockie.json";
