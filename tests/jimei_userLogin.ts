@@ -3,6 +3,7 @@
  */
 import fs from "fs";
 import { mkdirIfNotExists } from "./utils";
+import { resolve } from "path";
 export let COCKIES: string[] = [];
 async function userLogin(retry_count = 0) {
   console.log("jimei", "userLogin");
@@ -44,6 +45,7 @@ async function userLogin(retry_count = 0) {
     } else {
       console.log("retry login ", retry_count);
     }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return userLogin();
   }
 }
