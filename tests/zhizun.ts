@@ -258,7 +258,7 @@ async function getGirlDetails(id: number, retry_count = 0) {
       return null;
     }
     const json_str = await res.json();
-    console.log(res.statusText, "data length:", json_str.data.length);
+    console.log(res.statusText, "data length:", json_str?.data?.length ?? 0);
     return json_str;
   } catch (e) {
     console.log("getGirlDetails error", e);
