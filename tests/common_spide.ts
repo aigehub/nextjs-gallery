@@ -225,14 +225,14 @@ const zz = new ZhizunPlatform();
  });
  const kv58 = new Kv58Platform();
 //58kv
- runStartSpider<Girl58Kv>({
-   girlsPlatform: kv58,
-   platforn_name: "58kv",
-checkTokenExpires: async () => (await checkExpires58()) !== null,
-insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
-mapData: async (data) => await kv58.mapData(data),
-all_data_file_path: "../json/all/all_58kv_data.json",
- });
+//  runStartSpider<Girl58Kv>({
+//    girlsPlatform: kv58,
+//    platforn_name: "58kv",
+// checkTokenExpires: async () => (await checkExpires58()) !== null,
+// insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
+// mapData: async (data) => await kv58.mapData(data),
+// all_data_file_path: "../json/all/all_58kv_data.json",
+//  });
 
 // jimei
 const jimei = new JimeiPlatform();
