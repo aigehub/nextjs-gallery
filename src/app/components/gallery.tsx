@@ -14,7 +14,7 @@ const PAGE_SIZE = 20; // 每页显示的图片数量
 const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
 
 export function Gallery({ plat, total, page_data, show_tel }: { plat: PLAT; total: number; show_tel?: boolean; page_data: any[] }) {
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(total / (plat == 4 ? 1 : PAGE_SIZE));
 
   console.log("Gallery dataset: total", total, "totalPages:", totalPages);
   const item_width = "sm:w-[18rem] sm:h-[23rem] max-sm:w-[18rem] max-sm:h-[23rem] ";
@@ -85,10 +85,14 @@ function ModelGirl({
         province = item.provinceCity + " " + item.region + " " + item.address;
         if (item.characteristics) skill = (JSON.parse(item.characteristics) as Array<string>).join(",");
         break;
+      case 4: //58kv
+        province = item.album_desc;
+        if (item.tags) skill = item.tags;
+        break;
     }
     return (
       <div className={`p-4 border bg-white rounded-lg shadow-md  ${item_width}`}>
-        <h1 className="text-emerald-500 border-l-4 pl-2 mb-2 font-extrabold text-2xl">{item.name ?? item.titlename}</h1>
+        <h1 className="text-emerald-500 border-l-4 pl-2 mb-2 font-extrabold text-2xl">{item.name ?? item.titlename ?? item.girl_name}</h1>
         {item.age && (
           <p className="text-sm text-gray-500 mb-2">
             年龄：{item.age}, 身高：{item.height}, 体重：{item.weight}, 罩杯：
@@ -96,9 +100,9 @@ function ModelGirl({
           </p>
         )}
         <p className="text-sm text-gray-500 mb-2">{province}</p>
-        <p className="text-sm text-gray-400 mb-2">{item.price}</p>
+        {item.price && <p className="text-sm text-gray-400 mb-2">{item.price}</p>}
         <p className="text-sm text-gray-500 mb-2">{skill}</p>
-        <p className="text-sm text-gray-500 mb-2">编号：{num}</p>
+        {num && <p className="text-sm text-gray-500 mb-2">编号：{num}</p>}
         {show_tel == true && (
           <>
             <p className="text-sm text-gray-400 mb-2">uu；{item.xl}</p>
@@ -122,7 +126,7 @@ function ModelGirl({
       </PhotoProvider>
       {/* 视频弹窗 */}
       {videoOpen && videoSrc && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050 text-white" >
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050 text-white">
           <XCircleIcon className="fixed top-6 right-6  h-6 w-6 cursor-pointer" onClick={() => setVideoOpen(false)} />
           <SmartVideo isLargePreview={true} plat={plat} src={videoSrc} controls autoPlay style={{ maxHeight: "80vh", maxWidth: "90vw" }} />
         </div>
@@ -140,8 +144,9 @@ interface PhotoViewerProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 
 function PhotoViewer(props: PhotoViewerProps): React.JSX.Element {
   const [imgSrc, setImgSrc] = useState("");
+  const dataSrc = props.plat == 2 || props.plat == 4 ? imgSrc : props.img;
   return (
-    <PhotoView src={props.plat == 2 ? imgSrc : props.img}>
+    <PhotoView src={dataSrc}>
       <SmartImage
         onLoadedSrc={(src) => {
           setImgSrc(src);
@@ -180,7 +185,14 @@ function getVideoComponent(
         setVideoOpen(true);
       }}
     >
-      <SmartVideo plat={plat} key={`${item.id}${item.name}video-${idx}`} poster={posters.length > 0 ? posters[idx] : undefined} src={video} width={300} className={item_width} />
+      <SmartVideo
+        plat={plat}
+        key={`${item.id}${item.name}video-${idx}`}
+        poster={posters.length > 0 ? posters[idx] : undefined}
+        src={video}
+        width={300}
+        className={item_width}
+      />
       <span className="absolute text-white text-3xl">&#9654;</span>
     </div>
   ));
@@ -201,6 +213,13 @@ function getAllImageUrls(item: any, plat: PLAT): string[] {
       if (images) {
         images.unshift(item.poster);
         return images.filter(Boolean);
+      }
+      return [];
+    case 4:
+      let dataSet = item.images.split(",");
+      if (dataSet) {
+        dataSet.unshift(item.cover);
+        return dataSet.filter(Boolean);
       }
       return [];
     default:
@@ -227,6 +246,8 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
       authentications = authentications ? authentications.filter(Boolean) : [];
       medium.push(...authentications);
       return medium;
+    case 4:
+      return [];
     default:
     case 1: //"jimei"
       return Array.from({ length: 3 })
@@ -241,8 +262,7 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
 function getAllPoster(item: any, plat: number) {
   let posters: any[] = [];
   if (item.poster) {
-    posters.push(item.poster)
+    posters.push(item.poster);
   }
-  return posters
+  return posters;
 }
-

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Gallery } from "@/app/components/gallery";
 import TopButton from "./components/TopButton";
 import SearchComponent from "./components/Search";
-import { PAGE_SIZE, PLAT, queryData } from "./libs/data";
+import { PAGE_SIZE, queryData } from "./libs/data";
 
 export default async function Home(props: {
   searchParams: Promise<{
@@ -30,10 +30,10 @@ export default async function Home(props: {
     province,
     bust,
     offset: page || 1,
-    limit: PAGE_SIZE,
+    limit: plat == 4 ? 1 : PAGE_SIZE,
     name,
     district_name: district,
-    platform:plat,
+    platform: plat,
   });
   return (
     <main className="flex min-h-screen flex-col items-center justify-between md:p-14 sm:p-5 p-5">
@@ -54,6 +54,12 @@ export default async function Home(props: {
           </span>
           <a href="/?p=3" className={`mx-1 ${plat === 3 ? "text-blue-700" : ""}`}>
             相册3
+          </a>
+          <span className="mx-1 text-gray-400 select-none" style={{ fontWeight: 100 }}>
+            |
+          </span>
+          <a href="/?p=4" className={`mx-1 ${plat === 4 ? "text-blue-700" : ""}`}>
+            相册4
           </a>
         </div>
       </div>

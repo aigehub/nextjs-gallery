@@ -1,3 +1,4 @@
+import { log } from "console";
 import data from "../json/all/all_girls_details.json" with {type: "json"};
 import { Girl, PrismaClient } from "../src/generated/prisma/index.js";
 
@@ -102,3 +103,13 @@ async function update_test() {
   await prisma.$disconnect();
 }
 // update_test()
+
+function testImages(){
+  let images:number[]=[]
+  addImages(images)
+  log("images:",images)
+}
+function addImages(images:number[]){
+  images.push(1)
+}
+// testImages()

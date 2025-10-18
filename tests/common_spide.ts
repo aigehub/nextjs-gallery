@@ -1,10 +1,13 @@
-import { Girl, Girl58Kv, ZhizunGirl } from "@/generated/prisma";
+import { Girl, Girl58Kv, Meirentu, ZhizunGirl } from "@/generated/prisma";
 import prisma from "../prisma/database_api";
 import { checkTokenExpires, loadAllData as loadAllDataZz, saveAllDetails as saveAllDetailsZz } from "./zhizun";
 import { checkExpires as checkExpires58, loadAllData, saveAllDetails } from "./58kv_com";
 import { checkTokenExpires as checkTokenExpiresJimei } from "./jimei_userLogin";
 import { testLoadAllCitiesGirlsData, testSaveAllGirlsDetails } from "./jimei_spider";
 import { mapData } from "@/app/libs/data";
+import { loadDataByModelName, loadDetailPage, loadHomePage, MeiRenTuImageData, retryLopp } from "./meirentu";
+import { log } from "console";
+import pLimit from "p-limit";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
 
@@ -65,17 +68,32 @@ export async function runStartSpider<GirlModel>({
     });
   }
 }
-export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatform: GirlsPlatform<T>, platforn_name: string): Promise<number> {
-  const res = await girlsPlatform.findFirst(data);
-  if (res) {
-    // console.log(platforn_name,"已存在", data?.name, data?.code_ref);
-    return 0;
+export async function insertOne<T extends Omit<any, "id">>(
+  data: T,
+  girlsPlatform: GirlsPlatform<T>,
+  platforn_name: string,
+  isUpdate: boolean = false
+): Promise<number> {
+  if (!isUpdate) {
+    const res = await girlsPlatform.findFirst(data);
+    if (res) {
+      console.log(platforn_name, "已存在", data?.name, data?.code_ref);
+      return 0;
+    }
   }
   const { id, ...rest } = data;
   try {
-    const count = await girlsPlatform.prismaCreateOne(rest);
+    const count = await girlsPlatform.prismaCreateOne(rest, isUpdate);
     // console.log(count);
-    console.log(platforn_name, "新增", data.name ?? "", data.titlename ?? "", data.address ?? "");
+    console.log(
+      platforn_name,
+      isUpdate ? "更新" : "新增",
+      data.girl_name ?? "",
+      data.album_desc ?? "",
+      data.name ?? "",
+      data.titlename ?? "",
+      data.address ?? ""
+    );
     if (count) {
       return 1;
     }
@@ -89,11 +107,11 @@ export async function insertOne<T extends Omit<any, "id">>(data: T, girlsPlatfor
  * 抽象类，定义爬取不同平台的通用方法
  */
 export abstract class GirlsPlatform<T> {
-  public abstract mapData(data: any[]): Promise<T[]>;
+  public abstract mapData(data: any[]): Promise<any[]>;
   public abstract loadAllData(): Promise<any>;
   public abstract saveAllDetails(): Promise<any>;
   public abstract findFirst<T>(data: T): Promise<T | null>;
-  public abstract prismaCreateOne<T>(rest: Omit<T, "id">): Promise<number>;
+  public abstract prismaCreateOne<T>(rest: Omit<T, "id">, isUpdate?: boolean): Promise<number>;
 }
 
 // ZhizunPlatform
@@ -213,34 +231,193 @@ export class JimeiPlatform extends GirlsPlatform<Girl> {
   }
 }
 
-const zz = new ZhizunPlatform();
-//zhizun
- runStartSpider<ZhizunGirl>({
-   girlsPlatform: zz,
-   platforn_name: "zhizun",
-   checkTokenExpires: checkTokenExpires,
-   mapData: async (data) => await zz.mapData(data),
-   insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
-   all_data_file_path: "../json/all/zhizun_all_girls_details.json",
- });
- const kv58 = new Kv58Platform();
-//58kv
-//  runStartSpider<Girl58Kv>({
-//    girlsPlatform: kv58,
-//    platforn_name: "58kv",
-// checkTokenExpires: async () => (await checkExpires58()) !== null,
-// insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
-// mapData: async (data) => await kv58.mapData(data),
-// all_data_file_path: "../json/all/all_58kv_data.json",
-//  });
+export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
+  loadPageCount: number = 100;
+  page_data: MeiRenTuImageData[] = [];
 
-// jimei
-const jimei = new JimeiPlatform();
-runStartSpider<Girl>({
-  girlsPlatform: jimei,
-  platforn_name: "jimei",
-  checkTokenExpires: checkTokenExpiresJimei,
-  insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
-  mapData: async (data) => await mapData(data),
-  all_data_file_path: "../json/all/all_girls_details.json",
-});
+  constructor(loadPageCount: number) {
+    super();
+    this.loadPageCount = loadPageCount;
+  }
+  public mapData(data: any[]): Promise<
+    {
+      tags: String;
+      images: String;
+      cover: String;
+      girl_name: String;
+      girl_desc: String;
+      album_desc: String;
+      time: String;
+    }[]
+  > {
+    const map_data = data.flatMap((item) => {
+      let map = item as MeiRenTuImageData;
+      return {
+        tags: map.tags!,
+        images: map.images!,
+        cover: map.cover!,
+        time: map.time!,
+        girl_name: map.girl_name!,
+        girl_desc: map.girl_desc!,
+        album_desc: map.album_desc!,
+      };
+    });
+    return Promise.resolve(map_data);
+  }
+  public async loadAllData(): Promise<any> {
+    for (let i = 1; i <= this.loadPageCount; i++) {
+      log("loadHomePage:", i);
+      let res = await loadHomePage(i);
+      if (res) {
+        this.page_data.push(...res);
+      }
+    }
+    return Promise.resolve(null);
+  }
+
+  public async loadModelByName(name: String) {
+    for (let i = 1; i <= this.loadPageCount; i++) {
+      log("loadHomePage:", i);
+      let res = await retryLopp(0, loadDataByModelName, name, i);
+      if (res) {
+        if (res == 404) {
+          log("load 404 end:", i);
+          break;
+        } else if (!(res instanceof Number)) {
+          res = res as MeiRenTuImageData[];
+          this.page_data.push(...res);
+        }
+      }
+    }
+    return Promise.resolve(null);
+  }
+
+  public async saveAllDetails(): Promise<any> {
+    let all_promise = [];
+    log("page_data length:", this.page_data.length);
+    let plimit = pLimit(PLIMIT_COUNT);
+    for (let i = 0; i < this.page_data.length; i++) {
+      const item = this.page_data[i];
+      log("item", i, "");
+      all_promise.push(
+        plimit(async () => {
+          return await retryLopp(0, loadDetailPage, item);
+        })
+      );
+      // //test break
+      // break;
+    }
+    await Promise.all(all_promise);
+    return Promise.resolve(null);
+  }
+  public async findFirst<T>(data: T): Promise<T | null> {
+    const res = await prisma.meirentu.findFirst({
+      where: { album_desc: (data as any).album_desc },
+    });
+    return res as any;
+  }
+  public async prismaCreateOne(rest: Omit<any, "id">, isUpdate: boolean = false): Promise<number> {
+    //同时插入模特表
+    const res = await prisma.meirentu.findFirst({
+      where: { girl_name: (rest as any).girl_name },
+    });
+    if (!res) {
+      const size = prisma.girlModelInfo.create({
+        data: { girl_desc: rest.girl_desc, girl_name: rest.girl_name },
+      });
+      log("insert model girl", (await size)?.girl_name);
+    } else {
+      log("already exists model girl, not insert");
+    }
+    let { girl_desc, ...rest2 } = rest;
+    if (isUpdate) {
+      let count = prisma.meirentu.update({
+        data: rest2 as any,
+        where: {
+          album_desc: rest2.album_desc,
+        },
+      });
+      return count ? (count as unknown as number) : 0;
+    } else {
+      let count = prisma.meirentu.create({
+        data: rest2 as any,
+      });
+      return count ? (count as unknown as number) : 0;
+    }
+  }
+}
+function spiderGilrs() {
+  const zz = new ZhizunPlatform();
+  //zhizun
+  runStartSpider<ZhizunGirl>({
+    girlsPlatform: zz,
+    platforn_name: "zhizun",
+    checkTokenExpires: checkTokenExpires,
+    mapData: async (data) => await zz.mapData(data),
+    insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
+    all_data_file_path: "../json/all/zhizun_all_girls_details.json",
+  });
+  //58kv
+  // const kv58 = new Kv58Platform();
+  ////  runStartSpider<Girl58Kv>({
+  ////    girlsPlatform: kv58,
+  ////    platforn_name: "58kv",
+  //   // checkTokenExpires: async () => (await checkExpires58()) !== null,
+  //   // insertOne: async (data, platforn_name) => await insertOne(data, kv58, platforn_name),
+  //   // mapData: async (data) => await kv58.mapData(data),
+  //   // all_data_file_path: "../json/all/all_58kv_data.json",
+  ////  });
+
+  // jimei
+  const jimei = new JimeiPlatform();
+  runStartSpider<Girl>({
+    girlsPlatform: jimei,
+    platforn_name: "jimei",
+    checkTokenExpires: checkTokenExpiresJimei,
+    insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
+    mapData: async (data) => await mapData(data),
+    all_data_file_path: "../json/all/all_girls_details.json",
+  });
+}
+
+async function meirentuSpide() {
+  const meirentuPlatform = new MeirentuPlatform(1);
+  await meirentuPlatform.loadAllData();
+  await meirentuPlatform.saveAllDetails();
+  const data = await meirentuPlatform.mapData(meirentuPlatform.page_data);
+  for (const item of data) {
+    await insertOne(item, meirentuPlatform, "meirentuPlatform");
+  }
+}
+async function meirentuSpideName(name: String) {
+  const meirentuPlatform = new MeirentuPlatform(50);
+  await meirentuPlatform.loadModelByName(name);
+  await meirentuPlatform.saveAllDetails();
+  const data = await meirentuPlatform.mapData(meirentuPlatform.page_data);
+  for (const item of data) {
+    await insertOne(item, meirentuPlatform, "meirentuPlatform", true);
+  }
+}
+export const PLIMIT_COUNT = 10;
+
+async function loopName() {
+  const dataset = await prisma.girlModelInfo.findMany();
+  let all = [];
+  let plimit = pLimit(PLIMIT_COUNT);
+  for (const item of dataset) {
+    const name = item.girl_name;
+    log("fetch ", name);
+    all.push(
+      plimit(async () => {
+        await meirentuSpideName(name);
+      })
+    );
+    //test break
+    // break;
+  }
+  await Promise.all(all);
+}
+
+// loopName();
+spiderGilrs()
+meirentuSpide();
