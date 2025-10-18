@@ -154,7 +154,7 @@ async function parseDetailImage(doc: HTMLElement) {
     //第一页的先获取一下
     let images: string[] = [];
     images = parseDetailImageSrc(doc);
-    for (let i = 1; i < querySelectorAll.length - 1; ++i) {
+    for (let i = 1; i < querySelectorAll.length; ++i) {
       const item = querySelectorAll[i];
       const hrefPath = item.attributes["href"];
     //   log("index:", i, "querySelectorAll  detail item hrefPath:", hrefPath);
