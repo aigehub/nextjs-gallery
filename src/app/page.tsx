@@ -41,25 +41,25 @@ export default async function Home(props: {
         <h1 className="text-4xl">Gallery 相册</h1>
         <div className="flex lg:ml-auto lg:text-right mt-4 lg:mt-0 font-bold justify-center">
           <a href="/?p=1" className={`mx-1 ${plat === 1 ? "text-blue-700" : ""}`}>
-            相册1
+            集美相册1
           </a>
           <span className="mx-1 text-gray-400 select-none" style={{ fontWeight: 100 }}>
             |
           </span>
           <a href="/?p=2" className={`mx-1 ${plat === 2 ? "text-blue-700" : ""}`}>
-            相册2
+            ZZ相册2
           </a>
           <span className="mx-1 text-gray-400 select-none" style={{ fontWeight: 100 }}>
             |
           </span>
           <a href="/?p=3" className={`mx-1 ${plat === 3 ? "text-blue-700" : ""}`}>
-            相册3
+            58相册3
           </a>
           <span className="mx-1 text-gray-400 select-none" style={{ fontWeight: 100 }}>
             |
           </span>
           <a href="/?p=4" className={`mx-1 ${plat === 4 ? "text-blue-700" : ""}`}>
-            相册4
+            秀人网相册
           </a>
         </div>
       </div>
