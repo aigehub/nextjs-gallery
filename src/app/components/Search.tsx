@@ -18,43 +18,47 @@ export default function SearchComponent(props: {
       <input type="hidden" name="page" value={props.page} />
       <input type="hidden" name="p" value={props.plat} />
       <div className="md:flex gap-2 m-2 items-end">
+        {props.plat != 4 && (
+          <div className={clsx("flex flex-col", width)}>
+            {/* search 省市 */}
+            {/* <label htmlFor="province">省市:</label> */}
+            <input
+              type="text"
+              name="province"
+              id="privice"
+              placeholder="查询省市"
+              defaultValue={props.province}
+              className="border cursor-pointer rounded  p-1  border-blue-400"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // 禁止提交
+                  // 这里也可以手动调搜索逻辑
+                }
+              }}
+            />
+          </div>
+        )}
+        {props.plat != 4 && (
+          <div className={clsx("flex flex-col", width)}>
+            {/* search 地区 */}
+            {/* <label htmlFor="district">地区:</label> */}
+            <input
+              type="text"
+              name="district"
+              id="district"
+              placeholder="地区"
+              defaultValue={props.district}
+              className="border cursor-pointer rounded  p-1  border-blue-400"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // 禁止提交
+                  // 这里也可以手动调搜索逻辑
+                }
+              }}
+            />
+          </div>
+        )}
         <div className={clsx("flex flex-col", width)}>
-          {/* search 省市 */}
-          {/* <label htmlFor="province">省市:</label> */}
-          <input
-            type="text"
-            name="province"
-            id="privice"
-            placeholder="查询省市"
-            defaultValue={props.province}
-            className="border cursor-pointer rounded  p-1  border-blue-400"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault(); // 禁止提交
-                // 这里也可以手动调搜索逻辑
-              }
-            }}
-          />
-        </div>
-              <div className={clsx("flex flex-col", width)}>
-          {/* search 地区 */}
-          {/* <label htmlFor="district">地区:</label> */}
-          <input
-            type="text"
-            name="district"
-            id="district"
-            placeholder="地区"
-            defaultValue={props.district}
-            className="border cursor-pointer rounded  p-1  border-blue-400"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault(); // 禁止提交
-                // 这里也可以手动调搜索逻辑
-              }
-            }}
-          />
-        </div>
-               <div className={clsx("flex flex-col", width)}>
           {/* search 名称或编号 */}
           {/* <label htmlFor="name">名称或编号:</label> */}
           <input
@@ -72,42 +76,46 @@ export default function SearchComponent(props: {
             }}
           />
         </div>
-        <div className={clsx("flex flex-col", width)}>
-          {/* search 胸围 */}
-          {/* <label htmlFor="bust">Bust:</label> */}
-          <input
-            type="text"
-            name="bust"
-            id="bust"
-            placeholder="bust"
-            defaultValue={props.bust}
-            className="border cursor-pointer rounded  p-1  border-blue-400"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault(); // 禁止提交
-                // 这里也可以手动调搜索逻辑
-              }
-            }}
-          />
-        </div>
-              <div className={clsx("flex flex-col", width)}>
-          {/* search 价格 */}
-          {/* <label htmlFor="maxPrice">Max Price:</label> */}
-          <input
-            type="text"
-            name="max price"
-            id="maxPrice"
-            defaultValue={props.max_price}
-            placeholder="Max Price"
-            className="border cursor-pointer rounded  p-1  border-blue-400"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault(); // 禁止提交
-                // 这里也可以手动调搜索逻辑
-              }
-            }}
-          />
-        </div>
+        {props.plat != 4 && (
+          <div className={clsx("flex flex-col", width)}>
+            {/* search 胸围 */}
+            {/* <label htmlFor="bust">Bust:</label> */}
+            <input
+              type="text"
+              name="bust"
+              id="bust"
+              placeholder="bust"
+              defaultValue={props.bust}
+              className="border cursor-pointer rounded  p-1  border-blue-400"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // 禁止提交
+                  // 这里也可以手动调搜索逻辑
+                }
+              }}
+            />
+          </div>
+        )}
+        {props.plat != 4 && (
+          <div className={clsx("flex flex-col", width)}>
+            {/* search 价格 */}
+            {/* <label htmlFor="maxPrice">Max Price:</label> */}
+            <input
+              type="text"
+              name="max price"
+              id="maxPrice"
+              defaultValue={props.max_price}
+              placeholder="Max Price"
+              className="border cursor-pointer rounded  p-1  border-blue-400"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // 禁止提交
+                  // 这里也可以手动调搜索逻辑
+                }
+              }}
+            />
+          </div>
+        )}
         <div className="flex flex-col">
           {/* submit 提交按钮 */}
           <button

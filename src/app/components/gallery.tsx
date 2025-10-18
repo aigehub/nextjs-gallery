@@ -144,7 +144,12 @@ interface PhotoViewerProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 
 function PhotoViewer(props: PhotoViewerProps): React.JSX.Element {
   const [imgSrc, setImgSrc] = useState("");
-  const dataSrc = props.plat == 2 || props.plat == 4 ? imgSrc : props.img;
+  let dataSrc = "";
+  if (props.plat == 4) {
+    dataSrc = "https://proxy.codelin.vip/meirentu/" + props.img;
+  } else {
+    dataSrc = props.plat == 2 ? imgSrc : props.img;
+  }
   return (
     <PhotoView src={dataSrc}>
       <SmartImage
@@ -216,9 +221,12 @@ function getAllImageUrls(item: any, plat: PLAT): string[] {
       }
       return [];
     case 4:
-      let dataSet = item.images.split(",");
+      let dataSet: any[] = item.images.split(",");
       if (dataSet) {
         dataSet.unshift(item.cover);
+        dataSet.map((item) => {
+          ("");
+        });
         return dataSet.filter(Boolean);
       }
       return [];

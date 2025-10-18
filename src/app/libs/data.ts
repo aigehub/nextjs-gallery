@@ -211,10 +211,10 @@ export async function queryData({
       const orArr_meirentu = [];
       if (name) {
         orArr_meirentu.push({ girl_name: { contains: name } });
-        orArr_meirentu.push({ girl_desc: { contains: name } });
+        orArr_meirentu.push({ album_desc: { contains: name } });
       }
       const where_meirentu = {
-        ...(orArr_meirentu.length > 0 ? { OR: orArr_58 } : {}),
+        ...(orArr_meirentu.length > 0 ? { OR: orArr_meirentu } : {}),
         tags: tag ? { contains: tag } : undefined,
       };
       // 1️⃣ 查数据
