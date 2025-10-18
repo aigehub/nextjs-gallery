@@ -119,7 +119,7 @@ export default function SmartImage({ src, onLoadedSrc, plat, alt = "", className
 async function fetchMeirentu(src: string) {
   let proxy = "";
   // if (process.env.NODE_ENV == "development") {
-  proxy = "https://cors-proxy-rho-red.vercel.app/meirentu/";
+  proxy = "https://proxy.codelin.vip/meirentu/";
   // }
   // const res = await fetch(proxy + src, {
   //   referrer: "https://meirentu.cc/",
