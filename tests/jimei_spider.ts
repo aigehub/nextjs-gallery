@@ -459,7 +459,7 @@ async function testSaveAllGirlsDetails() {
   const files = fs.readdirSync(jsonDir);
 
   console.log("files.length:", files.length);
-  const limit = pLimit(5); // 设置最大并发数为 5
+  const plimit = pLimit(5); // 设置最大并发数为 5
 
   const allRequests: Promise<void>[] = [];
 
@@ -473,7 +473,7 @@ async function testSaveAllGirlsDetails() {
       let requests: any[] = [];
       for (const item of data_array) {
         requests.push(
-          limit(
+          plimit(
             async () => {
               const res = await getGirlDetails(item.id, 0, 3);
               if (res instanceof String && (res == "锁定" || res == "会话已过期")) {

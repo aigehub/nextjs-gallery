@@ -80,13 +80,29 @@ export default function SmartImage({ src, onLoadedSrc, plat, alt = "", className
           setOnLoadedUrl("");
         });
     }
+    if (plat == 4 && src) {
+      fetchMeirentu(src)
+        .then(setOnLoadedUrl)
+        .catch((e) => {
+          console.error(e);
+          setOnLoadedUrl("");
+        });
+    }
   }, [src, plat]);
-  
+
   function getImage(src: string | undefined) {
-    return <img src={src} alt={alt} {...props} className={`rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`} />;
+    return (
+      <img
+        referrerPolicy="no-referrer"
+        src={src}
+        alt={alt}
+        {...props}
+        className={`rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`}
+      />
+    );
   }
 
-  if (plat === 2) {
+  if (plat === 2 || plat === 4) {
     if (!dataUrl)
       return (
         <div
@@ -99,4 +115,20 @@ export default function SmartImage({ src, onLoadedSrc, plat, alt = "", className
   } else {
     return getImage(src);
   }
+}
+async function fetchMeirentu(src: string) {
+  let proxy = "";
+  // if (process.env.NODE_ENV == "development") {
+  proxy = "https://cors-proxy-rho-red.vercel.app/meirentu/";
+  // }
+  // const res = await fetch(proxy + src, {
+  //   referrer: "https://meirentu.cc/",
+  //   method: "GET",
+  // });
+  // if (res.status == 200) {
+  //   return URL.createObjectURL(await res.blob());
+  // } else {
+  //   return "";
+  // }
+  return proxy + src;
 }
