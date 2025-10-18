@@ -84,7 +84,6 @@ export async function insertOne<T extends Omit<any, "id">>(
   const { id, ...rest } = data;
   try {
     const count = await girlsPlatform.prismaCreateOne(rest, isUpdate);
-    // console.log(count);
     console.log(
       platforn_name,
       isUpdate ? "更新" : "新增",
@@ -92,7 +91,9 @@ export async function insertOne<T extends Omit<any, "id">>(
       data.album_desc ?? "",
       data.name ?? "",
       data.titlename ?? "",
-      data.address ?? ""
+      data.address ?? "",
+      "count:",
+      count
     );
     if (count) {
       return 1;
@@ -331,18 +332,32 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
     }
     let { girl_desc, ...rest2 } = rest;
     if (isUpdate) {
-      let count = prisma.meirentu.update({
-        data: rest2 as any,
-        where: {
-          album_desc: rest2.album_desc,
-        },
-      });
-      return count ? (count as unknown as number) : 0;
+      try {
+        let result = await prisma.meirentu.updateMany({
+          data: rest2 as any,
+          where: {
+            album_desc: rest2.album_desc,
+          },
+        });
+        return result.count;
+      } catch (e) {
+        // log(e);
+        log("try insert");
+        try {
+          let result = await prisma.meirentu.create({
+            data: rest2 as any,
+          });
+          return result ? 1 : 0;
+        } catch (e) {
+          // log(e);
+          return 0;
+        }
+      }
     } else {
-      let count = prisma.meirentu.create({
+      let result = await prisma.meirentu.create({
         data: rest2 as any,
       });
-      return count ? (count as unknown as number) : 0;
+      return result ? 1 : 0;
     }
   }
 }
@@ -421,3 +436,4 @@ async function loopName() {
 // loopName();
 spiderGilrs()
 meirentuSpide();
+// meirentuSpideName("李丽莎");
