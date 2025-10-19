@@ -87,6 +87,10 @@ async function loadAllByPage(url: string, page: number, allItems: any[]) {
     let task = [];
     for (const el of itemPhotos) {
       const url = el.querySelector("a")?.attributes["href"];
+      let base_image_url = el.querySelector("div.img")?.attributes["style"].split(";")[0].replace("background-image:url('", "").replace("')", "");
+      //去除两段路径，得到基础路径
+      base_image_url = base_image_url?.substring(0, base_image_url.lastIndexOf("/"));
+      base_image_url = base_image_url?.substring(0, base_image_url.lastIndexOf("/") + 1);
       const subs = el.querySelector(".subs")?.text;
       const title = el.querySelector(".title")?.text;
       const model = el.querySelector(".model-container")?.text;
@@ -102,7 +106,7 @@ async function loadAllByPage(url: string, page: number, allItems: any[]) {
           };
           const images = await composeDetailPageImage(el);
           if (images) {
-            let newItem = { picInfo: images.picInfo, imageCount: images.imageCount, videoCount: images.videoCount, ...itemObj };
+            let newItem = { base_image_url, picInfo: images.picInfo, imageCount: images.imageCount, videoCount: images.videoCount, ...itemObj };
             log(newItem);
             allItems.push(newItem);
           }
@@ -201,7 +205,8 @@ async function main(jsonPath: string, { count, url }: { count?: number; url: str
 
 class XchinaItemData {
   title: string = "";
-  subs: string = ""; //@unique
+  image_base_url: string = "";
+  subs: string = "";
   girl_name: string = "";
   album_id: string = ""; //@unique
   image_count: number = 0;
@@ -221,6 +226,7 @@ async function insert(jsonPath: string) {
     itemData.album_id = id;
     itemData.image_count = item.imageCount;
     itemData.video_count = item.videoCount;
+    itemData.image_base_url = item.base_image_url;
     try {
       const find = await prisma.xChinaSigou.findFirst({
         where: { album_id: itemData.album_id },
@@ -252,11 +258,11 @@ export async function spidexchina() {
   // getPageCount({ url: sigoHomeURL });
 
   let jsonPath = "./tests/xchina/xchina_sigou.json";
-  await main(jsonPath, { count: 1, url: sigoHomeURL });
+  await main(jsonPath, { count: undefined, url: sigoHomeURL });
   await insert(jsonPath);
 
   jsonPath = "./tests/xchina/xchina_jvid.json";
-  await main(jsonPath, { count: 1, url: JVIDHOMEURL });
+  await main(jsonPath, { count: undefined, url: JVIDHOMEURL });
   await insert(jsonPath);
 }
-// timeCost(spidexchina);
+timeCost(spidexchina);
