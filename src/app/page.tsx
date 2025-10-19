@@ -65,7 +65,7 @@ export default async function Home(props: {
             |
           </span>
           <a href="/?p=5" className={`mx-1 ${plat === 4 ? "text-blue-700" : ""}`}>
-            秀人私购流出
+            秀人私购流出&JVID
           </a>
         </div>
       </div>
