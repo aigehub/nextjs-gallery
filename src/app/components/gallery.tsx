@@ -239,7 +239,7 @@ function getAllImageUrls(item: any, plat: PLAT): string[] {
       return [];
     case 5: //xchina
       let xchinadataSet: any[] = [];
-      for (let index = 1; index < item.image_count; index++) {
+      for (let index = 1; index <= item.image_count; index++) {
         const name = index.toString().padStart(4, "0");
         const url = item.image_base_url + item.album_id + "/" + name + ".jpg";
         xchinadataSet.push(url);
@@ -273,7 +273,7 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
       return [];
     case 5: //xchina
       let xchinadataSet: any[] = [];
-      for (let index = 1; index < item.video_count; index++) {
+      for (let index = 1; index <= item.video_count; index++) {
         const name = index.toString().padStart(4, "0");
         const url = item.image_base_url + item.album_id + "/" + name + ".mp4";
         xchinadataSet.push(url);
