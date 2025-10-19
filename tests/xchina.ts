@@ -155,7 +155,7 @@ async function composeDetailPageImage(detail_url: string) {
 
 const jsonPath = "./tests/xchina/xchina_sigou.json";
 async function main() {
-  const pageCount = await getPageCount({ url: sigoHomeURL });
+  const pageCount = 1; //await getPageCount({ url: sigoHomeURL });
   let allItems: any[] = [];
   let tasks: any[] = [];
   let plimit = pLimit(1);
@@ -216,8 +216,9 @@ async function insert() {
     }
   }
 }
-
-// main();
-// loadAllByPage(1);
-// getPageCount({ url: sigoHomeURL });
-insert();
+export function spidexchina() {
+  main();
+  // loadAllByPage(1);
+  // getPageCount({ url: sigoHomeURL });
+  insert();
+}
