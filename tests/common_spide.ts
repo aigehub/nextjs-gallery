@@ -8,7 +8,7 @@ import { mapData } from "@/app/libs/data";
 import { loadDataByModelName, loadDetailPage, loadHomePage, MeiRenTuImageData } from "./meirentu";
 import { log } from "console";
 import pLimit from "p-limit";
-import { retryLopp, timeCost } from "./utils";
+import { retryLoop, timeCost } from "./utils";
 import { spidexchina } from "./xchina";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
@@ -281,7 +281,7 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
   public async loadModelByName(name: String) {
     for (let i = 1; i <= this.loadPageCount; i++) {
       log("loadHomePage:", i);
-      let res = await retryLopp(0, loadDataByModelName, name, i);
+      let res = await retryLoop(0, loadDataByModelName, name, i);
       if (res) {
         if (res == 404) {
           log("load 404 end:", i);
@@ -304,7 +304,7 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
       log("item", i, "");
       all_promise.push(
         plimit(async () => {
-          return await retryLopp(0, loadDetailPage, item);
+          return await retryLoop(0, loadDetailPage, item);
         })
       );
       // //test break
@@ -363,10 +363,10 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
     }
   }
 }
-function spiderGilrs() {
+async function spiderGilrs() {
   const zz = new ZhizunPlatform();
   //zhizun
-  runStartSpider<ZhizunGirl>({
+  await runStartSpider<ZhizunGirl>({
     girlsPlatform: zz,
     platforn_name: "zhizun",
     checkTokenExpires: checkTokenExpires,
@@ -376,7 +376,7 @@ function spiderGilrs() {
   });
   //58kv
   // const kv58 = new Kv58Platform();
-  ////  runStartSpider<Girl58Kv>({
+  //// await runStartSpider<Girl58Kv>({
   ////    girlsPlatform: kv58,
   ////    platforn_name: "58kv",
   //   // checkTokenExpires: async () => (await checkExpires58()) !== null,
@@ -387,7 +387,7 @@ function spiderGilrs() {
 
   // jimei
   const jimei = new JimeiPlatform();
-  runStartSpider<Girl>({
+  await runStartSpider<Girl>({
     girlsPlatform: jimei,
     platforn_name: "jimei",
     checkTokenExpires: checkTokenExpiresJimei,
