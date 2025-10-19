@@ -13,12 +13,13 @@ export default function SearchComponent(props: {
 }) {
   const searcAction = wrappedSearchAction.bind(null);
   let width = "sm:max-w-[6rem]";
+  const isNot4_5 = props.plat != 4 && props.plat !=5;
   return (
     <form action={searcAction} className="max-sm:w-full mt-4">
       <input type="hidden" name="page" value={props.page} />
       <input type="hidden" name="p" value={props.plat} />
       <div className="md:flex gap-2 m-2 items-end">
-        {props.plat != 4 && (
+        {isNot4_5 && (
           <div className={clsx("flex flex-col", width)}>
             {/* search 省市 */}
             {/* <label htmlFor="province">省市:</label> */}
@@ -38,7 +39,7 @@ export default function SearchComponent(props: {
             />
           </div>
         )}
-        {props.plat != 4 && (
+        {isNot4_5 && (
           <div className={clsx("flex flex-col", width)}>
             {/* search 地区 */}
             {/* <label htmlFor="district">地区:</label> */}
@@ -76,7 +77,7 @@ export default function SearchComponent(props: {
             }}
           />
         </div>
-        {props.plat != 4 && (
+        {isNot4_5 && (
           <div className={clsx("flex flex-col", width)}>
             {/* search 胸围 */}
             {/* <label htmlFor="bust">Bust:</label> */}
@@ -96,7 +97,7 @@ export default function SearchComponent(props: {
             />
           </div>
         )}
-        {props.plat != 4 && (
+        {isNot4_5 && (
           <div className={clsx("flex flex-col", width)}>
             {/* search 价格 */}
             {/* <label htmlFor="maxPrice">Max Price:</label> */}

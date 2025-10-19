@@ -26,6 +26,7 @@ import { decompress } from "@mongodb-js/zstd";
 import { Buffer } from "node:buffer";
 import pLimit from "p-limit";
 import { PLIMIT_COUNT } from "./common_spide";
+import { retryLopp } from "./utils";
 
 export async function loadHomePage(page: number) {
   const res = await fetch(`https://meirentu.cc/index/${page}.html`, {
@@ -61,20 +62,6 @@ async function parseResponseText(res: Response) {
   return html;
 }
 
-export async function retryLopp(retry_count = 0, callback: Function, ...argArray: any) {
-  try {
-    // log("retryLopp params:", callback.name, ...argArray);
-    return await callback(...argArray);
-  } catch (e) {
-    if (++retry_count > 3) {
-      log("retry loading over 3");
-      return null;
-    }
-    log(e, "retry loading retry_count:", retry_count);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return retryLopp(retry_count, callback, ...argArray);
-  }
-}
 
 export async function loadDetailPage(item: MeiRenTuImageData) {
   const url = `https://meirentu.cc${item.href}`;

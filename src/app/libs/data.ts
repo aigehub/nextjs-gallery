@@ -232,6 +232,32 @@ export async function queryData({
         total: total_meirentu,
         page_data: rows_meirentu,
       };
+    case 5://xchina
+ // 共用条件对象
+      const orArr_xchina = [];
+      if (name) {
+        orArr_xchina.push({ tilte: { contains: name } });
+        orArr_xchina.push({ subs: { contains: name } });
+        orArr_xchina.push({ girl_name: { contains: name } });
+      }
+      const where_xchina = {
+        ...(orArr_xchina.length > 0 ? { OR: orArr_xchina } : {}),
+      };
+      // 1️⃣ 查数据
+      const rows_xchina = await prisma.xChinaSigou.findMany({
+        where: where_xchina,
+        skip: (offset - 1) * limit,
+        take: limit,
+        orderBy: { create_timestamps: "desc" }, // 建议加排序
+      });
+      // 2️⃣ 查总数
+      const total_xchina = await prisma.xChinaSigou.count({ where: where_xchina });
+      console.log(`query result: ${rows_xchina.length} / total: ${total_xchina}`);
+      // 3️⃣ 一起返回
+      return {
+        total: total_xchina,
+        page_data: rows_xchina,
+      };
     default:
       return {
         total: 0,

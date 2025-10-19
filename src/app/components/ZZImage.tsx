@@ -88,21 +88,21 @@ export default function SmartImage({ src, onLoadedSrc, plat, alt = "", className
           setOnLoadedUrl("");
         });
     }
+    if (plat == 5 && src) {
+      fetchXhcina(src)
+        .then(setOnLoadedUrl)
+        .catch((e) => {
+          console.error(e);
+          setOnLoadedUrl("");
+        });
+    }
   }, [src, plat]);
 
   function getImage(src: string | undefined) {
-    return (
-      <img
-        referrerPolicy="no-referrer"
-        src={src}
-        alt={alt}
-        {...props}
-        className={`rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`}
-      />
-    );
+    return <img src={src} alt={alt} {...props} className={`rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`} />;
   }
 
-  if (plat === 2 || plat === 4) {
+  if (plat === 2 || plat === 4 || plat === 5) {
     if (!dataUrl)
       return (
         <div
@@ -130,5 +130,10 @@ async function fetchMeirentu(src: string) {
   // } else {
   //   return "";
   // }
+  return proxy + src;
+}
+async function fetchXhcina(src: string) {
+  console.log("fetchXhcina", src, "process.env.NODE_ENV:", process.env.NODE_ENV);
+  let proxy = "https://proxy.codelin.vip/xchina/";
   return proxy + src;
 }
