@@ -30,7 +30,7 @@ export default async function Home(props: {
     province,
     bust,
     offset: page || 1,
-    limit: plat == 4 ? 1 : PAGE_SIZE,
+    limit: plat == 4 || plat == 5 ? 1 : PAGE_SIZE,
     name,
     district_name: district,
     platform: plat,
@@ -60,6 +60,12 @@ export default async function Home(props: {
           </span>
           <a href="/?p=4" className={`mx-1 ${plat === 4 ? "text-blue-700" : ""}`}>
             秀人网相册
+          </a>
+          <span className="mx-1 text-gray-400 select-none" style={{ fontWeight: 100 }}>
+            |
+          </span>
+          <a href="/?p=5" className={`mx-1 ${plat === 4 ? "text-blue-700" : ""}`}>
+            秀人私购流出
           </a>
         </div>
       </div>

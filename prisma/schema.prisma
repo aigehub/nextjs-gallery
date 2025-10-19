@@ -306,7 +306,7 @@ model Girl58Kv {
 model Meirentu {
   id                Int      @id @default(autoincrement())
   girl_name         String //模特名称
-  album_desc        String @unique//相册描述
+  album_desc        String   @unique //相册描述
   time              String //相册拍摄时间
   tags              String // [] 标签 数组，用逗号隔开
   cover             String //封面地址
@@ -319,6 +319,36 @@ model GirlModelInfo {
   id                Int      @id @default(autoincrement())
   girl_name         String   @unique
   girl_desc         String
+  create_time       DateTime @default(now())
+  create_timestamps BigInt   @default(dbgenerated("(strftime('%s','now') * 1000)"))
+}
+
+/**
+ * {
+ * id 12345
+ * title 标题
+ * subs 子目录 唯一
+ * image_base_url 图片基础地址
+ * album_id 相册ID
+ * image_count 图片数量
+ * create_time 创建时间
+ * }
+ * "title": "谭小灵《私购流出》",
+ * "subs": "私购流出Vol. 07645",
+ * "model": "谭小灵",
+ * thumb : https://img.xchina.io/photos2/${album_id}/0001_600x0.webp
+ * origin: https://img.xchina.io/photos2/${album_id}/0001.jpg
+ */
+model XChinaSigou {
+  id             Int    @id @default(autoincrement())
+  title          String
+  subs           String
+  girl_name      String
+  image_base_url String @default("https://img.xchina.io/photos2/")
+  album_id       String @unique
+  image_count    Int    @default(0)
+  video_count    Int    @default(0)
+
   create_time       DateTime @default(now())
   create_timestamps BigInt   @default(dbgenerated("(strftime('%s','now') * 1000)"))
 }

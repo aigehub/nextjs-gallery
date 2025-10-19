@@ -70,7 +70,7 @@ function ModelGirl({
     if (!num) {
       if (item.code) {
         num = `${item.code}`;
-      } else num = `M${item.ladyid}`;
+      } else if (item.ladyid) num = `M${item.ladyid}`;
     }
     switch (plat) {
       case 1: //jimei
@@ -85,9 +85,14 @@ function ModelGirl({
         province = item.provinceCity + " " + item.region + " " + item.address;
         if (item.characteristics) skill = (JSON.parse(item.characteristics) as Array<string>).join(",");
         break;
-      case 4: //58kv
+      case 4: //meirentu
         province = item.album_desc;
         if (item.tags) skill = item.tags;
+        break;
+      case 5: //xchina
+        province = item.subs;
+        if (item.title) skill = item.title;
+        num = item.album_id;
         break;
     }
     return (
@@ -147,6 +152,8 @@ function PhotoViewer(props: PhotoViewerProps): React.JSX.Element {
   let dataSrc = "";
   if (props.plat == 4) {
     dataSrc = "https://proxy.codelin.vip/meirentu/" + props.img;
+  } else if (props.plat == 5) {
+    dataSrc = "https://proxy.codelin.vip/xchina/" + props.img;
   } else {
     dataSrc = props.plat == 2 ? imgSrc : props.img;
   }
@@ -230,6 +237,14 @@ function getAllImageUrls(item: any, plat: PLAT): string[] {
         return dataSet.filter(Boolean);
       }
       return [];
+    case 5: //xchina
+      let xchinadataSet: any[] = [];
+      for (let index = 1; index < item.image_count; index++) {
+        const name = index.toString().padStart(4, "0");
+        const url = item.image_base_url + item.album_id + "/" + name + ".jpg";
+        xchinadataSet.push(url);
+      }
+      return xchinadataSet;
     default:
     case 1: //"jimei"
       return Array.from({ length: 6 })
@@ -256,6 +271,14 @@ function getAllVideoUrls(item: any, plat: PLAT): string[] {
       return medium;
     case 4:
       return [];
+    case 5: //xchina
+      let xchinadataSet: any[] = [];
+      for (let index = 1; index < item.video_count; index++) {
+        const name = index.toString().padStart(4, "0");
+        const url = item.image_base_url + item.album_id + "/" + name + ".mp4";
+        xchinadataSet.push(url);
+      }
+      return xchinadataSet;
     default:
     case 1: //"jimei"
       return Array.from({ length: 3 })

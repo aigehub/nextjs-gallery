@@ -5,9 +5,10 @@ import { checkExpires as checkExpires58, loadAllData, saveAllDetails } from "./5
 import { checkTokenExpires as checkTokenExpiresJimei } from "./jimei_userLogin";
 import { testLoadAllCitiesGirlsData, testSaveAllGirlsDetails } from "./jimei_spider";
 import { mapData } from "@/app/libs/data";
-import { loadDataByModelName, loadDetailPage, loadHomePage, MeiRenTuImageData, retryLopp } from "./meirentu";
+import { loadDataByModelName, loadDetailPage, loadHomePage, MeiRenTuImageData } from "./meirentu";
 import { log } from "console";
 import pLimit from "p-limit";
+import { retryLopp } from "./utils";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
 

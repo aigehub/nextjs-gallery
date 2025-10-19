@@ -16,7 +16,6 @@ interface SmartVideoProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
 
 export default function SmartVideo({ isLargePreview = false, src, plat, poster, className, ...props }: SmartVideoProps) {
   const [blobUrl, setBlobUrl] = useState<string | undefined>(undefined);
-  const [posterrSrc, setPosterrSrc] = useState<string>("");
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (!src) return;
@@ -46,6 +45,9 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
           hls.destroy();
         };
       }
+    } else if (plat == 5) {
+      let proxy = "https://proxy.codelin.vip/xchina/" + src;
+      setBlobUrl(proxy);
     } else {
       setBlobUrl(src);
     }
