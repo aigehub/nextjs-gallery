@@ -9,6 +9,7 @@ import { loadDataByModelName, loadDetailPage, loadHomePage, MeiRenTuImageData } 
 import { log } from "console";
 import pLimit from "p-limit";
 import { retryLopp } from "./utils";
+import { spidexchina } from "./xchina";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
 
@@ -438,3 +439,4 @@ async function loopName() {
 spiderGilrs()
 meirentuSpide();
 // meirentuSpideName("李丽莎");
+spidexchina()
