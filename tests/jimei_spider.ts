@@ -206,7 +206,7 @@ async function loadHomePageData({
     if (++retry_count > 3) {
       return "retry over 3 times";
     }
-    console.log("retry load ",retry_count,"times");
+    console.log("retry load ", retry_count, "times");
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return loadHomePageData({ p_number, c_number, rangeRef, page_number, page_size, retry_count });
   }
@@ -429,28 +429,40 @@ export {
 async function testLoadAllCitiesGirlsData() {
   // await checkExpires();
   const conut = provinces.city.length;
+  let plimit = pLimit(5); // 设置最大并发数为 5
+  let task = [];
   for (let i = 0; i < conut; i++) {
     const c = provinces.city[i];
     console.log("jimei provinces.city:", `${c.p_number}\t${getProvinceNameByCode(c.p_number)}\t${c.c_number}\t${c.name}`);
-    const res = await loadHomePageData({
-      p_number: c.p_number,
-      c_number: c.c_number,
-      rangeRef: 2, //中圈
-      page_number: 1,
-      page_size: 500,
-    });
-    if (res == "锁定" || res == "会话已过期") {
-      console.log(res, "被锁定了，不再继续请求");
-      break;
-    }
-    await loadHomePageData({
-      p_number: c.p_number,
-      c_number: c.c_number,
-      rangeRef: 3, //大圈
-      page_number: 1,
-      page_size: 500,
-    });
+    task.push(
+      plimit(async () => {
+        const res = await loadHomePageData({
+          p_number: c.p_number,
+          c_number: c.c_number,
+          rangeRef: 2, //中圈
+          page_number: 1,
+          page_size: 500,
+        });
+        if (res == "锁定" || res == "会话已过期") {
+          console.log(res, "被锁定了，不再继续请求");
+          return;
+        }
+      })
+    );
+    task.push(
+      plimit(
+        async () =>
+          await loadHomePageData({
+            p_number: c.p_number,
+            c_number: c.c_number,
+            rangeRef: 3, //大圈
+            page_number: 1,
+            page_size: 500,
+          })
+      )
+    );
   }
+  await Promise.all(task);
 }
 // getGirlDetails(21176); 读取json路径文件列表，然后从文件读区数据列表中获取id，然后获取详情
 

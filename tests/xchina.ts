@@ -1,5 +1,5 @@
 import { log } from "console";
-import { retryLopp, timeCost } from "./utils";
+import { retryLoop, timeCost } from "./utils";
 import parse from "node-html-parser";
 import pLimit from "p-limit";
 import { readFileSync, writeFileSync } from "fs";
@@ -40,7 +40,7 @@ async function loadDetailPage(detail_url: string) {
   for (let pageIndex = 1; pageIndex < pageCount; pageIndex++) {
     allTask.push(
       plimit(async () => {
-        await retryLopp(0, load, pageIndex, imageUrls);
+        await retryLoop(0, load, pageIndex, imageUrls);
       })
     );
     //test
@@ -69,7 +69,7 @@ async function getPageCount({ url, doc }: { url?: string; doc?: any }) {
       return pageCount;
     }
   }
-  return await retryLopp(0, load);
+  return await retryLoop(0, load);
 }
 async function loadAllByPage(url: string, page: number, allItems: any[]) {
   async function load() {
@@ -116,7 +116,7 @@ async function loadAllByPage(url: string, page: number, allItems: any[]) {
     }
     await Promise.all(task);
   }
-  await retryLopp(0, load);
+  await retryLoop(0, load);
 }
 async function composeDetailPageImage(doc: any) {
   log("composeDetailPageImage start");

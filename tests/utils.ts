@@ -9,7 +9,7 @@ export function mkdirIfNotExists(dirPath: string) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
 }
-export async function retryLopp(retry_count = 0, callback: Function, ...argArray: any) {
+export async function retryLoop(retry_count = 0, callback: Function, ...argArray: any) {
   try {
     // log("retryLopp params:", callback.name, ...argArray);
     return await callback(...argArray);
@@ -20,7 +20,7 @@ export async function retryLopp(retry_count = 0, callback: Function, ...argArray
     }
     log(e, "retry loading retry_count:", retry_count);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    return retryLopp(retry_count, callback, ...argArray);
+    return retryLoop(retry_count, callback, ...argArray);
   }
 }
 

@@ -26,7 +26,7 @@ import { decompress } from "@mongodb-js/zstd";
 import { Buffer } from "node:buffer";
 import pLimit from "p-limit";
 import { PLIMIT_COUNT } from "./common_spide";
-import { retryLopp } from "./utils";
+import { retryLoop } from "./utils";
 
 export async function loadHomePage(page: number) {
   const res = await fetch(`https://meirentu.cc/index/${page}.html`, {
@@ -147,7 +147,7 @@ async function parseDetailImage(doc: HTMLElement) {
     //   log("index:", i, "querySelectorAll  detail item hrefPath:", hrefPath);
       allRequests.push(
         plimit(async () => {
-          await retryLopp(0, fetchDetail, hrefPath, images);
+          await retryLoop(0, fetchDetail, hrefPath, images);
         })
       );
     }

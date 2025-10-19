@@ -2,7 +2,8 @@
  * 至尊
  */
 import fs from "fs";
-import { mkdirIfNotExists } from "./utils";
+import { mkdirIfNotExists, retryLoop } from "./utils";
+import pLimit from "p-limit";
 
 const token_json_file = "tests/zhizun/zhizun_token.json";
 mkdirIfNotExists("tests/zhizun");
@@ -20,7 +21,7 @@ async function getProduct(params: QUERY_BODY = data) {
   }
   console.log("start getProduct");
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000); // 3秒超时
+  const timeout = setTimeout(() => controller.abort(), 5000); // 3秒超时
   const res = await fetch("https://www.zz2025.cc/v1/product", {
     headers: {
       accept: "application/json, text/plain, */*",
@@ -206,7 +207,7 @@ async function loadAllData() {
   for (let i = 1; i <= 100; i++) {
     console.log("获取中圈数据：page", i);
     data.page_index = i;
-    const jsondata = await getProduct({ ...data, page_index: i });
+    const jsondata = await retryLoop(0, getProduct, { ...data, page_index: i });
     if (!jsondata || jsondata.code !== 0 || !jsondata.data.product) {
       console.log("获取中圈数据失败，停止，page_index=", i);
       break;
@@ -215,7 +216,7 @@ async function loadAllData() {
   for (let i = 1; i <= 100; i++) {
     console.log("获取大圈数据：page", i);
     data.page_index = i;
-    const jsondata = await getProduct({
+    const jsondata = await retryLoop(0, getProduct, {
       ...data,
       page_index: i,
       premium: true,
@@ -292,16 +293,23 @@ async function saveAllDetails() {
       console.log("处理读取文件：", fullpath);
       const res = fs.readFileSync(fullpath, { encoding: "utf-8" });
       const jsondata = JSON.parse(res);
+      let plimit = pLimit(10);
+      let task = [];
       if (jsondata && jsondata.code === 0 && jsondata.data.product) {
         for (let i = 0; i < jsondata.data.product.length; i++) {
           //请求详情数据
-          const json_data = await getGirlDetails(jsondata.data.product[i].id);
-          if (json_data) {
-            all_girls_details.push(json_data);
-            // break;
-          }
+          task.push(
+            plimit(async () => {
+              const json_data = await getGirlDetails(jsondata.data.product[i].id);
+              if (json_data) {
+                all_girls_details.push(json_data);
+                // break;
+              }
+            })
+          );
         }
       }
+      await Promise.all(task);
     }
   }
   console.log("所有详情数据：", all_girls_details.length);
