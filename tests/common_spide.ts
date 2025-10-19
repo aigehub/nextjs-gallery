@@ -8,7 +8,7 @@ import { mapData } from "@/app/libs/data";
 import { loadDataByModelName, loadDetailPage, loadHomePage, MeiRenTuImageData } from "./meirentu";
 import { log } from "console";
 import pLimit from "p-limit";
-import { retryLopp } from "./utils";
+import { retryLopp, timeCost } from "./utils";
 import { spidexchina } from "./xchina";
 
 const needSpideAllData_arg: boolean = process.argv[2] === "true"; // true / false
@@ -436,7 +436,7 @@ async function loopName() {
 }
 
 // loopName();
-spiderGilrs()
-meirentuSpide();
+timeCost(spiderGilrs);
+timeCost(meirentuSpide);
 // meirentuSpideName("李丽莎");
-spidexchina()
+timeCost(spidexchina);
