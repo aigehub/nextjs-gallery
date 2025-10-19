@@ -64,7 +64,7 @@ export default async function Home(props: {
           <span className="mx-1 text-gray-400 select-none" style={{ fontWeight: 100 }}>
             |
           </span>
-          <a href="/?p=5" className={`mx-1 ${plat === 4 ? "text-blue-700" : ""}`}>
+          <a href="/?p=5" className={`mx-1 ${plat === 5 ? "text-blue-700" : ""}`}>
             秀人私购流出&JVID
           </a>
         </div>
