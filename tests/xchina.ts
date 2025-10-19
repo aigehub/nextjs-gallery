@@ -8,6 +8,7 @@ import prisma from "../prisma/database_api";
 import { randomInt } from "crypto";
 const baseURl = "https://xchina.co";
 const sigoHomeURL = `https://xchina.co/photos/series-66600a3a227ee.html`;
+const JVIDHOMEURL = "https://xchina.co/photos/series-637b2029d2347.html";
 
 /**
  * @deprecate composeDetailPageImage
@@ -70,13 +71,13 @@ async function getPageCount({ url, doc }: { url?: string; doc?: any }) {
   }
   return await retryLopp(0, load);
 }
-async function loadAllByPage(page: number, allItems: any[]) {
+async function loadAllByPage(url: string, page: number, allItems: any[]) {
   async function load() {
-    const res = await fetch(`https://xchina.co/photos/series-66600a3a227ee/${page}.html`);
+    const res = await fetch(`${url.replace(".html", `/${page}.html`)}`);
     // log("loadAllByPage:", res.status,res.statusText);
     if (!res.ok) {
       log("loadAllByPage failed:", res.status, res.statusText);
-      return;
+      throw Error(res.statusText);
     }
     const html = await res.text();
     const doc = parse(html);
@@ -172,11 +173,11 @@ async function composeDetailPageImage(doc: any) {
   return result;
 }
 
-const jsonPath = "./tests/xchina/xchina_sigou.json";
-async function main(count: number = 0) {
+async function main(jsonPath: string, { count, url }: { count?: number; url: string }) {
+  log("main", count, url);
   let pageCount;
-  if (count <= 0) {
-    pageCount = await getPageCount({ url: sigoHomeURL });
+  if (!count) {
+    pageCount = await getPageCount({ url: url });
   } else {
     pageCount = count;
   }
@@ -189,7 +190,7 @@ async function main(count: number = 0) {
     tasks.push(
       plimit(async () => {
         await new Promise((resolve) => setTimeout(resolve, randomInt(3) * 100));
-        await loadAllByPage(page, allItems);
+        await loadAllByPage(url, page, allItems);
       })
     );
     // break; //test
@@ -206,10 +207,9 @@ class XchinaItemData {
   image_count: number = 0;
   video_count: number = 0;
 }
-async function insert() {
+async function insert(jsonPath: string) {
   const jsonData = readFileSync(jsonPath, { encoding: "utf-8" });
   const data = JSON.parse(jsonData);
-  log("data count:", data.length);
   for (let index = 0; index < data.length; index++) {
     const item = data[index];
     const itemData = new XchinaItemData();
@@ -245,11 +245,18 @@ async function insert() {
       log(e);
     }
   }
+  log("data count:", data.length);
 }
 export async function spidexchina() {
-  await main();
   // loadAllByPage(1);
   // getPageCount({ url: sigoHomeURL });
-  await insert();
-}
 
+  let jsonPath = "./tests/xchina/xchina_sigou.json";
+  await main(jsonPath, { count: 1, url: sigoHomeURL });
+  await insert(jsonPath);
+
+  jsonPath = "./tests/xchina/xchina_jvid.json";
+  await main(jsonPath, { count: 1, url: JVIDHOMEURL });
+  await insert(jsonPath);
+}
+// timeCost(spidexchina);
