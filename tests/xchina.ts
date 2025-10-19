@@ -258,11 +258,11 @@ export async function spidexchina() {
   // getPageCount({ url: sigoHomeURL });
 
   let jsonPath = "./tests/xchina/xchina_sigou.json";
-  await main(jsonPath, { count: undefined, url: sigoHomeURL });
+  await main(jsonPath, { count: 1, url: sigoHomeURL });
   await insert(jsonPath);
 
   jsonPath = "./tests/xchina/xchina_jvid.json";
-  await main(jsonPath, { count: undefined, url: JVIDHOMEURL });
+  await main(jsonPath, { count: 1, url: JVIDHOMEURL });
   await insert(jsonPath);
 }
-timeCost(spidexchina);
+// timeCost(spidexchina);
