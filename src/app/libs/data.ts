@@ -236,7 +236,7 @@ export async function queryData({
  // 共用条件对象
       const orArr_xchina = [];
       if (name) {
-        orArr_xchina.push({ tilte: { contains: name } });
+        orArr_xchina.push({ title: { contains: name } });
         orArr_xchina.push({ subs: { contains: name } });
         orArr_xchina.push({ girl_name: { contains: name } });
       }
