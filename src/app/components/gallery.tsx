@@ -14,7 +14,7 @@ const PAGE_SIZE = 20; // 每页显示的图片数量
 const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
 
 export function Gallery({ plat, total, page_data, show_tel }: { plat: PLAT; total: number; show_tel?: boolean; page_data: any[] }) {
-  const totalPages = Math.ceil(total / (plat == 4 ? 1 : PAGE_SIZE));
+  const totalPages = Math.ceil(total / (plat == 4||plat == 5 ? 1 : PAGE_SIZE));
 
   console.log("Gallery dataset: total", total, "totalPages:", totalPages);
   const item_width = "sm:w-[18rem] sm:h-[23rem] max-sm:w-[18rem] max-sm:h-[23rem] ";

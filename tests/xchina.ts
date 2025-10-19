@@ -1,10 +1,11 @@
 import { log } from "console";
-import { retryLopp } from "./utils";
+import { retryLopp, timeCost } from "./utils";
 import parse from "node-html-parser";
 import pLimit from "p-limit";
 import { readFileSync, writeFileSync } from "fs";
 import { deprecate } from "util";
 import prisma from "../prisma/database_api";
+import { randomInt } from "crypto";
 const baseURl = "https://xchina.co";
 const sigoHomeURL = `https://xchina.co/photos/series-66600a3a227ee.html`;
 
@@ -61,9 +62,9 @@ async function getPageCount({ url, doc }: { url?: string; doc?: any }) {
       pager = doc.querySelectorAll("div.pager a");
     }
     if (pager) {
-      log("children count", pager.length);
+      // log("children count", pager.length);
       const pageCount = parseInt(pager[pager?.length - 2].text);
-      log("page count:", pageCount);
+      // log("page count:", pageCount);
       return pageCount;
     }
   }
@@ -72,11 +73,15 @@ async function getPageCount({ url, doc }: { url?: string; doc?: any }) {
 async function loadAllByPage(page: number, allItems: any[]) {
   async function load() {
     const res = await fetch(`https://xchina.co/photos/series-66600a3a227ee/${page}.html`);
-    log("loadAllByPage:", res.status);
+    // log("loadAllByPage:", res.status,res.statusText);
+    if (!res.ok) {
+      log("loadAllByPage failed:", res.status, res.statusText);
+      return;
+    }
     const html = await res.text();
     const doc = parse(html);
     const itemPhotos = doc.querySelectorAll(".item.photo");
-    let plimit = pLimit(5);
+    let plimit = pLimit(50);
 
     let task = [];
     for (const el of itemPhotos) {
@@ -94,10 +99,10 @@ async function loadAllByPage(page: number, allItems: any[]) {
             model_href,
             detail_url: url,
           };
-          log(itemObj);
-          const images = await composeDetailPageImage(url!);
+          const images = await composeDetailPageImage(el);
           if (images) {
-            let newItem = { images: images.imageUrls, videoCount: images.videoCount, ...itemObj };
+            let newItem = { picInfo: images.picInfo, imageCount: images.imageCount, videoCount: images.videoCount, ...itemObj };
+            log(newItem);
             allItems.push(newItem);
           }
         })
@@ -108,62 +113,82 @@ async function loadAllByPage(page: number, allItems: any[]) {
   }
   await retryLopp(0, load);
 }
-async function composeDetailPageImage(detail_url: string) {
+async function composeDetailPageImage(doc: any) {
   log("composeDetailPageImage start");
-  const res = await fetch(`${baseURl}${detail_url}`);
-  if (!res.ok) {
-    return null;
-  }
-  const html = await res.text();
-  const doc = parse(html);
-  let pageCount = await getPageCount({ doc: doc });
-  const video = doc.querySelector(".mp4-player-in-photo video");
-  const index = doc.querySelector(".mp4-player-in-photo .index");
+  // const res = await fetch(`${baseURl}${detail_url}`);
+  // if (!res.ok) {
+  //   return null;
+  // }
+  // const html = await res.text();
+  // const doc = parse(html);
+  // let pageCount = await getPageCount({ doc: doc });
+  // const video = doc.querySelector(".mp4-player-in-photo video");
+  // const index = doc.querySelector(".mp4-player-in-photo .index");
+  const picInfo = doc.querySelector(".tags").children[0]?.text;
   let videoCount = 0;
-  if (index) {
-    const count = index.text;
+  // if (index) {
+  //   const count = index.text;
+  //   log("video count", count);
+  //   if (count && count.includes("/")) {
+  //     try {
+  //       videoCount = parseInt(count.split("/")[1].replace('"', "").trim());
+  //       log("parseInt video count", videoCount);
+  //     } catch (e) {
+  //       log("parseInt error", count);
+  //     }
+  //   }
+  // }
 
-    log("video count", count);
-    if (count && count.includes("/")) {
-      try {
-        videoCount = parseInt(count.split("/")[1].replace('"', "").trim());
-        log("parseInt video count", videoCount);
-      } catch (e) {
-        log("parseInt error", count);
-      }
-    }
+  let imageCount = 0;
+  const array = picInfo?.split("P");
+  // log("array:", array, array.length);
+  imageCount = parseInt(array[0]);
+  if (array.length > 1 && array[1] !== "") {
+    videoCount = parseInt(array[1].trim().replace("+", "").replace("V", "").trim());
   }
-  if (video) {
-    log("found video, skip:", video.attributes["src"]);
-  }
-  let imageUrls: string[] = [];
-  if (pageCount == 0) {
-    pageCount = doc.querySelectorAll(".item.photo-image div.img").length;
-  }
-  log("composeDetailPageImage pageCount:", pageCount);
-  for (let index = 1; index < pageCount * 15; index++) {
-    const id = detail_url.substring(detail_url.indexOf("-") + 1, detail_url.indexOf(".html"));
-    // log(index, "composeDetailPageImage id:", id);
-    const formatted = index.toString().padStart(4, "0");
-    let imageUrl = "https://img.xchina.io/photos2/" + id + "/" + formatted + ".jpg";
-    // log("composed imageUrl", imageUrl);
-    imageUrls.push(imageUrl);
-  }
-
-  return { imageUrls, videoCount };
+  // log("composeDetailPageImage pageCount:", pageCount);
+  // if (pageCount == 0) {
+  //   imageCount = doc.querySelectorAll(".item.photo-image div.img").length;
+  // } else {
+  //   // let imageUrls: string[] = [];
+  //   // for (let index = 1; index < pageCount * 15; index++) {
+  //   //   const id = detail_url.substring(detail_url.indexOf("-") + 1, detail_url.indexOf(".html"));
+  //   //   // log(index, "composeDetailPageImage id:", id);
+  //   //   const formatted = index.toString().padStart(4, "0");
+  //   //   let imageUrl = "https://img.xchina.io/photos2/" + id + "/" + formatted + ".jpg";
+  //   //   // log("composed imageUrl", imageUrl);
+  //   //   imageUrls.push(imageUrl);
+  //   // }
+  //   imageCount = (pageCount - 1) * 15;
+  //   const response = await fetch(`${baseURl}${detail_url.replace(".html", `/${pageCount}.html`)}`);
+  //   if (response.ok) {
+  //     const html = await response.text();
+  //     const pageDoc = parse(html);
+  //     imageCount += pageDoc.querySelectorAll(".item.photo-image div.img").length;
+  //   }
+  // }
+  const result = { imageCount, videoCount, picInfo };
+  log("picInfo:", result);
+  return result;
 }
 
 const jsonPath = "./tests/xchina/xchina_sigou.json";
-async function main() {
-  const pageCount = 1; //await getPageCount({ url: sigoHomeURL });
+async function main(count: number = 0) {
+  let pageCount;
+  if (count <= 0) {
+    pageCount = await getPageCount({ url: sigoHomeURL });
+  } else {
+    pageCount = count;
+  }
   let allItems: any[] = [];
   let tasks: any[] = [];
-  let plimit = pLimit(1);
+  let plimit = pLimit(3);
 
   for (let page = 1; page <= pageCount; page++) {
     log(`load page ${page}`);
     tasks.push(
       plimit(async () => {
+        await new Promise((resolve) => setTimeout(resolve, randomInt(3) * 100));
         await loadAllByPage(page, allItems);
       })
     );
@@ -188,37 +213,43 @@ async function insert() {
   for (let index = 0; index < data.length; index++) {
     const item = data[index];
     const itemData = new XchinaItemData();
-    itemData.subs = item.subs;
+    itemData.subs = item.subs + " [" + item.picInfo + "]";
     itemData.title = item.title;
     itemData.girl_name = item.model ?? item.title;
     let detail_url = item.detail_url;
     const id = detail_url.substring(detail_url.indexOf("-") + 1, detail_url.indexOf(".html"));
     itemData.album_id = id;
-    itemData.image_count = item.images.length;
+    itemData.image_count = item.imageCount;
     itemData.video_count = item.videoCount;
     try {
-      //   const find = await prisma.xChinaSigou.findFirst({
-      //     where: { album_id: itemData.album_id },
-      //   });
-      //   if (find) {
-      //     // log("already exists:", itemData.album_id, itemData.title);
-      //     continue;
-      //   }
-      const insert = await prisma.xChinaSigou.updateMany({
-        data: itemData,
+      const find = await prisma.xChinaSigou.findFirst({
         where: { album_id: itemData.album_id },
       });
-      if (insert) {
-        log("insert:", insert.count, item.model ?? "", item.subs);
+      if (find) {
+        const insert = await prisma.xChinaSigou.updateMany({
+          data: itemData,
+          where: { album_id: itemData.album_id },
+        });
+        if (insert) {
+          log("update:", insert.count, item.model ?? "", item.subs);
+        }
+      } else {
+        const insert = await prisma.xChinaSigou.createMany({
+          data: itemData,
+        });
+        if (insert) {
+          log("insert:", insert.count, item.model ?? "", item.subs);
+        }
       }
     } catch (e) {
       log(e);
     }
   }
 }
-export function spidexchina() {
-  main();
+export async function spidexchina() {
+  await main();
   // loadAllByPage(1);
   // getPageCount({ url: sigoHomeURL });
-  insert();
+  await insert();
 }
+
