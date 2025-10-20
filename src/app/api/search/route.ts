@@ -6,9 +6,10 @@ import { NextRequest } from "next/server";
 export async function GET(req: NextRequest) {
   const headersList = await headers();
   const ua = headersList.get("user-agent");
+  const agent = headersList.get("agent");
   const referer = headersList.get("referer");
-  console.log("ua:", ua, "referer:", referer, "origin:", req.nextUrl.origin);
-  if (!ua || referer !== "jaysen") {
+  console.log("agent",agent,"ua:", ua, "referer:", referer, "origin:", req.nextUrl.origin);
+  if (!ua || agent !== "jaysen") {
     return Response.json({ error: "bad request" }, { status: 400 });
   }
   const params = req.nextUrl.searchParams;
