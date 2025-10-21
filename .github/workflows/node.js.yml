@@ -19,7 +19,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ["self-hosted", "4090"]
+    runs-on: ["self-hosted", "gallery-4090"]
 
     strategy:
       matrix:
