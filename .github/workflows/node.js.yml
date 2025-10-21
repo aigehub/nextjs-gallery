@@ -19,7 +19,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ["self-hosted", "gallery-aigc"]
+    runs-on: ["self-hosted"]
 
     strategy:
       matrix:
