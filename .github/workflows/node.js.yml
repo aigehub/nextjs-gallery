@@ -35,9 +35,9 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: |
-        apt update
-        apt install -y ca-certificates
-        update-ca-certificates
+        # apt update
+        # apt install -y ca-certificates
+        # update-ca-certificates
         export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
         DATABASE_URL="file:./data/girls.db?timeout=5000" npx tsx tests/common_spide.ts true
     - name: git update
