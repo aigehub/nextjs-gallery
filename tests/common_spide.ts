@@ -79,7 +79,7 @@ export async function insertOne<T extends Omit<any, "id">>(
   if (!isUpdate) {
     const res = await girlsPlatform.findFirst(data);
     if (res) {
-      console.log(platforn_name, "已存在", data?.name, data?.code_ref);
+      // console.log(platforn_name, "已存在", data?.name, data?.code_ref);
       return 0;
     }
   }
@@ -94,8 +94,6 @@ export async function insertOne<T extends Omit<any, "id">>(
       data.name ?? "",
       data.titlename ?? "",
       data.address ?? "",
-      "count:",
-      count
     );
     if (count) {
       return 1;
@@ -365,7 +363,6 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
 }
 async function spiderGilrs() {
   const zz = new ZhizunPlatform();
-  //zhizun
   await runStartSpider<ZhizunGirl>({
     girlsPlatform: zz,
     platforn_name: "zhizun",
@@ -374,7 +371,7 @@ async function spiderGilrs() {
     insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
     all_data_file_path: "../json/all/zhizun_all_girls_details.json",
   });
-  //58kv
+
   // const kv58 = new Kv58Platform();
   //// await runStartSpider<Girl58Kv>({
   ////    girlsPlatform: kv58,
@@ -385,7 +382,6 @@ async function spiderGilrs() {
   //   // all_data_file_path: "../json/all/all_58kv_data.json",
   ////  });
 
-  // jimei
   const jimei = new JimeiPlatform();
   await runStartSpider<Girl>({
     girlsPlatform: jimei,
@@ -437,6 +433,6 @@ async function loopName() {
 
 // loopName();
 timeCost(spiderGilrs);
-timeCost(meirentuSpide);
+// timeCost(meirentuSpide);
 // meirentuSpideName("李丽莎");
-timeCost(spidexchina);
+// timeCost(spidexchina);

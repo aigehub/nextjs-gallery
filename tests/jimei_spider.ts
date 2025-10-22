@@ -188,7 +188,7 @@ async function loadHomePageData({
   if (retry_count == undefined) {
     retry_count = 0;
   }
-  console.log("jimei loadHomePageData", JSON.stringify(getHeaders(), null, 2));
+  // console.log("jimei loadHomePageData start page_number", page_number);
   let jsonObj = null;
   try {
     const res = fetch(
@@ -215,15 +215,18 @@ async function loadHomePageData({
     if (jsonObj.message == "锁定" || jsonObj.message == "会话已过期") return jsonObj.message;
   } else {
     const data_array: Array<object> = jsonObj.data;
-    console.log(`==》page ${page_number}，数据数量：${data_array.length}:`, data_array[0] ?? "NoData");
+    let rangeRefName = "";
+    if (rangeRef == 3) {
+      rangeRefName = "大圈";
+    } else {
+      rangeRefName = "中圈";
+    }
+    console.log(
+      `==》${rangeRefName}_${getProvinceNameByCode(p_number)}_${getCityNameByCode(c_number)}_page${page_number}，数据数量：${data_array.length}:`,
+      data_array[0] ? "" : "NoData"
+    );
     if (data_array.length > 0) {
       //save json to local file system
-      let rangeRefName = "";
-      if (rangeRef == 3) {
-        rangeRefName = "大圈";
-      } else {
-        rangeRefName = "中圈";
-      }
       const filePath = path.join(
         process.cwd(),
         "json",
@@ -366,9 +369,20 @@ async function getGirlDetails(id: number, retryCount: number = 0, maxRetries: nu
         console.log(res, "被锁定了，不再继续请求");
         return jsonObj.message;
       }
-      console.log(`✅ fetch success for url=${url} `, jsonObj);
+      // console.log(`✅ fetch success for url=${url} `);
       const data_obj: any = jsonObj.data;
-      console.log(`girl id=${id} details:\n`, data_obj);
+      console.log(
+        `girl id=${id} details:`,
+        data_obj.name,
+        data_obj.remarks,
+        data_obj.province,
+        data_obj.city,
+        data_obj.age,
+        data_obj.height,
+        data_obj.weight,
+        data_obj.bust,
+        data_obj.skill
+      );
       data_obj["id"] = id; // add id field
       data_obj["api_url"] = url; // add id field
       data_obj["web_url"] = "https://pig.zwidi.cn/girlDetails.html?id=" + id; // add id field
@@ -404,7 +418,7 @@ async function loadAllGirlsJSONData({
     console.log("json_path", json_path);
     const content = fs.readFileSync(json_path, "utf-8");
     cachedGirlsData = JSON.parse(content);
-    console.log(`==》loadAllGirlsJSONData，数据数量：${cachedGirlsData.length}:\n`, cachedGirlsData[0]);
+    console.log(`==》loadAllGirlsJSONData，数据数量：${cachedGirlsData.length}:\n`);
   }
   if (slice_by_page) return cachedGirlsData.slice((page_no - 1) * page_size, page_no * page_size);
   else return cachedGirlsData;
@@ -429,7 +443,7 @@ export {
 async function testLoadAllCitiesGirlsData() {
   // await checkExpires();
   const conut = provinces.city.length;
-  let plimit = pLimit(5); // 设置最大并发数为 5
+  let plimit = pLimit(10); // 设置最大并发数为 5
   let task = [];
   for (let i = 0; i < conut; i++) {
     const c = provinces.city[i];
@@ -471,7 +485,7 @@ async function testSaveAllGirlsDetails() {
   const files = fs.readdirSync(jsonDir);
 
   console.log("files.length:", files.length);
-  const plimit = pLimit(5); // 设置最大并发数为 5
+  const plimit = pLimit(20); // 设置最大并发数为 5
 
   const allRequests: Promise<void>[] = [];
 

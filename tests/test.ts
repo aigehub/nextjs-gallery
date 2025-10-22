@@ -104,12 +104,39 @@ async function update_test() {
 }
 // update_test()
 
-function testImages(){
+async function testImages(){
   let images:number[]=[]
   addImages(images)
   log("images:",images)
+   const res = await fetch("https://www.zz2025.cc/v1/product/", {
+      headers: {
+        accept: "application/json, text/plain, */*",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+        "cache-control": "no-cache, no-store, must-revalidate",
+        priority: "u=1, i",
+        "sec-ch-ua": '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": '"Android"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6MSwiaXNzIjoiaXNzdWVyIiwiZXhwIjoxNzYxOTY2MjQyfQ.wZfKJwaI6LjcjJMEilW1Zv8-Sugl6lZvzRlD2DlQ3pg",
+        // "cookie": "__51vcke__3LXbMpY3HA4LNEfR=3f3b417e-d3c3-56f5-a840-07825429f121; __51vuft__3LXbMpY3HA4LNEfR=1758242696587; __51uvsct__3LXbMpY3HA4LNEfR=3; __vtins__3LXbMpY3HA4LNEfR=%7B%22sid%22%3A%20%22db3a81d8-5596-5dc4-952e-491291bf250b%22%2C%20%22vd%22%3A%202%2C%20%22stt%22%3A%20217248%2C%20%22dr%22%3A%20217248%2C%20%22expires%22%3A%201758299762861%2C%20%22ct%22%3A%201758297962861%7D",
+        Referer: "https://www.zz2025.cc/",
+      },
+      body: JSON.stringify({
+        city_code: 100,
+        district_code: 0,
+        tag: 0,
+        page_index: 35,
+        premium: false, //false 中圈，true 大圈
+      }),
+      method: "POST",
+    });
+console.log(res,await res.json())
 }
 function addImages(images:number[]){
   images.push(1)
 }
 // testImages()
+
