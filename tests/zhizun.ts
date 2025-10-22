@@ -19,7 +19,7 @@ async function getProduct(params: QUERY_BODY = data) {
   } else {
     // console.log("已有token:", token);
   }
-  console.log("start getProduct");
+  // console.log("start getProduct");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000); // 3秒超时
   const res = await fetch("https://www.zz2025.cc/v1/product", {
@@ -54,6 +54,7 @@ async function getProduct(params: QUERY_BODY = data) {
     if (json_str && json_str.code === 0) {
       // console.log(res, JSON.stringify(json_str, null, 2));
       mkdirIfNotExists("json/zhizun");
+      console.log("save file: product?.length", json_str.data?.product?.length ?? 0);
       fs.writeFileSync(`json/zhizun/${params.premium ? "大圈" : "中圈"}zhizun_page_${params.page_index}.json`, JSON.stringify(json_str, null, 2));
       return json_str;
     } else {
@@ -229,7 +230,7 @@ async function loadAllData() {
 }
 
 async function getGirlDetails(id: number, retry_count = 0) {
-  console.log("getGirlDetails start id:", id);
+  // console.log("getGirlDetails start id:", id);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 3000); // 3秒超时
   try {
@@ -259,7 +260,7 @@ async function getGirlDetails(id: number, retry_count = 0) {
       return null;
     }
     const json_str = await res.json();
-    console.log(res.statusText, "data length:", json_str?.data?.length ?? 0);
+    console.log("id:", id, "data:", json_str?.name, json_str?.city_name, json_str?.district_name, json_str?.tag_name[0]);
     return json_str;
   } catch (e) {
     console.log("getGirlDetails error", e);
@@ -290,7 +291,7 @@ async function saveAllDetails() {
   for (const file of files) {
     if (file.startsWith("中圈") || file.startsWith("大圈")) {
       const fullpath = dir + "/" + file;
-      console.log("处理读取文件：", fullpath);
+      // console.log("读取文件：", fullpath);
       const res = fs.readFileSync(fullpath, { encoding: "utf-8" });
       const jsondata = JSON.parse(res);
       let plimit = pLimit(10);
