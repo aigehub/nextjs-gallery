@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "prebuild": "npx prisma generate",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "test": "npx tsx tests/common_spide.ts true > test.log"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
