@@ -1,52 +1,6 @@
 {
   "code": 0,
   "data": {
-    "product": [
-      {
-        "id": 14950,
-        "status": true,
-        "valid": true,
-        "recommend": false,
-        "agent_id": 2554,
-        "name": "大⭕️品质 栗可 人比花香",
-        "image": "[\"14950/1976781772112793600.jpg\", \"14950/1976781776416149504.jpg\", \"14950/1976781780593676288.jpg\", \"14950/1976781784804757504.jpg\", \"14950/1976781788806123520.jpg\", \"14950/1976781793767985152.jpg\"]",
-        "media": "[]",
-        "tag": "[39, 40, 41, 34, 28, 35, 32, 16, 13]",
-        "authentication": "[\"14950/1976781867138945024\"]",
-        "premium": false,
-        "code": 2862,
-        "city_code": 100,
-        "district_code": 105,
-        "address": "众乐新村",
-        "certification": true,
-        "poster": "https://octopus.leelawyer.cn:2000/14950/1976781737866301440.jpg",
-        "random_index": "2000",
-        "city_name": "上海",
-        "district_name": "黄埔",
-        "tag_name": [
-          "清纯型",
-          "甜美型",
-          "服务型",
-          "可夜",
-          "三点粉",
-          "大长腿",
-          "刚下海",
-          "制服",
-          "69"
-        ],
-        "images": [
-          "https://octopus.leelawyer.cn:2000/14950/1976781772112793600.jpg",
-          "https://octopus.leelawyer.cn:2000/14950/1976781776416149504.jpg",
-          "https://octopus.leelawyer.cn:2000/14950/1976781780593676288.jpg",
-          "https://octopus.leelawyer.cn:2000/14950/1976781784804757504.jpg",
-          "https://octopus.leelawyer.cn:2000/14950/1976781788806123520.jpg",
-          "https://octopus.leelawyer.cn:2000/14950/1976781793767985152.jpg"
-        ],
-        "medium": [],
-        "authentications": [
-          "https://octopus.leelawyer.cn:2000/14950/1976781867138945024"
-        ]
-      }
-    ]
+    "product": null
   }
 }
