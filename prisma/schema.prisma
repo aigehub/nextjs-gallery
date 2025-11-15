@@ -79,6 +79,8 @@ model Girl {
   qq                String
   xl                String
   yn                String
+  qh                String   @default("") //启航 
+  bb                String   @default("") //帮办
   phone             String
   remarks           String
   photo             String
