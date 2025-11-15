@@ -14,14 +14,17 @@ const PAGE_SIZE = 20; // 每页显示的图片数量
 const IMG_BASE_URL = "https://pig.zwidi.cn"; // 替换为你的图片基础URL
 
 export function Gallery({ plat, total, page_data, show_tel }: { plat: PLAT; total: number; show_tel?: boolean; page_data: any[] }) {
-  const totalPages = Math.ceil(total / (plat == 4||plat == 5 ? 1 : PAGE_SIZE));
+  const totalPages = Math.ceil(total / (plat == 4 || plat == 5 ? 1 : PAGE_SIZE));
 
   console.log("Gallery dataset: total", total, "totalPages:", totalPages);
   const item_width = "sm:w-[18rem] sm:h-[23rem] max-sm:w-[18rem] max-sm:h-[23rem] ";
   return (
     <>
       {/* 分页组件 */}
-      <Pagination totalPages={totalPages} className="mb-4 mt-4" />
+      <Pagination
+        totalPages={totalPages}
+        className="mb-4 mt-4"
+      />
 
       {/* 外层：纵向排列每个 item */}
       <div className="flex flex-wrap gap-4 items-start justify-center">
@@ -37,7 +40,10 @@ export function Gallery({ plat, total, page_data, show_tel }: { plat: PLAT; tota
         ))}
       </div>
 
-      <Pagination totalPages={totalPages} className="p-2" />
+      <Pagination
+        totalPages={totalPages}
+        className="p-2"
+      />
     </>
   );
 }
@@ -132,8 +138,18 @@ function ModelGirl({
       {/* 视频弹窗 */}
       {videoOpen && videoSrc && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10050 text-white">
-          <XCircleIcon className="fixed top-6 right-6  h-6 w-6 cursor-pointer" onClick={() => setVideoOpen(false)} />
-          <SmartVideo isLargePreview={true} plat={plat} src={videoSrc} controls autoPlay style={{ maxHeight: "80vh", maxWidth: "90vw" }} />
+          <XCircleIcon
+            className="fixed top-6 right-6  h-6 w-6 cursor-pointer"
+            onClick={() => setVideoOpen(false)}
+          />
+          <SmartVideo
+            isLargePreview={true}
+            plat={plat}
+            src={videoSrc}
+            controls
+            autoPlay
+            style={{ maxHeight: "80vh", maxWidth: "90vw" }}
+          />
         </div>
       )}
     </>
@@ -174,7 +190,15 @@ function PhotoViewer(props: PhotoViewerProps): React.JSX.Element {
 }
 function getImageComponent(images: string[], item: any, plat: number, item_width: string): React.ReactNode {
   return images.map((img: string, idx: number) => {
-    return <PhotoViewer key={idx + "PhotoViewer" + item.id} img={img} plat={plat} name={item.name} item_width={item_width} />;
+    return (
+      <PhotoViewer
+        key={idx + "PhotoViewer" + item.id}
+        img={img}
+        plat={plat}
+        name={item.name}
+        item_width={item_width}
+      />
+    );
   });
 }
 
@@ -247,9 +271,14 @@ function getAllImageUrls(item: any, plat: PLAT): string[] {
       return xchinadataSet;
     default:
     case 1: //"jimei"
-      return Array.from({ length: 6 })
+      return Array.from({ length: 7 })
         .map((_, idx) => {
-          const index = `photo${idx + 1}` as keyof typeof item;
+          let index;
+          if (idx == 0) {
+            index = `photo` as keyof typeof item;
+          } else {
+            index = `photo${idx}` as keyof typeof item;
+          }
           return item[index] ? IMG_BASE_URL + item[index] : null;
         })
         .filter(Boolean) as string[];
