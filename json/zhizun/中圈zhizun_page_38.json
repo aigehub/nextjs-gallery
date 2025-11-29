@@ -1,56 +1,6 @@
 {
   "code": 0,
   "data": {
-    "product": [
-      {
-        "id": 12034,
-        "status": true,
-        "valid": true,
-        "recommend": false,
-        "agent_id": 2583,
-        "name": "长宁靠近闵行韩国安妮 60分钟二次",
-        "image": "[\"12034/1962788210950017024.jpg\", \"12034/1962788260417638400.jpg\", \"12034/1962788317980266496.jpg\", \"12034/1962788376671162368.jpg\", \"12034/1962788431398440960.jpg\", \"12034/1962806865767174144.jpg\", \"12034/1962806922205728768.jpg\", \"12034/1962806980405891072.jpg\", \"12034/1962807048521388032.jpg\", \"12034/1962807089197748224.jpg\", \"12034/1966502512190033920.jpg\", \"12034/1966502538463154176.jpg\", \"12034/1966502577474375680.jpg\"]",
-        "media": "[\"12034/1962807241815887872\", \"12034/1962807730636853248\"]",
-        "tag": "[35, 39, 40]",
-        "authentication": "[\"12034/1962811522560299008\"]",
-        "premium": false,
-        "code": 520888,
-        "city_code": 100,
-        "district_code": 108,
-        "address": "长宁区姚虹路519号",
-        "certification": true,
-        "poster": "https://octopus.leelawyer.cn:2000/12034/1980202413222531072.jpg",
-        "random_index": "1991",
-        "city_name": "上海",
-        "district_name": "长宁",
-        "tag_name": [
-          "大长腿",
-          "清纯型",
-          "甜美型"
-        ],
-        "images": [
-          "https://octopus.leelawyer.cn:2000/12034/1962788210950017024.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962788260417638400.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962788317980266496.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962788376671162368.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962788431398440960.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962806865767174144.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962806922205728768.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962806980405891072.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962807048521388032.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1962807089197748224.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1966502512190033920.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1966502538463154176.jpg",
-          "https://octopus.leelawyer.cn:2000/12034/1966502577474375680.jpg"
-        ],
-        "medium": [
-          "https://octopus.leelawyer.cn:2000/12034/1962807241815887872",
-          "https://octopus.leelawyer.cn:2000/12034/1962807730636853248"
-        ],
-        "authentications": [
-          "https://octopus.leelawyer.cn:2000/12034/1962811522560299008"
-        ]
-      }
-    ]
+    "product": null
   }
 }
