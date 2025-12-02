@@ -1,6 +1,47 @@
 {
   "code": 0,
   "data": {
-    "product": null
+    "product": [
+      {
+        "id": 2426,
+        "status": true,
+        "valid": true,
+        "recommend": false,
+        "agent_id": 535,
+        "name": "普陀大长腿大屁股",
+        "image": "[\"2426/1935281746761224192.jpg\", \"2426/1935281778625351680.jpg\", \"2426/1935281804026056704.jpg\", \"2426/1935281829015719936.jpg\", \"2426/1935281859004993536.jpg\"]",
+        "media": "[\"2426/1935281984934776832\"]",
+        "tag": "[12, 13, 33, 35, 36]",
+        "authentication": "[]",
+        "premium": false,
+        "code": 3426,
+        "city_code": 100,
+        "district_code": 104,
+        "address": "上海市普陀区",
+        "certification": true,
+        "poster": "https://octopus.leelawyer.cn:2000/2426/1935281599096557568.jpg",
+        "random_index": "1999",
+        "city_name": "上海",
+        "district_name": "普陀",
+        "tag_name": [
+          "舌吻",
+          "69",
+          "可外",
+          "大长腿",
+          "蜜桃臀"
+        ],
+        "images": [
+          "https://octopus.leelawyer.cn:2000/2426/1935281746761224192.jpg",
+          "https://octopus.leelawyer.cn:2000/2426/1935281778625351680.jpg",
+          "https://octopus.leelawyer.cn:2000/2426/1935281804026056704.jpg",
+          "https://octopus.leelawyer.cn:2000/2426/1935281829015719936.jpg",
+          "https://octopus.leelawyer.cn:2000/2426/1935281859004993536.jpg"
+        ],
+        "medium": [
+          "https://octopus.leelawyer.cn:2000/2426/1935281984934776832"
+        ],
+        "authentications": []
+      }
+    ]
   }
 }
