@@ -45,11 +45,11 @@ jobs:
     - name: git update
       if: matrix.node-version == '22.x'
       run: |
-       git config user.name "github-actions[bot]"
+        git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git status
         git add --all
-       git commit -m "auto spide data and update database" || echo "no changes"
+        git commit -m "auto spide data and update database - $(date '+%Y-%m-%d %H:%M:%S')" || echo "no changes"
         git push --all
 
         
