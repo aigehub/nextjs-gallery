@@ -130,7 +130,7 @@ export class PuppeteerCloudflareBypass {
           if (stillHasChallenge) {
             log(`⚠️  尝试 ${attempt}: Cloudflare挑战未完成`);
             if (attempt < maxRetries) {
-              await this.page.waitForTimeout(2000);
+              await new Promise(resolve => setTimeout(resolve, 3000));
               continue;
             }
             return false;
@@ -142,7 +142,7 @@ export class PuppeteerCloudflareBypass {
         if (finalStatus === 403) {
           log(`⚠️  尝试 ${attempt}: 仍然收到403状态码`);
           if (attempt < maxRetries) {
-            await this.page.waitForTimeout(3000);
+            await new Promise(resolve => setTimeout(resolve, 3000));
             continue;
           }
           return false;
@@ -157,7 +157,7 @@ export class PuppeteerCloudflareBypass {
       } catch (error: any) {
         log(`❌ 尝试 ${attempt} 失败:`, error.message);
         if (attempt < maxRetries) {
-          await this.page.waitForTimeout(3000);
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       }
     }
@@ -206,7 +206,7 @@ export class PuppeteerCloudflareBypass {
         return;
       }
 
-      await this.page.waitForTimeout(500);
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     log('⏱️  等待超时');
@@ -363,9 +363,7 @@ export class PuppeteerCloudflareBypass {
    * 等待指定时间
    */
   async wait(ms: number): Promise<void> {
-    if (this.page) {
-      await this.page.waitForTimeout(ms);
-    }
+    await new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
