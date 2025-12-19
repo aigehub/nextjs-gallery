@@ -2,13 +2,124 @@ import { log } from "console";
 import { retryLoop, timeCost } from "./utils";
 import parse from "node-html-parser";
 import pLimit from "p-limit";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { deprecate } from "util";
 import prisma from "../prisma/database_api";
 import { randomInt } from "crypto";
+import { join } from "path";
+// 使用 cloudscraper 绕过 Cloudflare 保护
+const cloudscraper = require('cloudscraper');
+
 const baseURl = "https://xchina.co";
 const sigoHomeURL = `https://xchina.co/photos/series-66600a3a227ee.html`;
 const JVIDHOMEURL = "https://xchina.co/photos/series-637b2029d2347.html";
+
+/**
+ * ⚠️  如何更新 Cookie（当遇到 403 错误时）：
+ *
+ * 方法1: 从文件加载（推荐）
+ *   - 编辑 tests/xchina/cookies.json
+ *   - 按照 tests/update-cookies.md 的步骤获取Cookie
+ *   - 将Cookie粘贴到 cookies.json 的 cookies 字段
+ *
+ * 方法2: 直接修改代码
+ *   - 手动更新下面 getHeaders() 函数中的 cookie 字段
+ *
+ * 注意：cf_clearance cookie 通常有效期约5分钟到2小时
+ */
+
+// 从文件加载Cookie配置
+function loadCookiesFromFile(): { cookies: string; userAgent: string } | null {
+  const cookieFilePath = join(__dirname, 'xchina', 'cookies.json');
+
+  if (existsSync(cookieFilePath)) {
+    try {
+      const cookieData = JSON.parse(readFileSync(cookieFilePath, 'utf-8'));
+
+      // 检查Cookie是否有效
+      if (cookieData.cookies && cookieData.cookies !== '请在这里粘贴你的完整Cookie字符串' && cookieData.cookies.length > 50) {
+        const cookieAge = Date.now() - (cookieData.timestamp || 0);
+        const ageMinutes = Math.floor(cookieAge / 60000);
+
+        log(`📁 从文件加载Cookie: ${cookieFilePath}`);
+        log(`🕐 Cookie年龄: ${ageMinutes}分钟前`);
+
+        if (ageMinutes > 120) {
+          log(`⚠️  Cookie可能已过期（超过2小时），建议更新`);
+        }
+
+        return {
+          cookies: cookieData.cookies,
+          userAgent: cookieData.userAgent || "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36"
+        };
+      }
+    } catch (e) {
+      log(`❌ 读取Cookie文件失败: ${e}`);
+    }
+  }
+
+  log(`⚠️  未找到有效的Cookie文件，使用默认配置（可能已过期）`);
+  return null;
+}
+
+// 获取请求头
+function getHeaders() {
+  const cookieConfig = loadCookiesFromFile();
+
+  const headers = {
+    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7",
+    "cache-control": "no-cache",
+    dnt: "1",
+    pragma: "no-cache",
+    priority: "u=0, i",
+    "sec-ch-ua": '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+    "sec-ch-ua-mobile": "?1",
+    "sec-ch-ua-platform": '"Android"',
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "none",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1",
+    "user-agent": cookieConfig?.userAgent || "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",
+    cookie: cookieConfig?.cookies || "pv_punch_pc=%7B%22count%22%3A1%2C%22expiry%22%3A1766212667%7D; showed_adscarat_shuffle_box=1; ck_theme=dark; _ga=GA1.1.1370686643.1766126414; pv_punch_mobile=%7B%22count%22%3A1%2C%22expiry%22%3A1766212833%7D; _ga_F0JXM9DQXX=GS2.1.s1766126413$o1$g1$t1766126433$j40$l0$h0; deviceType=1; cf_clearance=m8wiuzwRNLDU4YX2lw8OXcA1VctbXL3e7PHXsmTI6Qk-1766126435-1.2.1.1-N7XF_7q8ZJuw79yE2pk6506UXnjchjP69GbQYYih6PrrFyGW32BDmrMb_JZc0h0dLwZD_3JFVbQuHiR9K2pGUyRLCjw4NAHo5DaRFjFlHaQ5aLYKZdLsg87Mba9kmj1fPvEMfMOA5Atqc0bTdDRy8wQ1XL3YMgTle2fePMBueiLcVgKY_GvzsOGll8erN4yuM365C1MjV23BvAOHnzPrC4ZApfvaOxVz5172xxb5smU"
+  };
+
+  return headers;
+}
+
+async function fetchWithHeaders(url: string) {
+  try {
+    // 使用 cloudscraper 自动绕过 Cloudflare
+    const html = await cloudscraper.get({
+      uri: url,
+      headers: {
+        'User-Agent': getHeaders()['user-agent'],
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+      },
+      timeout: 30000,
+    });
+
+    log(`✅ cloudscraper 请求成功: ${url.substring(0, 60)}...`);
+
+    // 返回一个类似 fetch Response 的对象
+    return {
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: async () => html,
+    };
+  } catch (error: any) {
+    log(`❌ cloudscraper 请求失败: ${error.message}`);
+    return {
+      ok: false,
+      status: error.statusCode || 500,
+      statusText: error.message,
+      text: async () => "",
+    };
+  }
+}
 
 /**
  * @deprecate composeDetailPageImage
@@ -18,7 +129,7 @@ async function loadDetailPage(detail_url: string) {
   const pageCount = await getPageCount({ url: `${baseURl}${detail_url}` });
   //加载每一页
   async function load(page: number, imageUrls: string[]) {
-    const res = await fetch(`${baseURl}${detail_url.replace(".html", `/${page}.html`)}`);
+    const res = await fetchWithHeaders(`${baseURl}${detail_url.replace(".html", `/${page}.html`)}`);
     if (res.ok) {
       const html = await res.text();
       const pageDoc = parse(html);
@@ -54,7 +165,7 @@ async function getPageCount({ url, doc }: { url?: string; doc?: any }) {
   async function load() {
     let pager;
     if (url) {
-      const res = await fetch(url);
+      const res = await fetchWithHeaders(url);
       log("getPageCount:", url, "statuscode:", res.status, res.statusText);
       const html = await res.text();
       const document = parse(html);
@@ -73,15 +184,28 @@ async function getPageCount({ url, doc }: { url?: string; doc?: any }) {
 }
 async function loadAllByPage(url: string, page: number, allItems: any[]) {
   async function load() {
-    const res = await fetch(`${url.replace(".html", `/${page}.html`)}`);
-    // log("loadAllByPage:", res.status,res.statusText);
+    const pageUrl = `${url.replace(".html", `/${page}.html`)}`;
+    log(`正在请求: ${pageUrl}`);
+
+    const res = await fetchWithHeaders(pageUrl);
+    log(`loadAllByPage 第${page}页:`, res.status, res.statusText);
+
     if (!res.ok) {
-      log("loadAllByPage failed:", res.status, res.statusText);
-      throw Error(res.statusText);
+      if (res.status === 403) {
+        log("⚠️  403 Forbidden - 可能原因:");
+        log("  1. Cloudflare cf_clearance cookie已过期");
+        log("  2. 请求频率过高，触发反爬虫");
+        log("  3. User-Agent被识别为爬虫");
+        log("  建议: 手动访问网站，获取新的 cf_clearance cookie");
+      }
+      throw Error(`${res.status} ${res.statusText}`);
     }
+
     const html = await res.text();
     const doc = parse(html);
     const itemPhotos = doc.querySelectorAll(".item.photo");
+    log(`第${page}页找到 ${itemPhotos.length} 个项目`);
+
     let plimit = pLimit(50);
 
     let task = [];
@@ -187,13 +311,17 @@ async function main(jsonPath: string, { count, url }: { count?: number; url: str
   }
   let allItems: any[] = [];
   let tasks: any[] = [];
-  let plimit = pLimit(3);
+  // 降低并发数，避免触发反爬虫
+  let plimit = pLimit(1);
 
   for (let page = 1; page <= pageCount; page++) {
-    log(`load page ${page}`);
+    log(`load page ${page}/${pageCount}`);
     tasks.push(
       plimit(async () => {
-        await new Promise((resolve) => setTimeout(resolve, randomInt(3) * 100));
+        // 增加随机延迟时间（2-5秒），模拟人类行为
+        const delay = 2000 + randomInt(3000);
+        log(`等待 ${delay}ms 后请求第${page}页...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
         await loadAllByPage(url, page, allItems);
       })
     );
@@ -201,6 +329,7 @@ async function main(jsonPath: string, { count, url }: { count?: number; url: str
   }
   await Promise.all(tasks);
   writeFileSync(jsonPath, JSON.stringify(allItems, null, 2), { encoding: "utf-8" });
+  log(`✅ 数据已保存到: ${jsonPath}, 共 ${allItems.length} 项`);
 }
 
 class XchinaItemData {
