@@ -1,56 +1,6 @@
 {
   "code": 0,
   "data": {
-    "product": [
-      {
-        "id": 15606,
-        "status": true,
-        "valid": true,
-        "recommend": false,
-        "agent_id": 50,
-        "name": "嘉定新人白虎静静",
-        "image": "[\"15606/2005109842972250112.jpg\", \"15606/2005109846440939520.jpg\", \"15606/2005109849297260544.jpg\", \"15606/2005109851511853056.jpg\", \"15606/2005109853739028480.jpg\", \"15606/2005109856230445056.jpg\"]",
-        "media": "[\"15606/2005110246564958208\", \"15606/2005110405579411456\"]",
-        "tag": "[12, 13, 16, 18, 22, 23, 32, 27, 33, 34, 39, 40]",
-        "authentication": "[]",
-        "premium": false,
-        "code": 3266,
-        "city_code": 100,
-        "district_code": 106,
-        "address": "江桥万达",
-        "certification": true,
-        "poster": "https://tencent.leelawyer.cn/15606/2005109620724469760.jpg",
-        "random_index": "1998",
-        "city_name": "上海",
-        "district_name": "嘉定",
-        "tag_name": [
-          "舌吻",
-          "69",
-          "制服",
-          "车震",
-          "白虎",
-          "真实06后",
-          "刚下海",
-          "学妹兼职",
-          "可外",
-          "可夜",
-          "清纯型",
-          "甜美型"
-        ],
-        "images": [
-          "https://tencent.leelawyer.cn/15606/2005109842972250112.jpg",
-          "https://tencent.leelawyer.cn/15606/2005109846440939520.jpg",
-          "https://tencent.leelawyer.cn/15606/2005109849297260544.jpg",
-          "https://tencent.leelawyer.cn/15606/2005109851511853056.jpg",
-          "https://tencent.leelawyer.cn/15606/2005109853739028480.jpg",
-          "https://tencent.leelawyer.cn/15606/2005109856230445056.jpg"
-        ],
-        "medium": [
-          "https://tencent.leelawyer.cn/15606/2005110246564958208",
-          "https://tencent.leelawyer.cn/15606/2005110405579411456"
-        ],
-        "authentications": []
-      }
-    ]
+    "product": null
   }
 }
