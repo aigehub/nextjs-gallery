@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "data": {
+    "product": [
+      {
+        "id": 16994,
+        "status": true,
+        "valid": true,
+        "recommend": false,
+        "agent_id": 3199,
+        "name": "Y1998-涵涵 上海清纯学生妹兼职 168C.07",
+        "image": "[\"16994/2028803762130259968.jpg\", \"16994/2028803766232289280.jpg\", \"16994/2028803771026378752.jpg\", \"16994/2028803778450296832.jpg\", \"16994/2028803782770429952.jpg\", \"16994/2028803788030087168.jpg\"]",
+        "media": "[\"16994/2028803837246050304\"]",
+        "tag": "[40]",
+        "authentication": "[]",
+        "premium": true,
+        "code": 9402,
+        "city_code": 100,
+        "district_code": 109,
+        "address": "美国签证咨询服务",
+        "certification": false,
+        "poster": "https://resource.jinyu32.com/16994/2028803724020813824.jpg",
+        "random_index": "1999",
+        "city_name": "上海",
+        "district_name": "静安",
+        "tag_name": [
+          "甜美型"
+        ],
+        "images": [
+          "https://resource.jinyu32.com/16994/2028803762130259968.jpg",
+          "https://resource.jinyu32.com/16994/2028803766232289280.jpg",
+          "https://resource.jinyu32.com/16994/2028803771026378752.jpg",
+          "https://resource.jinyu32.com/16994/2028803778450296832.jpg",
+          "https://resource.jinyu32.com/16994/2028803782770429952.jpg",
+          "https://resource.jinyu32.com/16994/2028803788030087168.jpg"
+        ],
+        "medium": [
+          "https://resource.jinyu32.com/16994/2028803837246050304"
+        ],
+        "authentications": []
+      }
+    ]
+  }
+}
