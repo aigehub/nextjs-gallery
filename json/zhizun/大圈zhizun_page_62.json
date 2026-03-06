@@ -1,6 +1,46 @@
 {
   "code": 0,
   "data": {
-    "product": null
+    "product": [
+      {
+        "id": 16479,
+        "status": true,
+        "valid": true,
+        "recommend": false,
+        "agent_id": 3199,
+        "name": "Y4112-德国 徐汇欧美大蜜 170H.24🏠三外五",
+        "image": "[\"16479/2027664880642822144.jpg\", \"16479/2027664883276845056.jpg\", \"16479/2027665364137021440.jpg\", \"16479/2027665386396192768.jpg\", \"16479/2027665410102398976.jpg\", \"16479/2027665435582795776.jpg\", \"16479/2027665471494426624.jpg\", \"16479/2027665547482632192.jpg\", \"16479/2027665590063206400.jpg\"]",
+        "media": "[]",
+        "tag": "[13, 43]",
+        "authentication": "[]",
+        "premium": true,
+        "code": 1498,
+        "city_code": 100,
+        "district_code": 103,
+        "address": "金巢铂瑞阁",
+        "certification": false,
+        "poster": "https://res.jinyu32.com/16479/2027664757145735168.jpg",
+        "random_index": "1999",
+        "city_name": "上海",
+        "district_name": "徐汇",
+        "tag_name": [
+          "69",
+          "洋酒"
+        ],
+        "images": [
+          "https://res.jinyu32.com/16479/2027664880642822144.jpg",
+          "https://res.jinyu32.com/16479/2027664883276845056.jpg",
+          "https://res.jinyu32.com/16479/2027665364137021440.jpg",
+          "https://res.jinyu32.com/16479/2027665386396192768.jpg",
+          "https://res.jinyu32.com/16479/2027665410102398976.jpg",
+          "https://res.jinyu32.com/16479/2027665435582795776.jpg",
+          "https://res.jinyu32.com/16479/2027665471494426624.jpg",
+          "https://res.jinyu32.com/16479/2027665547482632192.jpg",
+          "https://res.jinyu32.com/16479/2027665590063206400.jpg"
+        ],
+        "medium": [],
+        "authentications": []
+      }
+    ]
   }
 }
