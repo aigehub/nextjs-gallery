@@ -362,15 +362,15 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
   }
 }
 async function spiderGilrs() {
-  const zz = new ZhizunPlatform();
-  await runStartSpider<ZhizunGirl>({
-    girlsPlatform: zz,
-    platforn_name: "zhizun",
-    checkTokenExpires: checkTokenExpires,
-    mapData: async (data) => await zz.mapData(data),
-    insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
-    all_data_file_path: "../json/all/zhizun_all_girls_details.json",
-  });
+  // const zz = new ZhizunPlatform();
+  // await runStartSpider<ZhizunGirl>({
+  //   girlsPlatform: zz,
+  //   platforn_name: "zhizun",
+  //   checkTokenExpires: checkTokenExpires,
+  //   mapData: async (data) => await zz.mapData(data),
+  //   insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
+  //   all_data_file_path: "../json/all/zhizun_all_girls_details.json",
+  // });
 
   // const kv58 = new Kv58Platform();
   //// await runStartSpider<Girl58Kv>({
