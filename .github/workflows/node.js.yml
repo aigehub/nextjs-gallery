@@ -49,7 +49,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git status
         git add --all
-        git commit -m "auto spide data and update database - $(date '+%Y-%m-%d %H:%M:%S')" || echo "no changes"
+        git commit -m "auto spide data and update database by github actions - $(date '+%Y-%m-%d %H:%M:%S')" || echo "no changes"
         git push --all
 
         
