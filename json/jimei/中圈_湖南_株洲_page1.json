@@ -35,15 +35,15 @@
     "state_ref": 0
   },
   {
-    "id": 42986,
+    "id": 42974,
     "user_id": 15471,
-    "code_ref": "M18335",
-    "name": "宝儿",
-    "age": "20",
-    "height": "166",
-    "weight": "47",
-    "bust": "C",
-    "skill": "六九#长腿#可外#可夜",
+    "code_ref": "M66136",
+    "name": "七七",
+    "age": "19",
+    "height": "165",
+    "weight": "46",
+    "bust": "B",
+    "skill": "SW#萝莉#长腿#可外#可夜",
     "range_ref": 2,
     "price": 1600,
     "priceFlag": 3,
@@ -64,10 +64,10 @@
     "yn": "",
     "phone": "",
     "remarks": "",
-    "photo": "/images/c2qsdzed0436785/vbifhclb0436785.jpeg",
+    "photo": "/images/05sl86u68941628/qnbp9a458941628.jpeg",
     "top": 0,
     "today_top": 0,
-    "state_ref": 0
+    "state_ref": 2
   },
   {
     "id": 42981,
@@ -105,15 +105,15 @@
     "state_ref": 0
   },
   {
-    "id": 42974,
+    "id": 42986,
     "user_id": 15471,
-    "code_ref": "M66136",
-    "name": "七七",
-    "age": "19",
-    "height": "165",
-    "weight": "46",
-    "bust": "B",
-    "skill": "SW#萝莉#长腿#可外#可夜",
+    "code_ref": "M18335",
+    "name": "宝儿",
+    "age": "20",
+    "height": "166",
+    "weight": "47",
+    "bust": "C",
+    "skill": "六九#长腿#可外#可夜",
     "range_ref": 2,
     "price": 1600,
     "priceFlag": 3,
@@ -134,9 +134,9 @@
     "yn": "",
     "phone": "",
     "remarks": "",
-    "photo": "/images/05sl86u68941628/qnbp9a458941628.jpeg",
+    "photo": "/images/c2qsdzed0436785/vbifhclb0436785.jpeg",
     "top": 0,
     "today_top": 0,
-    "state_ref": 2
+    "state_ref": 0
   }
 ]
