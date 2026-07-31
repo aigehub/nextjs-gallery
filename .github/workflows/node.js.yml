@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 
   # 定时触发（每天凌晨 3 点）
-  schedule:
-    - cron: '0 9/12 * * *'   # UTC 时间
-    - cron: '0 1 * * *'   # UTC 时间
+  # schedule:
+  #   - cron: '0 9/12 * * *'   # UTC 时间
+  #   - cron: '0 1 * * *'   # UTC 时间
 env:
   # Setting an environment variable with the value of a configuration variable
   DATABASE_URL: ${{ vars.DATABASE_URL }}
