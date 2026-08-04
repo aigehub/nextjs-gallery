@@ -433,9 +433,9 @@ async function loopName() {
 
 // loopName();
 
-timeCost(spiderGilrs);
+// timeCost(spiderGilrs);
 timeCost(meirentuSpide);
 
 // meirentuSpideName("李丽莎");
 
-timeCost(spidexchina);
+// timeCost(spidexchina);
