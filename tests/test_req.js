@@ -7,7 +7,7 @@
 //     "sec-ch-ua-mobile": "?1",
 //     "sec-ch-ua-platform": "\"Android\"",
 //     "source": "blob",
-//     // "Referer": "https://www.zz2025.cc/"
+//     // "Referer": "https://xc.xz0377.com/"
 //   },
 //   "body": null,
 //   "method": "GET"

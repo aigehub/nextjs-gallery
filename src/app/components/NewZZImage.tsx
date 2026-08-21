@@ -1,0 +1,138 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+const BASE64_ALPHABET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const ENCRYPTED_HEADER_BYTES = 18;
+
+interface NewZZImageProps
+  extends React.ImgHTMLAttributes<HTMLImageElement> {
+  src?: string;
+  plat?: number;
+  onLoadedSrc?: (loadedSrc: string) => void;
+}
+
+function shiftBase64Character(character: string) {
+  const index = BASE64_ALPHABET.indexOf(character);
+  if (index < 0) return character;
+  return BASE64_ALPHABET[index === 0 ? 63 : index - 1];
+}
+
+function isWebP(bytes: Uint8Array) {
+  return (
+    bytes.length >= 12 &&
+    String.fromCharCode(...bytes.subarray(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.subarray(8, 12)) === "WEBP"
+  );
+}
+
+/**
+ * 新版至尊图片把前 18 字节对应的 24 个 Base64 字符循环前移了一位。
+ * 这里执行逆变换，并返回可以被浏览器识别的标准 WebP Blob。
+ */
+export async function decodeZhizunImage(blob: Blob) {
+  const encrypted = new Uint8Array(await blob.arrayBuffer());
+  if (isWebP(encrypted)) return new Blob([encrypted], { type: "image/webp" });
+  if (encrypted.length < ENCRYPTED_HEADER_BYTES) {
+    throw new Error("至尊图片数据过短，无法解码");
+  }
+
+  let binaryHeader = "";
+  for (const byte of encrypted.subarray(0, ENCRYPTED_HEADER_BYTES)) {
+    binaryHeader += String.fromCharCode(byte);
+  }
+  const decodedBase64 = btoa(binaryHeader)
+    .split("")
+    .map(shiftBase64Character)
+    .join("");
+  const decodedHeader = atob(decodedBase64);
+  const output = new Uint8Array(encrypted);
+  for (let index = 0; index < decodedHeader.length; index++) {
+    output[index] = decodedHeader.charCodeAt(index);
+  }
+
+  if (!isWebP(output)) throw new Error("至尊图片解码后不是有效的 WebP");
+  return new Blob([output], { type: "image/webp" });
+}
+
+async function loadZhizunImage(src: string, signal: AbortSignal) {
+  const proxyUrl = `/api/zz-image?src=${encodeURIComponent(src)}`;
+  const response = await fetch(proxyUrl, { signal });
+  if (!response.ok) {
+    throw new Error(`至尊图片加载失败: HTTP ${response.status}`);
+  }
+  return URL.createObjectURL(await decodeZhizunImage(await response.blob()));
+}
+
+function resolveOtherPlatformImage(src: string, plat?: number) {
+  if (plat === 4) return `https://proxy.okforks.com/meirentu/${src}`;
+  if (plat === 5) return `https://proxy.okforks.com/xchina/${src}`;
+  return src;
+}
+
+export default function NewZZImage({
+  src,
+  plat,
+  onLoadedSrc,
+  alt = "",
+  className = "",
+  ...props
+}: NewZZImageProps) {
+  const [loadedSrc, setLoadedSrc] = useState("");
+  const [failed, setFailed] = useState(false);
+  const onLoadedSrcRef = useRef(onLoadedSrc);
+
+  useEffect(() => {
+    onLoadedSrcRef.current = onLoadedSrc;
+  }, [onLoadedSrc]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let objectUrl = "";
+    setFailed(false);
+    setLoadedSrc("");
+
+    if (!src) return () => controller.abort();
+
+    if (plat !== 2) {
+      const resolved = resolveOtherPlatformImage(src, plat);
+      setLoadedSrc(resolved);
+      onLoadedSrcRef.current?.(resolved);
+      return () => controller.abort();
+    }
+
+    void loadZhizunImage(src, controller.signal)
+      .then((url) => {
+        objectUrl = url;
+        setLoadedSrc(url);
+        onLoadedSrcRef.current?.(url);
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        console.error("至尊图片解码失败:", src, error);
+        setFailed(true);
+        onLoadedSrcRef.current?.("");
+      });
+
+    return () => {
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src, plat]);
+
+  const commonClassName = `rounded-lg mb-4 transition-opacity duration-500 w-fit object-cover ${className}`;
+  if (!loadedSrc) {
+    return (
+      <div
+        role="status"
+        className={`flex items-center justify-center text-center ${commonClassName}`}
+      >
+        {failed ? "图片加载失败" : "图片加载中..."}
+      </div>
+    );
+  }
+
+  // Blob URL 需要浏览器原生 img 解码，不能经过 Next Image Optimizer。
+  return <img src={loadedSrc} alt={alt} className={commonClassName} {...props} />;
+}
