@@ -22,7 +22,7 @@ function upgrade(t: string) {
 export async function fetchImageAsBase64(url: string): Promise<string> {
   try {
     const res = await fetch(url, {
-      referrer: "https://www.zz2025.cc/",
+      referrer: "https://xc.xz0377.com/",
     });
     if (!res || !res.ok) throw new Error("HTTP " + res.status);
 

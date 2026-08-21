@@ -1,6 +1,10 @@
 import { Girl, Girl58Kv, Meirentu, ZhizunGirl } from "@/generated/prisma";
 import prisma from "../prisma/database_api";
-import { checkTokenExpires, loadAllData as loadAllDataZz, saveAllDetails as saveAllDetailsZz } from "./zhizun";
+import {
+  checkTokenExpires,
+  loadAllData as loadAllDataZz,
+  saveAllDetails as saveAllDetailsZz,
+} from "./new_zhizun";
 import { checkExpires as checkExpires58, loadAllData, saveAllDetails } from "./58kv_com";
 import { checkTokenExpires as checkTokenExpiresJimei } from "./jimei_userLogin";
 import { testLoadAllCitiesGirlsData, testSaveAllGirlsDetails } from "./jimei_spider";
@@ -115,31 +119,62 @@ export abstract class GirlsPlatform<T> {
   public abstract prismaCreateOne<T>(rest: Omit<T, "id">, isUpdate?: boolean): Promise<number>;
 }
 
+function formatReadableDateTime(date = new Date()) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return [
+    date.getFullYear(),
+    "-",
+    pad(date.getMonth() + 1),
+    "-",
+    pad(date.getDate()),
+    " ",
+    pad(date.getHours()),
+    ":",
+    pad(date.getMinutes()),
+    ":",
+    pad(date.getSeconds()),
+  ].join("");
+}
+
 // ZhizunPlatform
 export class ZhizunPlatform extends GirlsPlatform<ZhizunGirl> {
   public async mapData(data: any[]): Promise<ZhizunGirl[]> {
-    //简单数据
-    //   image           String //[]
-    //   media           String //[]
-    //   tags            String //[]
-    //   authentication  String //[]
-    //   //详细数据
-    //   tag_name        String //[]
-    //   images          String //[]
-    //   medium          String //[]
-    //   authentications String //[]
-    // 把数组字符串转为 JSON 字符串存储
-    const map_data = data.flatMap((item) => {
-      item.image = JSON.stringify(item.image ? item.image : "");
-      item.media = JSON.stringify(item.media ? item.media : "");
-      item.tags = JSON.stringify(item.tag ? item.tag : "");
-      delete item.tag;
-      item.authentication = JSON.stringify(item.authentication ? item.authentication : "");
-      item.tag_name = JSON.stringify(item.tag_name ? item.tag_name : "");
-      item.images = JSON.stringify(item.images ? item.images : "");
-      item.medium = JSON.stringify(item.medium ? item.medium : "");
-      item.authentications = JSON.stringify(item.authentications ? item.authentications : "");
-      return { ...item, url_id: item.id };
+    const map_data = data.map((item) => {
+      const images = Array.isArray(item.images) ? item.images : [];
+      const videos = Array.isArray(item.videos) ? item.videos : [];
+      const authVideos = Array.isArray(item.authVideos) ? item.authVideos : [];
+      const tags = Array.isArray(item.tags) ? item.tags : [];
+      const tagNames = tags.map((tag: any) => tag?.name ?? tag).filter(Boolean);
+      const code = Number(item.code);
+
+      return {
+        // 新旧站会复用正数详情 ID。新版统一使用负数 code 作为独立命名空间，
+        // 原始（可能超过 JS 安全整数范围的）详情 ID 保存到 random_index。
+        url_id: -Math.abs(code),
+        status: item.status == null ? true : Boolean(item.status),
+        valid: true,
+        recommend: Boolean(item.isPinned),
+        agent_id: Number(item.jjAccountId ?? 0),
+        name: String(item.title ?? ""),
+        premium: item.tier === "premium",
+        code,
+        city_code: Number(item.cityCode ?? 0),
+        district_code: Number(item.districtCode ?? 0),
+        address: String(item.address ?? ""),
+        certification: Boolean(item.isCertified),
+        poster: String(item.poster ?? ""),
+        random_index: String(item.id ?? ""),
+        city_name: String(item.cityName ?? ""),
+        district_name: String(item.districtName ?? ""),
+        image: JSON.stringify(images),
+        media: JSON.stringify(videos),
+        tags: JSON.stringify(tags),
+        authentication: JSON.stringify(authVideos),
+        tag_name: JSON.stringify(tagNames),
+        images: JSON.stringify(images),
+        medium: JSON.stringify(videos),
+        authentications: JSON.stringify(authVideos),
+      } as ZhizunGirl;
     });
     return Promise.resolve(map_data);
   }
@@ -153,7 +188,16 @@ export class ZhizunPlatform extends GirlsPlatform<ZhizunGirl> {
     if (await this.findFirst(rest as any)) {
       return 0;
     }
-    const count = await prisma.zhizunGirl.create({ data: rest as any });
+    const count = await prisma.$transaction(async (transaction) => {
+      const created = await transaction.zhizunGirl.create({ data: rest as any });
+      // Prisma/SQLite 会把 DateTime 写成毫秒整数；显式改为便于直接查看的本地时间。
+      await transaction.$executeRaw`
+        UPDATE ZhizunGirl
+        SET create_time = ${formatReadableDateTime()}
+        WHERE id = ${created.id}
+      `;
+      return created;
+    });
     return count ? (count as unknown as number) : 0;
   }
   public async findFirst<zhizunGirl>(data: zhizunGirl): Promise<zhizunGirl | null> {
@@ -364,15 +408,15 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
   }
 }
 async function spiderGilrs() {
-  // const zz = new ZhizunPlatform();
-  // await runStartSpider<ZhizunGirl>({
-  //   girlsPlatform: zz,
-  //   platforn_name: "zhizun",
-  //   checkTokenExpires: checkTokenExpires,
-  //   mapData: async (data) => await zz.mapData(data),
-  //   insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
-  //   all_data_file_path: "../json/all/zhizun_all_girls_details.json",
-  // });
+  const zz = new ZhizunPlatform();
+  await runStartSpider<ZhizunGirl>({
+    girlsPlatform: zz,
+    platforn_name: "zhizun",
+    checkTokenExpires: async () => Boolean(await checkTokenExpires()),
+    mapData: async (data) => await zz.mapData(data),
+    insertOne: async (data, platforn_name) => await insertOne(data, zz, platforn_name),
+    all_data_file_path: "../json/all/new_zhizun_all_girls_details.json",
+  });
 
   // const kv58 = new Kv58Platform();
   //// await runStartSpider<Girl58Kv>({
@@ -384,15 +428,15 @@ async function spiderGilrs() {
   //   // all_data_file_path: "../json/all/all_58kv_data.json",
   ////  });
 
-  const jimei = new JimeiPlatform();
-  await runStartSpider<Girl>({
-    girlsPlatform: jimei,
-    platforn_name: "jimei",
-    checkTokenExpires: checkTokenExpiresJimei,
-    insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
-    mapData: async (data) => await mapData(data),
-    all_data_file_path: "../json/all/all_girls_details.json",
-  });
+  // const jimei = new JimeiPlatform();
+  // await runStartSpider<Girl>({
+  //   girlsPlatform: jimei,
+  //   platforn_name: "jimei",
+  //   checkTokenExpires: checkTokenExpiresJimei,
+  //   insertOne: async (data, platforn_name) => await insertOne(data, jimei, platforn_name),
+  //   mapData: async (data) => await mapData(data),
+  //   all_data_file_path: "../json/all/all_girls_details.json",
+  // });
 }
 
 async function meirentuSpide() {
@@ -435,7 +479,7 @@ async function loopName() {
 
 // loopName();
 
-// timeCost(spiderGilrs);
+timeCost(spiderGilrs);
 timeCost(meirentuSpide);
 
 // meirentuSpideName("李丽莎");

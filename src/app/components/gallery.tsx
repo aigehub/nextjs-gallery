@@ -6,7 +6,7 @@ import "react-photo-view/dist/react-photo-view.css";
 import React from "react";
 import { PLAT } from "@/app/libs/data";
 import Pagination from "./pagination";
-import SmartImage from "./ZZImage";
+import SmartImage from "./NewZZImage";
 import SmartVideo from "./ZZVideo";
 import clsx from "clsx";
 import { XCircleIcon } from "@heroicons/react/24/solid";
