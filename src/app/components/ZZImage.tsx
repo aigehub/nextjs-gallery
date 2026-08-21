@@ -119,7 +119,7 @@ export default function SmartImage({ src, onLoadedSrc, plat, alt = "", className
 async function fetchMeirentu(src: string) {
   let proxy = "";
   // if (process.env.NODE_ENV == "development") {
-  proxy = "https://proxy.codelin.vip/meirentu/";
+  proxy = "https://proxy.okforks.com/meirentu/";
   // }
   // const res = await fetch(proxy + src, {
   //   referrer: "https://meirentu.cc/",
@@ -134,6 +134,6 @@ async function fetchMeirentu(src: string) {
 }
 async function fetchXhcina(src: string) {
   console.log("fetchXhcina", src, "process.env.NODE_ENV:", process.env.NODE_ENV);
-  let proxy = "https://proxy.codelin.vip/xchina/";
+  let proxy = "https://proxy.okforks.com/xchina/";
   return proxy + src;
 }

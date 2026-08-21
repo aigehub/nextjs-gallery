@@ -29,22 +29,27 @@ import { PLIMIT_COUNT } from "./common_spide";
 import { retryLoop } from "./utils";
 
 export async function loadHomePage(page: number) {
-  const res = await fetch(`https://meirentu.cc/index/${page}.html`, {
-    headers: httpHeaders(),
-    method: "GET",
-  });
-  console.log("loadHomePage", res.status);
+  try {
+    const res = await fetch(`https://meirentu.cc/index/${page}.html`, {
+      headers: httpHeaders(),
+      method: "GET",
+    });
+    console.log("loadHomePage", page, res.status);
 
-  if (res && res.status === 200) {
-    // 获取压缩后的二进制内容
-    let html = await parseResponseText(res);
+    if (res.status === 200) {
+      // 获取压缩后的二进制内容
+      let html = await parseResponseText(res);
+      console.log("html", html.slice(0, 500)); // 只打印前 500 字符
+      const doc = parse(html);
+      return parseHomePageImageList(doc);
+    }
 
-    console.log("html", html.slice(0, 500)); // 只打印前 500 字符
-    const doc = parse(html);
-    return parseHomePageImageList(doc);
+    console.log("loadHomePage non-200 status", page, res.status);
+    return null;
+  } catch (error) {
+    console.log("loadHomePage fetch error", page, error);
+    throw error;
   }
-
-  return null;
 }
 async function parseResponseText(res: Response) {
   const buffer = Buffer.from(await res.arrayBuffer());
@@ -65,25 +70,28 @@ async function parseResponseText(res: Response) {
 
 export async function loadDetailPage(item: MeiRenTuImageData) {
   const url = `https://meirentu.cc${item.href}`;
-  let res = await fetch(url, {
-    headers: httpHeaders(),
-    method: "GET",
-  });
-  log(`loadDetailPage res ${res.status}`);
-  if (res.status == 200) {
-    let html = await parseResponseText(res);
-    const doc = parse(html);
-    let detailImages = await parseDetailImage(doc);
-    item.girl_desc = detailImages?.girl_desc;
-    item.images = detailImages?.images;
-    item.tags = detailImages?.tags;
-    const count = item.images?.split(",");
-
-    log(url, "all images:", count, count?.length);
+  try {
+    let res = await fetch(url, {
+      headers: httpHeaders(),
+      method: "GET",
+    });
+    log(`loadDetailPage res ${res.status}`);
+    if (res.status == 200) {
+      let html = await parseResponseText(res);
+      const doc = parse(html);
+      let detailImages = await parseDetailImage(doc);
+      item.girl_desc = detailImages?.girl_desc;
+      item.images = detailImages?.images;
+      item.tags = detailImages?.tags;
+      const count = item.images?.split(",");
+      log(url, "all images:", count, count?.length);
+      return item;
+    }
+    log("loadDetailPage non-200 status", url, res.status);
     return item;
-  } else {
-    log("load data not success");
-    return item;
+  } catch (error) {
+    log("loadDetailPage fetch error", url, error);
+    throw error;
   }
 }
 
@@ -160,35 +168,46 @@ async function parseDetailImage(doc: HTMLElement) {
 async function fetchDetail(hrefPath: string, images: String[]) {
   log("fetchDetail:hrefPath:", hrefPath);
   let url = new URL("https://meirentu.cc" + hrefPath!);
-  let res = await fetch(url, {
-    headers: httpHeaders(),
-    method: "GET",
-  });
-  if (res.status == 200) {
-    let detailDoc = parse(await parseResponseText(res));
-    const srcs = parseDetailImageSrc(detailDoc);
-    if (!images.includes(srcs[0])) {
-      images.push(...srcs);
-      //   log("images push:", srcs.length);
+  try {
+    let res = await fetch(url, {
+      headers: httpHeaders(),
+      method: "GET",
+    });
+    if (res.status == 200) {
+      let detailDoc = parse(await parseResponseText(res));
+      const srcs = parseDetailImageSrc(detailDoc);
+      if (!images.includes(srcs[0])) {
+        images.push(...srcs);
+      } else {
+        log("already includes");
+      }
     } else {
-      log("already includes");
+      log("fetchDetail non-200 status:", url.href, res.status);
     }
-  } else {
-    log("fetchDetail error:", res);
+  } catch (error) {
+    log("fetchDetail fetch error:", url.href, error);
+    throw error;
   }
 }
 
 export async function loadDataByModelName(name: String, page: number) {
-  const res = await fetch(`https://meirentu.cc/model/${name}-${page}.html`, { headers: httpHeaders(), method: "GET" });
-  const code = res.status;
-  if (code == 200) {
-    const html = await parseResponseText(res);
-    const doc = parse(html);
-    return parseHomePageImageList(doc);
-  } else {
-    log("loadDataByModelName code ", code);
+  try {
+    const res = await fetch(`https://meirentu.cc/model/${name}-${page}.html`, {
+      headers: httpHeaders(),
+      method: "GET",
+    });
+    const code = res.status;
+    if (code == 200) {
+      const html = await parseResponseText(res);
+      const doc = parse(html);
+      return parseHomePageImageList(doc);
+    }
+    log("loadDataByModelName non-200 status", name, page, code);
+    return code;
+  } catch (error) {
+    log("loadDataByModelName fetch error", name, page, error);
+    throw error;
   }
-  return code;
 }
 export class MeiRenTuImageData {
   //    tags: string;

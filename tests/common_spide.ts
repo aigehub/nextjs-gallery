@@ -268,9 +268,11 @@ export class MeirentuPlatform extends GirlsPlatform<Meirentu> {
   public async loadAllData(): Promise<any> {
     for (let i = 1; i <= this.loadPageCount; i++) {
       log("loadHomePage:", i);
-      let res = await loadHomePage(i);
+      let res = await retryLoop(0, loadHomePage, i);
       if (res) {
         this.page_data.push(...res);
+      } else {
+        log("loadHomePage failed after retries:", i);
       }
     }
     return Promise.resolve(null);
