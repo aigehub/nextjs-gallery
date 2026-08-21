@@ -46,7 +46,7 @@ export default function SmartVideo({ isLargePreview = false, src, plat, poster, 
         };
       }
     } else if (plat == 5) {
-      let proxy = "https://proxy.codelin.vip/xchina/" + src;
+      let proxy = "https://proxy.okforks.com/xchina/" + src;
       setBlobUrl(proxy);
     } else {
       setBlobUrl(src);

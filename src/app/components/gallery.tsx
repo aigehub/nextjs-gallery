@@ -167,9 +167,9 @@ function PhotoViewer(props: PhotoViewerProps): React.JSX.Element {
   const [imgSrc, setImgSrc] = useState("");
   let dataSrc = "";
   if (props.plat == 4) {
-    dataSrc = "https://proxy.codelin.vip/meirentu/" + props.img;
+    dataSrc = "https://proxy.okforks.com/meirentu/" + props.img;
   } else if (props.plat == 5) {
-    dataSrc = "https://proxy.codelin.vip/xchina/" + props.img;
+    dataSrc = "https://proxy.okforks.com/xchina/" + props.img;
   } else {
     dataSrc = props.plat == 2 ? imgSrc : props.img;
   }
