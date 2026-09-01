@@ -1,15 +1,26 @@
 /**
- * 下载新版至尊相册的全部媒体资源。
+ * 下载新版至尊相册的媒体资源。
+ *
+ * 模式：
+ *   --mode today    只下载 updatedAt 落在本地今日零点之后的条目（默认）
+ *   --mode full     下载清单里全部条目
+ *   --since <date>  只下载 updatedAt >= 给定日期的条目（YYYY-MM-DD）
+ *
+ * 其它常用参数：
+ *   --limit <n>            只处理前 n 条
+ *   --images-only          只下载图片
+ *   --videos-only          只下载视频
+ *   --concurrency <n>      条目级并发，默认 4
+ *   --force                无视本地已有文件，全部重下
+ *
+ * 下载前去重规则：
+ *   - 已完整下载过的条目整体跳过，连 metadata.json 都不重写
+ *   - 部分文件缺失 / 损坏时，只重下坏的那部分
+ *   - 图片：文件头必须是合法 WebP（匹配已解码或原始加密产物）
+ *   - 视频：要求 .complete 标记 + 至少一个 video.* / auth.* (>0)
  *
  * 默认输入：json/zhizun/new_zhizun_all_list.json
  * 默认输出：downloads/new_zhizun
- *
- * 示例：
- *   npx tsx tests/download_new_zhizun_media.ts
- *   npx tsx tests/download_new_zhizun_media.ts --limit 2
- *   npx tsx tests/download_new_zhizun_media.ts --images-only
- *   npx tsx tests/download_new_zhizun_media.ts --videos-only --concurrency 2
- *   npx tsx tests/download_new_zhizun_media.ts --force
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -24,6 +35,8 @@ const BASE64_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 const ENCRYPTED_HEADER_BASE64_LENGTH = 24;
 
+type Mode = "full" | "today" | "since";
+
 interface AlbumItem {
   id: number | string;
   code?: string;
@@ -34,6 +47,7 @@ interface AlbumItem {
   images?: string[];
   videos?: string[];
   authVideos?: string[];
+  updatedAt?: string;
 }
 
 interface DownloadOptions {
@@ -45,6 +59,9 @@ interface DownloadOptions {
   force: boolean;
   downloadImages: boolean;
   downloadVideos: boolean;
+  mode: Mode;
+  since?: string;
+  dryRun: boolean;
 }
 
 interface Failure {
@@ -52,6 +69,13 @@ interface Failure {
   kind: string;
   url: string;
   error: string;
+}
+
+interface ItemEntry {
+  url: string;
+  name: string;
+  kind: "poster" | "image" | "video" | "auth-video";
+  isHls: boolean;
 }
 
 const options = parseArguments(process.argv.slice(2));
@@ -63,21 +87,40 @@ const segmentLimit = pLimit(options.segmentConcurrency);
 const ffmpegLimit = pLimit(1);
 let downloadedFiles = 0;
 let skippedFiles = 0;
+let skippedItems = 0;
 
 async function main() {
-  const items = readItems(options.input);
-  const selected = options.limit ? items.slice(0, options.limit) : items;
+  const allItems = readItems(options.input);
+  const filtered = filterByMode(allItems);
+  const selected = options.limit ? filtered.slice(0, options.limit) : filtered;
   fs.mkdirSync(options.output, { recursive: true });
 
   const totals = countResources(selected);
   console.log("新版至尊媒体下载开始", {
     input: options.input,
     output: options.output,
-    items: selected.length,
+    mode: options.mode,
+    since: options.since ?? null,
+    itemsTotal: allItems.length,
+    itemsInScope: filtered.length,
+    itemsSelected: selected.length,
     ...totals,
     concurrency: options.concurrency,
     segmentConcurrency: options.segmentConcurrency,
+    force: options.force,
+    dryRun: options.dryRun,
   });
+  if (options.dryRun) {
+    console.log("[dry-run] 不实际下载，仅打印要处理的条目概览");
+    selected.slice(0, 5).forEach((item, index) => {
+      console.log(
+        `  #${index + 1} id=${item.id} code=${item.code ?? "-"} updatedAt=${item.updatedAt ?? "-"} ` +
+        `images=${1 + (item.images?.length ?? 0)} videos=${(item.videos?.length ?? 0) + (item.authVideos?.length ?? 0)}`,
+      );
+    });
+    if (selected.length > 5) console.log(`  … 共 ${selected.length} 条`);
+    return;
+  }
 
   let completed = 0;
   await Promise.all(
@@ -87,7 +130,7 @@ async function main() {
         completed++;
         if (completed % 10 === 0 || completed === selected.length) {
           console.log(
-            `进度 ${completed}/${selected.length}，下载 ${downloadedFiles}，跳过 ${skippedFiles}，失败 ${failures.length}`,
+            `进度 ${completed}/${selected.length}，下载 ${downloadedFiles}，跳过文件 ${skippedFiles}，跳过条目 ${skippedItems}，失败 ${failures.length}`,
           );
         }
       }),
@@ -98,7 +141,12 @@ async function main() {
     finishedAt: new Date().toISOString(),
     input: options.input,
     output: options.output,
-    items: selected.length,
+    mode: options.mode,
+    since: options.since ?? null,
+    itemsTotal: allItems.length,
+    itemsInScope: filtered.length,
+    itemsSelected: selected.length,
+    skippedItems,
     downloadedFiles,
     skippedFiles,
     failed: failures.length,
@@ -106,6 +154,7 @@ async function main() {
   };
   await writeJsonAtomic(path.join(options.output, "download-report.json"), report);
   console.log("下载完成", {
+    skippedItems,
     downloadedFiles,
     skippedFiles,
     failed: failures.length,
@@ -134,6 +183,182 @@ function countResources(items: AlbumItem[]) {
   return { images, videos };
 }
 
+/**
+ * 按 options.mode 从全量清单中筛选本轮要下载的条目。
+ * - full：直接返回全部
+ * - today：取本地当日零点作为 since 边界
+ * - since：使用用户传入的 YYYY-MM-DD
+ */
+function filterByMode(items: AlbumItem[]) {
+  if (options.mode === "full") return items;
+  const since = options.mode === "today" ? localToday() : options.since!;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(since)) {
+    throw new Error(`--since 需要 YYYY-MM-DD 格式，收到: ${since}`);
+  }
+  // updatedAt 形如 "2026-08-23 00:00:00"，字典序与日期序一致
+  return items.filter((item) => {
+    const updated = String(item.updatedAt ?? "");
+    return updated.slice(0, 10) >= since;
+  });
+}
+
+function localToday() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * 把一个条目所有要拉取的媒体资源列成平铺列表。
+ * 供「去重判断」和「下载执行」共用，避免两边各自拼路径造成不一致。
+ */
+function buildEntries(item: AlbumItem): ItemEntry[] {
+  const entries: ItemEntry[] = [];
+  if (item.poster) {
+    entries.push({
+      url: item.poster,
+      name: "poster.webp",
+      kind: "poster",
+      isHls: false,
+    });
+  }
+  [...new Set((item.images || []).filter(isString))]
+    .filter((url) => url !== item.poster)
+    .forEach((url, index) => {
+      entries.push({
+        url,
+        name: `image_${String(index + 1).padStart(3, "0")}.webp`,
+        kind: "image",
+        isHls: false,
+      });
+    });
+
+  const ordinary = [...new Set((item.videos || []).filter(isString))];
+  const authentication = [...new Set((item.authVideos || []).filter(isString))];
+  ordinary.forEach((url, index) => {
+    entries.push({
+      url,
+      name: `video_${String(index + 1).padStart(3, "0")}`,
+      kind: "video",
+      isHls: /\.m3u8(?:\?|$)/i.test(url) || !hasFileExtension(url),
+    });
+  });
+  authentication.forEach((url, index) => {
+    entries.push({
+      url,
+      name: `auth_${String(index + 1).padStart(3, "0")}`,
+      kind: "auth-video",
+      isHls: /\.m3u8(?:\?|$)/i.test(url) || !hasFileExtension(url),
+    });
+  });
+  return entries;
+}
+
+function entryDir(entry: ItemEntry) {
+  if (entry.kind === "poster" || entry.kind === "image") return "images";
+  if (entry.kind === "auth-video") return "auth-videos";
+  return "videos";
+}
+
+/**
+ * 找一条 image entry 在磁盘上的实际文件。
+ * 历史版本可能存成 .webp（加密产物/已解码），新版按真实格式存成 .jpg/.png/.webp。
+ * 命中任一且文件头是合法图片即返回路径，否则 null。
+ */
+function findExistingImageFile(itemDirectory: string, entry: ItemEntry): string | null {
+  const dir = path.join(itemDirectory, entryDir(entry));
+  const stem = baseName(entry.name);
+  const candidates = [".webp", ".jpg", ".jpeg", ".png", ".gif"].map((ext) =>
+    path.join(dir, stem + ext),
+  );
+  for (const file of candidates) {
+    if (isValidImageFile(file)) return file;
+  }
+  return null;
+}
+
+function entryFileName(entry: ItemEntry) {
+  if (entry.kind === "poster" || entry.kind === "image") return entry.name; // poster.webp / image_NNN.webp
+  return entry.name + ".mp4";
+}
+
+function baseName(file: string) {
+  return file.replace(/\.[^.]+$/, "");
+}
+
+function entryKey(entry: ItemEntry) {
+  return `${entry.kind}:${entry.name}`;
+}
+
+/**
+ * 落盘的"图片文件"是否已下载且合法：
+ * 不再只限 WebP — im4ge 偶尔按 Accept 返回明文 JPEG/PNG，
+ * 这些也应该视为合法已下载，避免反复回源。
+ * 文件名统一仍是 entry.name(.webp)，只校验内容。
+ */
+function isValidImageFile(filename: string) {
+  if (!fs.existsSync(filename)) return false;
+  const descriptor = fs.openSync(filename, "r");
+  try {
+    const header = Buffer.alloc(16);
+    const n = fs.readSync(descriptor, header, 0, 16, 0);
+    if (n < 3) return false;
+    return detectGenericImageFormat(header.subarray(0, n)) !== null;
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+/**
+ * 视频判定：
+ *   HLS    — 目录下要有 .complete 标记 + video.mp4 (>0)
+ *   非 HLS — 目录下要有 .complete 标记 + 至少一个 video.* / auth.* (>0)
+ */
+function fileLooksLikeVideo(directory: string, isHls: boolean): boolean {
+  const marker = path.join(directory, ".complete");
+  if (!fs.existsSync(marker)) return false;
+  if (isHls) {
+    const target = path.join(directory, "video.mp4");
+    return fs.existsSync(target) && fs.statSync(target).size > 0;
+  }
+  try {
+    return fs
+      .readdirSync(directory)
+      .filter((name) => /^(video|auth)\./i.test(name))
+      .some((name) => fs.statSync(path.join(directory, name)).size > 0);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 判定单个条目是否已"完整下载过"。
+ * 返回每条 entry 的合法性 Map，方便调用方只重下坏的那部分。
+ */
+function itemIsComplete(item: AlbumItem, itemDirectory: string): {
+  complete: boolean;
+  entryValid: Map<string, boolean>;
+} {
+  const entryValid = new Map<string, boolean>();
+  let complete = true;
+  for (const entry of buildEntries(item)) {
+    if (!options.downloadImages && (entry.kind === "poster" || entry.kind === "image")) continue;
+    if (!options.downloadVideos && (entry.kind === "video" || entry.kind === "auth-video")) continue;
+    let ok: boolean;
+    if (entry.kind === "poster" || entry.kind === "image") {
+      const filePath = findExistingImageFile(itemDirectory, entry);
+      ok = filePath !== null;
+    } else {
+      ok = fileLooksLikeVideo(path.join(itemDirectory, entryDir(entry)), entry.isHls);
+    }
+    entryValid.set(entryKey(entry), ok);
+    if (!ok) complete = false;
+  }
+  return { complete, entryValid };
+}
+
 async function downloadItem(item: AlbumItem) {
   const itemId = String(item.id);
   const girlName = item.name || item.title || "unnamed";
@@ -145,53 +370,114 @@ async function downloadItem(item: AlbumItem) {
     sanitize(item.tier || "unknown"),
     directoryName,
   );
-  fs.mkdirSync(itemDirectory, { recursive: true });
 
+  // ===== 下载前去重 =====
+  // 整个条目已完整 → 直接跳过，连 metadata.json 都不重写，
+  // 避免 today 模式重跑时反复覆盖已下好的条目。
+  if (!options.force && fs.existsSync(path.join(itemDirectory, "metadata.json"))) {
+    const { complete, entryValid } = itemIsComplete(item, itemDirectory);
+    if (complete) {
+      skippedItems++;
+      return;
+    }
+    // 部分文件缺失/损坏：只重下坏的那部分
+    const pending = buildEntries(item).filter((entry) => {
+      if (!options.downloadImages && (entry.kind === "poster" || entry.kind === "image")) return false;
+      if (!options.downloadVideos && (entry.kind === "video" || entry.kind === "auth-video")) return false;
+      return !entryValid.get(entryKey(entry));
+    });
+    fs.mkdirSync(itemDirectory, { recursive: true });
+    await writeJsonAtomic(path.join(itemDirectory, "metadata.json"), item);
+    await runEntries(itemId, itemDirectory, pending);
+    return;
+  }
+
+  fs.mkdirSync(itemDirectory, { recursive: true });
   await writeJsonAtomic(path.join(itemDirectory, "metadata.json"), item);
 
-  const tasks: Promise<void>[] = [];
-  if (options.downloadImages) {
-    const imageEntries: Array<{ url: string; name: string }> = [];
-    if (item.poster) imageEntries.push({ url: item.poster, name: "poster.webp" });
-    [...new Set((item.images || []).filter(isString))]
-      .filter((url) => url !== item.poster)
-      .forEach((url, index) => {
-        imageEntries.push({
-          url,
-          name: `image_${String(index + 1).padStart(3, "0")}.webp`,
-        });
-      });
-    imageEntries.forEach(({ url, name }) => {
-      tasks.push(resourceLimit(() => captureFailure(itemId, "image", url, () => downloadDecodedImage(url, path.join(itemDirectory, "images", name)))));
-    });
-  }
+  const entries = buildEntries(item).filter((entry) => {
+    if (!options.downloadImages && (entry.kind === "poster" || entry.kind === "image")) return false;
+    if (!options.downloadVideos && (entry.kind === "video" || entry.kind === "auth-video")) return false;
+    return true;
+  });
+  await runEntries(itemId, itemDirectory, entries);
+}
 
-  if (options.downloadVideos) {
-    const ordinary = [...new Set((item.videos || []).filter(isString))];
-    const authentication = [...new Set((item.authVideos || []).filter(isString))];
-    ordinary.forEach((url, index) => {
-      tasks.push(resourceLimit(() => captureFailure(itemId, "video", url, () => downloadVideo(url, path.join(itemDirectory, "videos", `video_${String(index + 1).padStart(3, "0")}`)))));
-    });
-    authentication.forEach((url, index) => {
-      tasks.push(resourceLimit(() => captureFailure(itemId, "auth-video", url, () => downloadVideo(url, path.join(itemDirectory, "auth-videos", `auth_${String(index + 1).padStart(3, "0")}`)))));
-    });
-  }
+async function runEntries(itemId: string, itemDirectory: string, entries: ItemEntry[]) {
+  const tasks = entries.map((entry) =>
+    resourceLimit(() =>
+      captureFailure(itemId, entry.kind, entry.url, async () => {
+        const targetDir = path.join(itemDirectory, entryDir(entry));
+        if (entry.kind === "poster" || entry.kind === "image") {
+          await downloadDecodedImage(entry.url, itemDirectory, entry);
+        } else {
+          await downloadVideo(entry.url, path.join(targetDir, entry.name));
+        }
+      }),
+    ),
+  );
   await Promise.all(tasks);
 }
 
-async function downloadDecodedImage(url: string, destination: string) {
-  if (!options.force && isValidWebP(destination)) {
+/**
+ * 按真实格式落盘：同一 entry 只会保留一种扩展名（.webp / .jpg / .png / .gif），
+ * 与 findExistingImageFile 配合确保跨扩展名去重。
+ */
+async function downloadDecodedImage(
+  url: string,
+  itemDirectory: string,
+  entry: ItemEntry,
+) {
+  const existing = findExistingImageFile(itemDirectory, entry);
+  if (!options.force && existing) {
     skippedFiles++;
     return;
   }
-  const encrypted = await fetchBuffer(url);
-  const decoded = decodeZhizunImage(encrypted);
-  await writeFileAtomic(destination, decoded);
+
+  const fetched = await fetchBuffer(url);
+  const { data, ext } = decodeZhizunImage(fetched);
+
+  const dir = path.join(itemDirectory, entryDir(entry));
+  const stem = baseName(entry.name);
+  const destination = path.join(dir, stem + ext);
+  // 同 entry 只保留一份；如果之前按别的扩展名落过盘（比如旧版强制 .webp），清理掉
+  for (const suffix of [".webp", ".jpg", ".jpeg", ".png", ".gif"]) {
+    if (suffix === ext) continue;
+    const stale = path.join(dir, stem + suffix);
+    if (fs.existsSync(stale)) {
+      try { fs.unlinkSync(stale); } catch { /* ignore */ }
+    }
+  }
+  await writeFileAtomic(destination, data);
   downloadedFiles++;
 }
 
-export function decodeZhizunImage(encrypted: Buffer) {
-  if (isWebP(encrypted)) return encrypted;
+/**
+ * 与前端 NewZZImage.decodeZhizunImage 对齐：
+ * - 先按 magic bytes 识别明文图（JPEG / PNG / GIF / WebP），匹配则原样返回
+ *   （im4ge 偶尔会按 Accept 头返回明文 JPEG，URL 看起来是 .webp 但实际不是）
+ * - 不匹配才走 18 字节 base64 位移反变换，结果是 webp
+ * 返回值带 mimeType，方便下载方决定落盘扩展名
+ */
+function detectGenericImageFormat(buf: Buffer): { mime: string; ext: string } | null {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    return { mime: "image/jpeg", ext: ".jpg" };
+  }
+  if (buf.length >= 4 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
+    return { mime: "image/png", ext: ".png" };
+  }
+  if (buf.length >= 6 && buf.subarray(0, 4).toString("ascii") === "GIF8") {
+    return { mime: "image/gif", ext: ".gif" };
+  }
+  if (isWebP(buf)) {
+    return { mime: "image/webp", ext: ".webp" };
+  }
+  return null;
+}
+
+export function decodeZhizunImage(encrypted: Buffer): { data: Buffer; mime: string; ext: string } {
+  const plain = detectGenericImageFormat(encrypted);
+  if (plain) return { data: encrypted, ...plain };
   if (encrypted.length < 18) throw new Error("图片内容太短，无法解码");
 
   const encoded = encrypted.toString("base64");
@@ -208,8 +494,10 @@ export function decodeZhizunImage(encrypted: Buffer) {
     decodedHeader + encoded.slice(ENCRYPTED_HEADER_BASE64_LENGTH),
     "base64",
   );
-  if (!isWebP(decoded)) throw new Error("解码后不是有效 WebP");
-  return decoded;
+  // 至尊 CDN 的加密产物已见过 WebP / PNG 两种，后续再加格式就放宽成 magic bytes 全部接受
+  const decodedKind = detectGenericImageFormat(decoded);
+  if (!decodedKind) throw new Error("解码后不是可识别的图片格式");
+  return { data: decoded, ...decodedKind };
 }
 
 async function downloadVideo(source: string, destinationDirectory: string) {
@@ -466,17 +754,6 @@ async function writeJsonAtomic(destination: string, value: unknown) {
   await writeFileAtomic(destination, Buffer.from(JSON.stringify(value, null, 2)));
 }
 
-function isValidWebP(filename: string) {
-  if (!fs.existsSync(filename)) return false;
-  const descriptor = fs.openSync(filename, "r");
-  try {
-    const header = Buffer.alloc(12);
-    return fs.readSync(descriptor, header, 0, 12, 0) === 12 && isWebP(header);
-  } finally {
-    fs.closeSync(descriptor);
-  }
-}
-
 function isWebP(buffer: Buffer | Uint8Array) {
   return (
     buffer.length >= 12 &&
@@ -501,7 +778,7 @@ function shortHash(value: string) {
 }
 
 function sanitize(value: string) {
-  return value.replace(/[<>:"/\\|?*\x00-\x1f]/g, "_").slice(0, 120);
+  return value.replace(/[<>:"/\\|?* -]/g, "_").slice(0, 120);
 }
 
 function isString(value: unknown): value is string {
@@ -529,6 +806,21 @@ function parseArguments(args: string[]): DownloadOptions {
   const videosOnly = args.includes("--videos-only");
   if (imagesOnly && videosOnly) throw new Error("--images-only 和 --videos-only 不能同时使用");
 
+  const modeArg = (value("--mode") || "today").toLowerCase();
+  const sinceArg = value("--since");
+  let mode: Mode;
+  let since: string | undefined;
+  if (sinceArg) {
+    mode = "since";
+    since = sinceArg;
+  } else if (modeArg === "full") {
+    mode = "full";
+  } else if (modeArg === "today") {
+    mode = "today";
+  } else {
+    throw new Error(`--mode 只支持 today | full，收到: ${modeArg}`);
+  }
+
   return {
     input: value("--input") || DEFAULT_INPUT,
     output: value("--output") || DEFAULT_OUTPUT,
@@ -538,6 +830,9 @@ function parseArguments(args: string[]): DownloadOptions {
     force: args.includes("--force"),
     downloadImages: !videosOnly,
     downloadVideos: !imagesOnly,
+    mode,
+    since,
+    dryRun: args.includes("--dry-run") || args.includes("--dry"),
   };
 }
 

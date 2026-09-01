@@ -20,7 +20,8 @@ const ALL_OUTPUT_DIR = "json/all";
 const TOKEN_FILE = "tests/zhizun/new_zhizun_token.json";
 const PASSWORD = process.env.ZHIZUN_PASSWORD || "123456";
 const PAGE_SIZE = positiveInteger(process.env.ZHIZUN_PAGE_SIZE, 100);
-const DETAIL_CONCURRENCY = positiveInteger(process.env.ZHIZUN_CONCURRENCY, 5);
+const DETAIL_CONCURRENCY = positiveInteger(process.env.ZHIZUN_CONCURRENCY, 16);
+const DETAILS_OUTPUT = `${ALL_OUTPUT_DIR}/new_zhizun_all_girls_details.json`;
 const FALLBACK_CF_CLEARANCE =
   "WeQGGxyfph0bP4BMA81ApsPWijGRtvtn1ezV1V1JJXQ-1787299539-1.2.1.1-wu0r17TkGamgrWqhNcGJP4mjUuz1iY1l3qbmS9MrRwnGUbw3sozzmP39oPJTrfERty9fvPkpcemIe8YRPHRhnPftfHPiDllCn7CBq7JJfOrn9E9F9KPe7k98_MeaFIkR5nmVDW93YOYg_35Ur.wFvGoSYFzEPa9OwuUEMRW1fodYRtKWsl.qekCFkqBXu1hRAe9q6xZKZWy_NlDo.oT1Z0TEbz4DiTKmpqNemUnubGKDIm8RcxXf9P5F7wYpiK7xwI_LPAuDk4JeCczlxBjhbSa9mYfswOzHyp3wUCwnggs0Asz.VOYIcOoiK9bM2wwpDswq7.XFxx6v6yW_Qcmo4Kvxa9VHUPcf2X7jKUaZZR4";
 const CF_CLEARANCE = process.env.ZHIZUN_CF_CLEARANCE || FALLBACK_CF_CLEARANCE;
@@ -280,22 +281,41 @@ export async function getProduct(query: ListQuery = {}) {
   return response;
 }
 
+/**
+ * 列表抓取的并发度，比较低以保护源站：
+ * 大圈内圈各一个 worker，再并发 ~4 页，合计峰值约 8 req/突发。
+ * 想更慢改 ZHIZUN_LIST_CONCURRENCY=1，行为退回老的串行翻页。
+ */
+const LIST_CONCURRENCY = positiveInteger(process.env.ZHIZUN_LIST_CONCURRENCY, 4);
+
+/**
+ * 顺序抓 Tier 下所有分页的改良版：
+ * 第 1 页直接拿到 total/hasMore，算出总页数后用 pLimit(LIST_CONCURRENCY)
+ * 并发拉剩下页。边界异常（一边拉一边新增导致某页变空）自动收敛，不会死循环。
+ */
 async function loadTier(tier: Tier) {
-  const items: AlbumItem[] = [];
-  for (let pageNum = 1; ; pageNum++) {
-    const response = await getProduct({ pageNum, pageSize: PAGE_SIZE, tier });
-    items.push(...response.data.items);
-    if (!response.data.hasMore || response.data.items.length === 0) break;
-  }
+  const first = await getProduct({ pageNum: 1, pageSize: PAGE_SIZE, tier });
+  const totalPages = Math.max(1, Math.ceil(first.data.total / PAGE_SIZE));
+  const items: AlbumItem[] = [...first.data.items];
+  if (!first.data.hasMore || totalPages <= 1) return items;
+
+  const limit = pLimit(LIST_CONCURRENCY);
+  const pageNums = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+  const pages = await Promise.all(
+    pageNums.map((pageNum) =>
+      limit(() => getProduct({ pageNum, pageSize: PAGE_SIZE, tier })),
+    ),
+  );
+  for (const page of pages) items.push(...page.data.items);
   return items;
 }
 
 export async function loadAllData() {
   console.log("开始抓取新版至尊相册列表");
   await Promise.all([getMeta(), getOptions()]);
-  // 顺序抓取分页，避免给站点造成突发压力。
-  const middle = await loadTier("middle");
-  const premium = await loadTier("premium");
+  // 两个 tier 同时跑（内部每 tier 再按 LIST_CONCURRENCY 并发翻页），
+  // 想退回串行设 ZHIZUN_LIST_CONCURRENCY=1 即可。
+  const [middle, premium] = await Promise.all([loadTier("middle"), loadTier("premium")]);
   const all = deduplicate([...middle, ...premium]);
   fs.writeFileSync(`${OUTPUT_DIR}/new_zhizun_all_list.json`, JSON.stringify(all, null, 2));
   console.log(`列表完成：中圈 ${middle.length}，大圈 ${premium.length}，去重后 ${all.length}`);
@@ -326,16 +346,42 @@ function readSavedList() {
 
 export async function saveAllDetails(items: AlbumItem[] = readSavedList()) {
   if (items.length === 0) throw new Error("没有列表数据，请先运行 loadAllData()");
+
+  // ===== 增量优化：已抓过且 updatedAt 未变的详情直接复用 =====
+  // 每天新增的通常只有几十~几百条，没必要重复回源 5000+ 次
+  const existingById = loadCachedDetails();
+  const refreshAll = process.env.ZHIZUN_REFRESH_DETAILS === "1";
+
+  const cached: AlbumItem[] = [];
+  const toFetch: AlbumItem[] = [];
+  for (const item of items) {
+    if (refreshAll) {
+      toFetch.push(item);
+      continue;
+    }
+    const key = String(item.id);
+    const hit = existingById.get(key);
+    if (hit && String(hit.updatedAt ?? "") === String(item.updatedAt ?? "")) {
+      cached.push(hit);
+    } else {
+      toFetch.push(item);
+    }
+  }
+  console.log(
+    `详情复用 ${cached.length} 条，需重抓 ${toFetch.length} 条` +
+      (refreshAll ? "（ZHIZUN_REFRESH_DETAILS=1，强制全量）" : ""),
+  );
+
   const limit = pLimit(DETAIL_CONCURRENCY);
   let completed = 0;
   const details = await Promise.all(
-    items.map((item) =>
+    toFetch.map((item) =>
       limit(async () => {
         try {
           const detail = await retry(() => getGirlDetails(item.id), 3);
           completed++;
-          if (completed % 25 === 0 || completed === items.length) {
-            console.log(`详情进度 ${completed}/${items.length}`);
+          if (completed % 25 === 0 || completed === toFetch.length) {
+            console.log(`详情进度 ${completed}/${toFetch.length}`);
           }
           return detail;
         } catch (error) {
@@ -345,11 +391,39 @@ export async function saveAllDetails(items: AlbumItem[] = readSavedList()) {
       }),
     ),
   );
-  const successful = details.filter((item): item is AlbumItem => item !== null);
-  const output = `${ALL_OUTPUT_DIR}/new_zhizun_all_girls_details.json`;
-  fs.writeFileSync(output, JSON.stringify(successful, null, 2));
-  console.log(`详情完成：成功 ${successful.length}/${items.length}，保存至 ${output}`);
-  return successful;
+  const fetched = details.filter((item): item is AlbumItem => item !== null);
+  // 缓存的旧详情只在最新的列表里；按列表顺序排，新抓回来的覆盖同 id 的旧记录
+  const finalById = new Map<string, AlbumItem>();
+  for (const d of cached) finalById.set(String(d.id), d);
+  for (const d of fetched) finalById.set(String(d.id), d);
+  const finalList = items
+    .map((item) => finalById.get(String(item.id)))
+    .filter((item): item is AlbumItem => Boolean(item));
+
+  fs.writeFileSync(DETAILS_OUTPUT, JSON.stringify(finalList, null, 2));
+  console.log(
+    `详情完成：总 ${finalList.length} 条（复用 ${cached.length} + 新抓 ${fetched.length}），保存至 ${DETAILS_OUTPUT}`,
+  );
+  return finalList;
+}
+
+/**
+ * 读取上次保存的详情文件，按 id 建索引。
+ * 文件不存在 / 解析失败都视为无缓存（继续走全量抓取）。
+ */
+function loadCachedDetails() {
+  const map = new Map<string, AlbumItem>();
+  try {
+    if (!fs.existsSync(DETAILS_OUTPUT)) return map;
+    const parsed = JSON.parse(fs.readFileSync(DETAILS_OUTPUT, "utf8"));
+    if (!Array.isArray(parsed)) return map;
+    for (const item of parsed as AlbumItem[]) {
+      if (item && item.id !== undefined) map.set(String(item.id), item);
+    }
+  } catch (error) {
+    console.warn("读取历史详情缓存失败，将全量抓取:", error);
+  }
+  return map;
 }
 
 async function retry<T>(task: () => Promise<T>, attempts: number) {

@@ -36,10 +36,10 @@ function detectGenericImageFormat(bytes: Uint8Array): string | null {
 }
 
 /**
- * 新版至尊图片把前 18 字节对应的 24 个 Base64 字符循环前移了一位。
- * 这里执行逆变换。
- * 老至尊对象存储（leelawyer / jinyu32 / punycode 域名）上是未加密原图，
- * 直接按 magic bytes 识别并原样返回，不做 18 字节位移变换。
+ * 新版至尊图片把前 18 字节对应的 24 个 Base64 字符循环前移了一位，这里执行逆变换。
+ * 老至尊对象存储是不加密原图，直接按 magic bytes 识别原样返回。
+ * 加密产物历史上是 WebP，2026-09 起新上传的批次改成 PNG，因此解码结果用
+ * detectGenericImageFormat 兜底识别，不再硬性要求 WebP。
  */
 export async function decodeZhizunImage(blob: Blob) {
   const encrypted = new Uint8Array(await blob.arrayBuffer());
@@ -65,8 +65,9 @@ export async function decodeZhizunImage(blob: Blob) {
     output[index] = decodedHeader.charCodeAt(index);
   }
 
-  if (!isWebP(output)) throw new Error("至尊图片解码后不是有效的 WebP");
-  return new Blob([output], { type: "image/webp" });
+  const decodedType = detectGenericImageFormat(output);
+  if (!decodedType) throw new Error("至尊图片解码后不是可识别的图片格式");
+  return new Blob([output], { type: decodedType });
 }
 
 async function loadZhizunImage(src: string, signal: AbortSignal) {
