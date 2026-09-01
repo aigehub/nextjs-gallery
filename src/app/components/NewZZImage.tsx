@@ -27,13 +27,26 @@ function isWebP(bytes: Uint8Array) {
   );
 }
 
+function detectGenericImageFormat(bytes: Uint8Array): string | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "image/png";
+  if (bytes.length >= 6 && String.fromCharCode(...bytes.subarray(0, 4)) === "GIF8") return "image/gif";
+  if (isWebP(bytes)) return "image/webp";
+  return null;
+}
+
 /**
  * 新版至尊图片把前 18 字节对应的 24 个 Base64 字符循环前移了一位。
- * 这里执行逆变换，并返回可以被浏览器识别的标准 WebP Blob。
+ * 这里执行逆变换。
+ * 老至尊对象存储（leelawyer / jinyu32 / punycode 域名）上是未加密原图，
+ * 直接按 magic bytes 识别并原样返回，不做 18 字节位移变换。
  */
 export async function decodeZhizunImage(blob: Blob) {
   const encrypted = new Uint8Array(await blob.arrayBuffer());
-  if (isWebP(encrypted)) return new Blob([encrypted], { type: "image/webp" });
+  const plaintextType = detectGenericImageFormat(encrypted);
+  if (plaintextType) {
+    return new Blob([encrypted], { type: plaintextType });
+  }
   if (encrypted.length < ENCRYPTED_HEADER_BYTES) {
     throw new Error("至尊图片数据过短，无法解码");
   }

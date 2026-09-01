@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const LEGACY_IMAGE_HOSTS = new Set([
+  // 老至尊图床（未加密原图，CDN 加密切换前的历史数据）
+  "test.xn--fiqa24e59ix1fezpezjsm1b4qeqwm.com",
+  "tencent.leelawyer.cn",
+  "octopus.leelawyer.cn",
+  "resource.jinyu32.com",
+  "res.jinyu32.com",
+]);
+
 function isAllowedImageUrl(url: URL) {
-  return (
-    url.protocol === "https:" &&
-    (url.hostname === "im4ge.net" || url.hostname.endsWith(".im4ge.net"))
-  );
+  if (url.protocol !== "https:") return false;
+  if (url.hostname === "im4ge.net" || url.hostname.endsWith(".im4ge.net")) {
+    return true;
+  }
+  if (url.port !== "" && url.port !== "443") {
+    return url.port === "2000" && LEGACY_IMAGE_HOSTS.has(url.hostname);
+  }
+  return LEGACY_IMAGE_HOSTS.has(url.hostname);
 }
 
 export async function GET(request: NextRequest) {

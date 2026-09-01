@@ -1,13 +1,13 @@
 // 创建图片库组件
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import "react-photo-view/dist/react-photo-view.css";
 import React from "react";
 import { PLAT } from "@/app/libs/data";
 import Pagination from "./pagination";
 import SmartImage from "./NewZZImage";
-import SmartVideo from "./ZZVideo";
+import SmartVideo from "./NewZZVideo";
 import clsx from "clsx";
 import { XCircleIcon } from "@heroicons/react/24/solid";
 const PAGE_SIZE = 20; // 每页显示的图片数量
