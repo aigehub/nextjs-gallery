@@ -52,5 +52,19 @@ jobs:
         git commit -m "auto spide data and update database by github actions - $(date '+%Y-%m-%d %H:%M:%S')" || echo "no changes"
         git push --all
 
+    - name: upload db to release
+      # girls.db 不入 git（超 100MB），每次跑完爬虫把最新版推到 Release，
+      # Vercel 构建时从 Release 下载，参考 scripts/fetch-db.sh
+      if: matrix.node-version == '22.x'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: db-snapshot
+        name: 数据库快照
+        body: |
+          每次爬虫跑完自动更新。Release 日期不影响内容时效 — 看附件修改时间。
+          下载 URL: https://github.com/${{ github.repository }}/releases/download/db-snapshot/girls.db
+        files: prisma/data/girls.db
+        token: ${{ secrets.GITHUB_TOKEN }}
+
         
     

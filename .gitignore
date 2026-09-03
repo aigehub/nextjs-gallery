@@ -56,3 +56,6 @@ next-env.d.ts
 !.env.example
 
 downloads
+
+# 数据库不入 git — 超 100MB，由 GitHub Actions 上传到 Release，Vercel 构建时下载
+prisma/data/girls.db
