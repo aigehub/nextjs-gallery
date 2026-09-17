@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>暗房相册</title>
+<style>
+  :root{
+    --bg:#0b0d10;
+    --panel:#111419;
+    --panel-2:#151a20;
+    --ink:#e9e7e1;
+    --muted:#9aa3ad;
+    --line:#232a33;
+    --line-soft:#1a2028;
+    --accent:#c8b98a;
+    --accent-ink:#201a08;
+    --chip:#1c2129;
+    --thumb-shade:#171b21;
+    --focus:#d8ca9b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Helvetica Neue","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+
+  /* ---------- top bar ---------- */
+  .bar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(11,13,16,.86);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .bar-in{
+    max-width:1480px;margin:0 auto;
+    display:flex;align-items:center;gap:16px;
+    padding:10px 18px;flex-wrap:wrap;
+  }
+  .word{
+    display:flex;align-items:center;gap:10px;
+    font-family:Georgia,"Songti SC","STSong",serif;
+    font-size:19px;letter-spacing:2px;color:var(--ink);
+    white-space:nowrap;
+  }
+  .word .frame{
+    width:26px;height:26px;border:1px solid var(--accent);
+    border-radius:2px;display:inline-block;position:relative;flex:0 0 26px;
+  }
+  .word .frame::after{
+    content:"";position:absolute;inset:4px;border:1px solid var(--accent);
+    border-radius:1px;opacity:.5;
+  }
+  .tabs{display:flex;gap:4px}
+  .tab{
+    border:1px solid var(--line);
+    background:transparent;color:var(--muted);
+    font-size:13px;letter-spacing:1px;
+    padding:6px 14px;border-radius:3px;cursor:pointer;
+    transition:.15s border-color,.15s color,.15s background;
+  }
+  .tab:hover{border-color:#333c47;color:var(--ink)}
+  .tab.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+  .search{
+    margin-left:auto;display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:3px;background:var(--panel);
+    padding:5px 10px;min-width:180px;
+  }
+  .search input{
+    background:transparent;border:0;outline:0;color:var(--ink);
+    font-size:13px;width:100%;letter-spacing:.5px;
+  }
+  .search input::placeholder{color:var(--muted)}
+  .sort{
+    border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    font-size:12px;padding:5px 8px;border-radius:3px;cursor:pointer;
+  }
+
+  /* ---------- hero strip ---------- */
+  .hero{
+    max-width:1480px;margin:0 auto;padding:26px 18px 8px;
+    display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
+  }
+  .hero h1{
+    font-family:Georgia,"Songti SC","STSong",serif;
+    font-weight:400;font-size:clamp(22px,3vw,30px);
+    letter-spacing:4px;margin:0;
+  }
+  .hero .stat{color:var(--muted);font-size:13px;letter-spacing:1px;font-variant-numeric:tabular-nums}
+  .hero .stat b{color:var(--accent);font-weight:600}
+
+  /* ---------- grid ---------- */
+  .grid{
+    max-width:1480px;margin:14px auto 0;padding:0 18px 40px;
+    display:grid;gap:18px;
+    grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  }
+  @media(max-width:520px){.grid{grid-template-columns:repeat(3,1fr);gap:10px}}
+
+  .card{
+    display:block;position:relative;
+    border:1px solid var(--line-soft);
+    background:var(--thumb-shade);
+    border-radius:2px;overflow:hidden;
+    cursor:pointer;
+    transition:.2s transform,.2s box-shadow,.2s border-color;
+    text-decoration:none;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.5);border-color:var(--line)}
+  .thumb{position:relative;aspect-ratio:3/4;overflow:hidden}
+  .thumb img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    transition:.35s transform;
+    filter:saturate(.94);
+  }
+  .card:hover .thumb img{transform:scale(1.04)}
+  .thumb .shade{
+    position:absolute;inset:0;
+    background:linear-gradient(to top,rgba(6,8,11,.72) 0%,rgba(6,8,11,0) 42%);
+  }
+  .flags{
+    position:absolute;top:6px;left:6px;display:flex;gap:4px;
+  }
+  .flag{
+    font-size:10px;letter-spacing:1px;
+    padding:2px 6px;border-radius:2px;
+    background:rgba(18,22,28,.82);color:var(--muted);
+    border:1px solid var(--line);
+  }
+  .flag.hot{background:rgba(58,33,23,.82);color:#e0a488;border-color:#5a3a2c}
+  .meta{
+    position:absolute;left:8px;right:8px;bottom:6px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:6px;
+  }
+  .meta .t{
+    font-size:13px;color:var(--ink);font-weight:500;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.5px;
+  }
+  .meta .c{font-size:11px;color:var(--muted);letter-spacing:.5px;font-variant-numeric:tabular-nums;flex:0 0 auto}
+  .price{
+    padding:6px 8px 7px;display:flex;align-items:center;gap:6px;
+    border-top:1px solid var(--line-soft);
+  }
+  .price .p{
+    font-family:Georgia,serif;font-size:16px;color:var(--accent);
+    letter-spacing:.5px;font-variant-numeric:tabular-nums;
+  }
+  .price .u{font-size:10px;color:var(--muted);letter-spacing:1px}
+  .price .cnt{
+    margin-left:auto;font-size:11px;color:var(--muted);
+    font-variant-numeric:tabular-nums;letter-spacing:1px;
+  }
+  .price .cnt svg{vertical-align:-2px;margin-right:2px}
+
+  /* album row card (grid mode) */
+  .noimg{background:var(--panel);display:grid;place-items:center;height:100%;}
+  .noimg span{font-size:11px;color:var(--muted);letter-spacing:2px}
+
+  /* ---------- pagination ---------- */
+  .pager{
+    max-width:1480px;margin:0 auto;padding:6px 18px 60px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .pager .btn{
+    border:1px solid var(--line);background:transparent;color:var(--ink);
+    font-size:13px;letter-spacing:1px;padding:7px 14px;border-radius:3px;cursor:pointer;
+    transition:.15s border-color,.15s background;
+  }
+  .pager .btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .pager .btn:disabled{opacity:.35;cursor:not-allowed}
+  .pager .nums{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .pager .nums button{
+    border:1px solid transparent;background:transparent;color:var(--muted);
+    font-size:13px;padding:6px 10px;border-radius:3px;cursor:pointer;
+    font-variant-numeric:tabular-nums;letter-spacing:1px;
+  }
+  .pager .nums button.on{color:var(--accent);border-color:var(--accent)}
+  .pager .nums button:hover:not(.on){color:var(--ink)}
+  .pager .trail{color:var(--muted);font-size:12px;letter-spacing:1px}
+  .pager .jump input{
+    width:56px;background:var(--panel);border:1px solid var(--line);
+    color:var(--ink);font-size:13px;padding:6px 8px;border-radius:3px;outline:0;
+    font-variant-numeric:tabular-nums;
+  }
+  .pager .jump input:focus{border-color:var(--accent)}
+  .pager .jump span{font-size:12px;color:var(--muted);letter-spacing:1px}
+  .scroll-top{
+    margin-left:auto;border:1px solid var(--line);background:transparent;
+    color:var(--muted);font-size:12px;letter-spacing:2px;padding:7px 12px;
+    border-radius:3px;cursor:pointer;
+  }
+  .scroll-top:hover{color:var(--accent);border-color:var(--accent)}
+
+  /* ---------- loading / empty ---------- */
+  .loader{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted);font-size:13px;letter-spacing:2px}
+  .empty{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted);font-size:13px;letter-spacing:2px}
+
+  /* ---------- lightbox ---------- */
+  .lb{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(3,4,6,.94);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;
+  }
+  .lb.open{display:flex}
+  .lb figure{margin:0;max-width:min(92vw,1100px);max-height:88vh;display:flex;align-items:center;justify-content:center}
+  .lb img{
+    max-width:100%;max-height:88vh;display:block;
+    border:1px solid var(--line);
+    box-shadow:0 24px 80px rgba(0,0,0,.7);
+  }
+  .lb video{max-width:100%;max-height:88vh;background:#000}
+  .lb .x{
+    position:absolute;top:14px;right:16px;
+    border:1px solid var(--line);background:rgba(18,22,28,.6);
+    color:var(--ink);font-size:16px;line-height:1;
+    width:34px;height:34px;border-radius:3px;cursor:pointer;
+  }
+  .lb .nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    border:1px solid var(--line);background:rgba(18,22,28,.5);
+    color:var(--ink);font-size:22px;width:44px;height:44px;border-radius:3px;
+    cursor:pointer;user-select:none;
+  }
+  .lb .nav.prev{left:14px}
+  .lb .nav.next{right:14px}
+  .lb .nav:hover,.lb .x:hover{border-color:var(--accent);color:var(--accent)}
+  .lb .cap{
+    position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+    font-size:12px;color:var(--muted);letter-spacing:1px;background:rgba(10,12,16,.7);
+    padding:5px 12px;border-radius:3px;border:1px solid var(--line-soft);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  @media(max-width:640px){
+    .lb .nav{width:36px;height:36px;font-size:18px}
+  }
+
+  /* ---------- scroll list mode ---------- */
+  .list{
+    max-width:1480px;margin:14px auto 0;padding:0 18px 40px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .row{
+    display:grid;grid-template-columns:128px 1fr auto;gap:14px;align-items:center;
+    border:1px solid var(--line-soft);background:var(--panel);
+    border-radius:2px;padding:12px;cursor:pointer;
+    transition:.15s border-color;
+  }
+  .row:hover{border-color:var(--line)}
+  .row .rit{position:relative;width:128px;aspect-ratio:3/4;overflow:hidden;background:var(--thumb-shade)}
+  .row .rit img{width:100%;height:100%;object-fit:cover;display:block}
+  .row .info h3{
+    margin:0 0 4px;font-size:15px;letter-spacing:.5px;font-weight:500;color:var(--ink);
+  }
+  .row .info .loc{font-size:12px;color:var(--muted);letter-spacing:1px}
+  .row .right{
+    display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+  }
+  .row .pr{font-family:Georgia,serif;font-size:18px;color:var(--accent);font-variant-numeric:tabular-nums}
+  .row .cnt{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="word"><span class="frame"></span>暗房相册</div>
+  <div class="tabs" id="tabs"></div>
+  <div class="search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" type="text" placeholder="搜索标题 / 城市 / 编号…" autocomplete="off">
+  </div>
+  <select class="sort" id="sort">
+    <option value="default">默认排序</option>
+    <option value="price-asc">价格 ↑</option>
+    <option value="price-desc">价格 ↓</option>
+    <option value="images">图片多</option>
+    <option value="videos">视频多</option>
+  </select>
+</div>
+
+<div class="hero">
+  <h1 id="sectionName">—</h1>
+  <div class="stat" id="stats"></div>
+</div>
+
+<div id="gridRoot" class="grid"></div>
+<div id="listRoot" class="list" style="display:none"></div>
+
+<div class="pager" id="pager" style="display:none">
+  <button class="btn" id="prev">上一页</button>
+  <div class="nums" id="nums"></div>
+  <button class="btn" id="next">下一页</button>
+  <div class="jump">
+    <input id="jumpInput" type="number" min="1">
+    <span id="jumpTotal"></span>
+  </div>
+  <div class="trail" id="trail"></div>
+  <button class="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">回到顶部</button>
+</div>
+
+<div class="lb" id="lb">
+  <button class="x" id="lbx">×</button>
+  <button class="nav prev" id="lbPrev">‹</button>
+  <button class="nav next" id="lbNext">›</button>
+  <figure>
+    <img id="lbImg" alt="">
+    <video id="lbVid" style="display:none" controls playsinline></video>
+  </figure>
+  <div class="cap" id="lbCap"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var MEDIA_BASE = "/gallery-media";
+  var DATA_BASE  = "/gallery-data";
+  var EL = {
+    tabs: document.getElementById("tabs"),
+    q: document.getElementById("q"),
+    sort: document.getElementById("sort"),
+    sectionName: document.getElementById("sectionName"),
+    stats: document.getElementById("stats"),
+    grid: document.getElementById("gridRoot"),
+    list: document.getElementById("listRoot"),
+    pager: document.getElementById("pager"),
+    nums: document.getElementById("nums"),
+    prev: document.getElementById("prev"),
+    next: document.getElementById("next"),
+    jump: document.getElementById("jumpInput"),
+    jumpTotal: document.getElementById("jumpTotal"),
+    trail: document.getElementById("trail"),
+    lb: document.getElementById("lb"),
+    lbImg: document.getElementById("lbImg"),
+    lbVid: document.getElementById("lbVid"),
+    lbCap: document.getElementById("lbCap"),
+    lbx: document.getElementById("lbx"),
+    lbPrev: document.getElementById("lbPrev"),
+    lbNext: document.getElementById("lbNext"),
+  };
+
+  var wroteHash = false;
+  var openingFromHash = false;
+
+  var state = {
+    section: null,         // 'premium' | 'middle'
+    sections: null,        // sections meta from server
+    albumLists: {},        // section -> array of slim entries (all pages merged)
+    filtered: [],
+    page: 1,
+    perPage: 24,
+    q: "",
+    sort: "default",
+    loadedAll: {},         // section -> bool when all pages merged
+    mode: "grid"           // 'grid' | 'list'
+  };
+
+  var currentAlbum = null; // opened album detail
+  var currentSlides = [];   // [{type, src}]
+  var currentIdx = -1;
+
+  function hashParse(){
+    var h = location.hash.replace(/^#/, "");
+    // formats:  premium   , middle?page=3 , album?section=f&idx=2
+    var dash = h.indexOf("?");
+    var path = dash >= 0 ? h.slice(0, dash) : h;
+    var qs   = dash >= 0 ? h.slice(dash+1) : "";
+    var params = {};
+    qs.split("&").forEach(function(p){
+      var kv = p.split("=");
+      if (kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || "");
+    });
+    return { path: path, params: params };
+  }
+
+  function hashSet(path, params){
+    var qs = "";
+    if (params){
+      var arr = Object.keys(params).map(function(k){
+        return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+      });
+      qs = "?" + arr.join("&");
+    }
+    wroteHash = true;
+    location.hash = "#" + path + qs;
+  }
+
+  function encodePath(p){
+    return String(p).split("/").map(function(s){ return encodeURIComponent(s); }).join("/");
+  }
+  function media(section, folder, rel){
+    return MEDIA_BASE + "/" + section + "/" + encodePath(folder) + "/" + encodePath(rel.replace(/^\/+/, ""));
+  }
+  function albumDetailUrl(section, folder){
+    return DATA_BASE + "/albums/" + section + "/" + encodePath(folder) + ".json";
+  }
+
+  function formatPrice(p){
+    if (p == null || p === 0 || p === "") return "—";
+    return "¥" + p;
+  }
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ---------- sections load ---------- */
+  function loadSections(){
+    return fetch(DATA_BASE + "/index/sections.json").then(function(r){ return r.json(); });
+  }
+
+  /* load all pages of a section (lazy-merge, resumable) */
+  function loadAllSectionPages(secId, pages, onProgress){
+    if (state.loadedAll[secId]) return Promise.resolve(state.albumLists[secId]);
+    var url = function(p){ return DATA_BASE + "/index/" + secId + "/page-" + p + ".json"; };
+    var lines = [];
+    var promises = [];
+    for (var p = 1; p <= pages; p++){
+      (function(p){
+        promises.push(fetch(url(p)).then(function(r){ return r.json(); }).then(function(arr){
+          if (onProgress) onProgress(p, pages);
+          lines.push({p:p, arr:arr});
+        }));
+      })(p);
+    }
+    return Promise.all(promises).then(function(){
+      lines.sort(function(a,b){ return a.p - b.p; });
+      var merged = [];
+      lines.forEach(function(l){ merged = merged.concat(l.arr); });
+      state.albumLists[secId] = merged;
+      state.loadedAll[secId] = true;
+      return merged;
+    });
+  }
+
+  /* ---------- search & sort ---------- */
+  function applyFilter(){
+    var list = (state.albumLists[state.section] || []).slice();
+    var q = state.q.trim();
+    if (q){
+      var ql = q.toLowerCase();
+      list = list.filter(function(a){
+        var hay = (a.t||"") + " " + (a.city||"") + " " + (a.code||"") + " " + (a.addr||"");
+        return hay.toLowerCase().indexOf(ql) >= 0;
+      });
+    }
+    var s = state.sort;
+    if (s === "price-asc") list.sort(function(a,b){ return (a.price||0) - (b.price||0); });
+    else if (s === "price-desc") list.sort(function(a,b){ return (b.price||0) - (a.price||0); });
+    else if (s === "images") list.sort(function(a,b){ return (b.nImg||0) - (a.nImg||0); });
+    else if (s === "videos") list.sort(function(a,b){ return (b.nVid||0) - (a.nVid||0); });
+    state.filtered = list;
+  }
+
+  /* ---------- HTML renderers ---------- */
+  function cardGrid(a){
+    var poster = a.poster ? media(state.section, a.f, a.poster) : "";
+    var img = poster
+      ? '<img loading="lazy" src="'+escapeHtml(poster)+'" alt="">'
+      : '<div class="noimg"><span>无图</span></div>';
+    var flags = '';
+    if (a.pinned) flags += '<span class="flag hot">置顶</span>';
+    if (a.certified) flags += '<span class="flag">认证</span>';
+    return ''+
+      '<article class="card" data-f="'+escapeHtml(a.f)+'" tabindex="0" role="button" aria-label="'+escapeHtml(a.t)+'">'+
+        '<div class="thumb">'+
+          img+
+          '<div class="shade"></div>'+
+          '<div class="flags">'+flags+'</div>'+
+          '<div class="meta">'+
+            '<span class="t" title="'+escapeHtml(a.t)+'">'+escapeHtml(a.t)+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="price">'+
+          '<span class="p">'+formatPrice(a.price)+'</span>'+
+          '<span class="u">/ 次</span>'+
+          '<span class="cnt">'+
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'+
+            a.nImg+' 图 · '+a.nVid+' 影'+
+          '</span>'+
+        '</div>'+
+      '</article>';
+  }
+
+  function cardRow(a){
+    var poster = a.poster ? media(state.section, a.f, a.poster) : "";
+    var img = poster ? '<img loading="lazy" src="'+escapeHtml(poster)+'" alt="">' : '';
+    var flags = [];
+    if (a.pinned) flags.push('<span class="flag hot">置顶</span>');
+    if (a.certified) flags.push('<span class="flag">认证</span>');
+    return ''+
+      '<div class="row" data-f="'+escapeHtml(a.f)+'">'+
+        '<div class="rit">'+img+'</div>'+
+        '<div class="info">'+
+          '<h3>'+escapeHtml(a.t)+'</h3>'+
+          '<div class="loc">'+escapeHtml(a.city||"")+(a.district ? " · "+escapeHtml(a.district) : "")+(a.addr ? " · "+escapeHtml(a.addr) : "")+(a.code ? " · 编号 "+escapeHtml(a.code) : "")+'</div>'+
+        '</div>'+
+        '<div class="right">'+
+          '<span class="pr">'+formatPrice(a.price)+'</span>'+
+          '<span class="cnt">'+a.nImg+' 图 · '+a.nVid+' 影 · '+a.nAuth+' 认证影'+'</span>'+
+        '</div>'+
+      '</div>';
+  }
+
+  function emptyList(msg){
+    return '<div class="empty">'+escapeHtml(msg||"无数据")+'</div>';
+  }
+
+  function loadChunk(container, items, mode){
+    var html = items.map(mode === "list" ? cardRow : cardGrid).join("");
+    container.innerHTML = html;
+  }
+
+  /* ---------- full render ---------- */
+  function render(){
+    var sec = state.section;
+    var meta = state.sections.find(function(s){ return s.id === sec; }) || {name: sec==="premium" ? "premium 高端" : "middle 中端", albums: 0, pages: 0};
+    EL.sectionName.textContent = meta.name;
+    var albums = state.filtered;
+    var total = albums.length;
+    EL.stats.innerHTML = '共 <b>'+total+'</b> 套 / 共 <b>'+(meta.pages||0)+'</b> 页相册分页（以后端分页文件为准）';
+    var pages = Math.max(1, Math.ceil(total / state.perPage));
+    if (state.page > pages) state.page = 1;
+    var start = (state.page - 1) * state.perPage;
+    var slice = albums.slice(start, start + state.perPage);
+
+    if (state.mode === "grid"){
+      EL.grid.style.display = "";
+      EL.list.style.display = "none";
+      loadChunk(EL.grid, slice.length ? slice : [], "grid");
+      if (!slice.length) EL.grid.innerHTML = emptyList(total ? "该筛选下无结果" : "加载中…");
+    } else {
+      EL.grid.style.display = "none";
+      EL.list.style.display = "";
+      loadChunk(EL.list, slice.length ? slice : [], "list");
+      if (!slice.length) EL.list.innerHTML = emptyList(total ? "该筛选下无结果" : "加载中…");
+    }
+
+    // pager
+    EL.pager.style.display = total ? "" : "none";
+    renderNums(pages);
+    EL.prev.disabled = state.page <= 1;
+    EL.next.disabled = state.page >= pages;
+    EL.jump.max = pages;
+    EL.jump.value = state.page;
+    EL.jumpTotal.textContent = "/ "+pages;
+    EL.trail.textContent = "本页 "+slice.length+" 套";
+    bindCards();
+    window.scrollTo(0, 0);
+  }
+
+  function renderNums(pages){
+    var page = state.page;
+    var out = [];
+    function btn(i){
+      return '<button class="'+(i===page?"on":"")+'" data-page="'+i+'">'+i+'</button>';
+    }
+    function dots(){ return '<span style="color:var(--muted);font-size:12px">…</span>'; }
+    var windowDelta = 2;
+    var lastGapped = false;
+    for (var i = 1; i <= pages; i++){
+      if (i === 1 || i === pages || (i >= page - windowDelta && i <= page + windowDelta)){
+        out.push(btn(i)); lastGapped = false;
+      } else if (!lastGapped){
+        out.push(dots()); lastGapped = true;
+      }
+    }
+    EL.nums.innerHTML = out.join("");
+    EL.nums.querySelectorAll("button[data-page]").forEach(function(b){
+      b.addEventListener("click", function(){
+        state.page = parseInt(b.getAttribute("data-page"), 10);
+        applyFilter(); render();
+      });
+    });
+  }
+
+  function bindCards(){
+    document.querySelectorAll(".card, .row").forEach(function(el){
+      el.addEventListener("click", function(){
+        openAlbum(el.getAttribute("data-f"));
+      });
+      el.addEventListener("keydown", function(e){
+        if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openAlbum(el.getAttribute("data-f")); }
+      });
+    });
+  }
+
+  /* ---------- album open + lightbox ---------- */
+  function openAlbum(folder){
+    openingFromHash = true;
+    fetch(albumDetailUrl(state.section, folder))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        currentAlbum = d;
+        currentSlides = [];
+        if (d.images && d.images.length){
+          // keep poster last? poster first if exists
+          d.images.forEach(function(p){ currentSlides.push({type:"img", src: media(state.section, d.f, p), name: p}); });
+        }
+        if (d.videos && d.videos.length){
+          d.videos.forEach(function(p){ currentSlides.push({type:"video", src: media(state.section, d.f, p), name: p}); });
+        }
+        if (d.authVideos && d.authVideos.length){
+          d.authVideos.forEach(function(p){ currentSlides.push({type:"video", src: media(state.section, d.f, p), name: p, auth:true}); });
+        }
+        if (!currentSlides.length){
+          currentSlides = [{type:"msg", name:"无媒体文件"}];
+        }
+        currentIdx = 0;
+        showSlide();
+        EL.lb.classList.add("open");
+        document.body.style.overflow = "hidden";
+      })
+      .catch(function(){
+        openingFromHash = false;
+        alert("加载相册详情失败");
+      });
+  }
+
+  function showSlide(){
+    var s = currentSlides[currentIdx];
+    var prev = currentSlides[currentIdx-1];
+    var next = currentSlides[currentIdx+1];
+    EL.lbPrev.style.display = prev ? "" : "none";
+    EL.lbNext.style.display = next ? "" : "none";
+    if (s.type === "img"){
+      EL.lbVid.style.display = "none"; EL.lbVid.pause && EL.lbVid.pause(); EL.lbVid.removeAttribute("src");
+      EL.lbImg.style.display = "";
+      EL.lbImg.src = s.src;
+    } else if (s.type === "video"){
+      EL.lbImg.style.display = "none";
+      EL.lbVid.style.display = "";
+      EL.lbVid.src = s.src;
+      EL.lbVid.play().catch(function(){});
+    } else {
+      EL.lbImg.style.display = "none";
+      EL.lbVid.style.display = "none";
+      EL.lbVid.pause && EL.lbVid.pause(); EL.lbVid.removeAttribute("src");
+    }
+    var name = s && s.name ? s.name : "";
+    var label = s.auth ? "认证视频" : (s.type === "video" ? "视频" : "图片");
+    EL.lbCap.textContent = (currentIdx+1) + " / " + currentSlides.length + " · " + label + (name ? " · " + name : "");
+    hashSet("album", {section: state.section, f: currentAlbum && currentAlbum.f || "", idx: currentIdx});
+    openingFromHash = false;
+    preloadNext();
+  }
+
+  function preloadNext(){
+    var next = currentSlides[currentIdx+1];
+    if (next && next.type === "img"){
+      var i = new Image();
+      i.src = next.src;
+    }
+  }
+
+  function closeLB(){
+    EL.lb.classList.remove("open");
+    document.body.style.overflow = "";
+    EL.lbVid.pause && EL.lbVid.pause(); EL.lbVid.removeAttribute("src");
+    EL.lbImg.removeAttribute("src");
+    hashSet(state.section, {page: state.page});
+  }
+
+  function nextSlide(){
+    if (currentIdx < currentSlides.length - 1){
+      currentIdx++; showSlide();
+    }
+  }
+  function prevSlide(){
+    if (currentIdx > 0){
+      currentIdx--; showSlide();
+    }
+  }
+
+  EL.lbx.addEventListener("click", closeLB);
+  EL.lbNext.addEventListener("click", function(e){ e.stopPropagation(); nextSlide(); });
+  EL.lbPrev.addEventListener("click", function(e){ e.stopPropagation(); prevSlide(); });
+  EL.lb.addEventListener("click", function(e){
+    if (e.target === EL.lb) closeLB();
+  });
+  EL.lbImg.addEventListener("dblclick", nextSlide);
+  document.addEventListener("keydown", function(e){
+    if (!EL.lb.classList.contains("open")) return;
+    if (e.key === "Escape") closeLB();
+    else if (e.key === "ArrowRight") nextSlide();
+    else if (e.key === "ArrowLeft") prevSlide();
+  });
+
+  /* ---------- section / search / sort wiring ---------- */
+  function buildTabs(sections){
+    var html = sections.map(function(s){
+      return '<button class="tab'+(s.id===state.section?" on":"")+'" data-id="'+escapeHtml(s.id)+'">'+escapeHtml(s.name)+'</button>';
+    }).join("");
+    EL.tabs.innerHTML = html;
+    EL.tabs.querySelectorAll(".tab").forEach(function(b){
+      b.addEventListener("click", function(){
+        state.section = b.getAttribute("data-id");
+        state.page = 1;
+        applyFilter();
+        render();
+        hashSet(state.section, {page: state.page});
+        EL.tabs.querySelectorAll(".tab").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-id")===state.section); });
+      });
+    });
+  }
+
+  EL.q.addEventListener("input", function(){
+    state.q = EL.q.value;
+    state.page = 1;
+    applyFilter();
+    render();
+  });
+  EL.sort.addEventListener("change", function(){
+    state.sort = EL.sort.value;
+    state.page = 1;
+    applyFilter();
+    render();
+  });
+  EL.prev.addEventListener("click", function(){
+    if (state.page > 1){ state.page--; applyFilter(); render(); }
+  });
+  EL.next.addEventListener("click", function(){
+    var pages = Math.max(1, Math.ceil(state.filtered.length / state.perPage));
+    if (state.page < pages){ state.page++; applyFilter(); render(); }
+  });
+  EL.jump.addEventListener("change", function(){
+    var pages = Math.max(1, Math.ceil(state.filtered.length / state.perPage));
+    var p = parseInt(EL.jump.value, 10);
+    if (!isNaN(p)) { p = Math.min(Math.max(1, p), pages); state.page = p; applyFilter(); render(); }
+  });
+
+  /* ---------- boot ---------- */
+  var H = hashParse();
+  var initialSection = (H.path === "premium" || H.path === "middle") ? H.path : "premium";
+  if (H.params && H.params.page) state.page = Math.max(1, parseInt(H.params.page, 10) || 1);
+  state.section = initialSection;
+
+  loadSections().then(function(d){
+    state.sections = d.sections || [];
+    if (!state.sections.find(function(s){ return s.id === state.section; })){
+      state.section = state.sections[0] && state.sections[0].id || "premium";
+    }
+    state.perPage = 24;
+    buildTabs(state.sections);
+    var target = state.sections.find(function(s){ return s.id === state.section; }) || state.sections[0];
+    state.section = target.id;
+
+    // load all pages for this section so client-side filter/sort works fully
+    loadAllSectionPages(state.section, target.pages || 0, function(p, total){
+      EL.stats.innerHTML = '加载中… <b>'+p+'/'+total+'</b>';
+    }).then(function(){
+      applyFilter();
+      render();
+      // if hash referenced a specific album, open it
+      if (H.path === "album" && H.params && H.params.f && H.params.section){
+        state.section = H.params.section;
+        openAlbum(H.params.f);
+      }
+    });
+  });
+
+  window.addEventListener("hashchange", function(){
+    if (wroteHash){ wroteHash = false; return; }
+    if (openingFromHash) return;
+    var h = hashParse();
+    if (h.path === "album" && h.params && h.params.f){
+      if (h.params.section && h.params.section !== state.section){
+        // reopen under a different section
+        state.section = h.params.section;
+        buildTabs(state.sections);
+        loadAllSectionPages(state.section, (state.sections.find(function(s){return s.id===state.section;})||{}).pages || 0)
+          .then(function(){ applyFilter(); render(); openAlbum(h.params.f); });
+        return;
+      }
+      openAlbum(h.params.f);
+    } else if (h.path === "premium" || h.path === "middle"){
+      state.section = h.path;
+      state.page = Math.max(1, parseInt(h.params.page, 10) || 1);
+      buildTabs(state.sections);
+      loadAllSectionPages(state.section, (state.sections.find(function(s){return s.id===state.section;})||{}).pages || 0)
+        .then(function(){ applyFilter(); render(); });
+    }
+  });
+})();
+</script>
+</body>
+</html>

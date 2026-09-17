@@ -209,6 +209,10 @@ git revert <提交哈希>
 | `src/app/components/NewZZVideo.tsx`        | ➖ 未动 | 复用代理 + 解码，自动受益                   |
 | `src/app/components/gallery.tsx`           | ➖ 未动 | 视频卡片入口                               |
 
+## 相关文档
+
+- [db-release-workflow.md](./db-release-workflow.md) — 数据库为何不入 git、Release 托管和日常使用方式
+
 ---
 
 *本手册依据 2026-08-31 的排查记录整理；数据库统计来自 `prisma/data/girls.db` 的 `ZhizunGirl` 表快照。*

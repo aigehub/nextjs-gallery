@@ -1,5 +1,12 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 项目文档
+
+- **[docs/db-release-workflow.md](docs/db-release-workflow.md)** — 数据库为何不入 git,
+  GitHub Release 托管和日常使用 / 故障排查
+- **[docs/zz-poster-runbook.md](docs/zz-poster-runbook.md)** — 至尊封面修复手册
+  （图片解码 / 代理白名单 / 部署验证）
+
 ## Getting Started
 
 First, run the development server:
